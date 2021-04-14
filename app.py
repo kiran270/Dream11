@@ -1,6 +1,6 @@
 from flask import Flask, render_template
 from flask import * 
-from db import create_connection,addMatch,getMactches,getteams,getplayers,addPlayer,removeplayer
+from db import create_connection,addMatch,getMactches,getteams,getplayers,addPlayer,removeplayer,deleteMatch,removeplayerByMatchID
 import requests
 import itertools
 import operator
@@ -10,6 +10,14 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
+	matches=getMactches()
+	return render_template("index.html",matches=matches)
+
+@app.route("/deletematch",methods = ["POST","GET"])
+def deletematch():
+	matchid=request.form.get("matchid")
+	deleteMatch(matchid)
+	removeplayerByMatchID(matchid)
 	matches=getMactches()
 	return render_template("index.html",matches=matches)
 
@@ -72,7 +80,8 @@ def generateTeams():
 	confirmedplayers=getconfirmedplayers(players)
 	finalteams=getfinalcombinations(confirmedplayers,validcombinations)
 	# print(len(finalteams))
-	return render_template("finalteams.html",validcombinations=finalteams)
+	totalteams=len(finalteams)
+	return render_template("finalteams.html",validcombinations=finalteams,totalteams=totalteams)
 def getfinalcombinations(confirmedplayers,validcombinations):
 	finalteams=[]
 	length=len(confirmedplayers)
@@ -134,12 +143,7 @@ def getvalidcombinations(combinations,teamA,teamB):
                                 if BATcount>=3 and BATcount<=5:
                                         if ALcount >=1 and ALcount<=4:
                                                 if BOWLCount >=3 and BOWLCount<=5:
-                                                	# for i in xrange(0,11):
-                              
-                                                	# 	TotalPercentage=TotalPercentage+team[i].percentage
-                                                	# team.append(TotalPercentage)
                                                 	validcombinations.append(team)
-        # validcombinations=sorted(validcombinations, key=itemgetter(11),reverse=True)
         return validcombinations
 
 

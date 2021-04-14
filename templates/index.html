@@ -38,7 +38,7 @@ body {
           <a class="navbar-brand" href="#">WebSiteName</a>
         </div>
         <ul class="nav navbar-nav">
-          <li class="active"><a href="#">Home</a></li>
+          <li class="active"><a href="/">Home</a></li>
           <li><a href="/addmatch">AddMatch</a></li>
           <li><a href="#">Page 2</a></li>
           <li><a href="#">Page 3</a></li>
@@ -66,6 +66,41 @@ body {
                       </div>
                       <div class="col-md-4" style="padding-top: 30px">
                         <button type="submit" class="btn btn-success">Play Now</button>
+                      </div>
+                      <div class="col-md-4 text-center">
+                        <div>
+                          <p>{{match.team2}}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                  <br>
+                  {% endfor %}
+                </div>
+              </div>
+              <br>
+            </div>
+          </div>
+      </div>
+      <div class="col-md-4" style="padding-top: 20px">
+          <div class="panel panel-primary">
+            <div class="panel-heading text-center">
+              UP coming matches
+            </div>
+            <div class="panel-body text-center" id="anyClass">
+              <div class="panel">
+                <div class="panel-body">
+                  {% for match in matches %}
+                  <form action="/deletematch" method="post" id="b">
+                    <input type="hidden" id="matchid" name="matchid" value="{{match.uniqueid}}">
+                    <div class="row">
+                      <div class="col-md-4 text-center">
+                        <div>
+                          <p>{{match.team1}}</p>
+                        </div>
+                      </div>
+                      <div class="col-md-4" style="padding-top: 30px">
+                        <button type="submit" class="btn btn-danger">Delete Match</beutton>
                       </div>
                       <div class="col-md-4 text-center">
                         <div>

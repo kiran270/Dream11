@@ -70,3 +70,15 @@ def removeplayer(playername,matchid):
 	cur.execute("DELETE FROM player where playername = ? and matchid = ?",[playername,matchid])
 	con.commit() 
 	rows = cur.fetchall()
+def removeplayerByMatchID(matchid):
+	con =create_connection()
+	cur = con.cursor()
+	cur.execute("DELETE FROM player where matchid = ?",[matchid])
+	con.commit() 
+	rows = cur.fetchall()
+def deleteMatch(matchid):
+	con =create_connection()
+	cur = con.cursor()
+	cur.execute("DELETE FROM matches where uniqueid = ?",[matchid])
+	con.commit() 
+	rows = cur.fetchall()
