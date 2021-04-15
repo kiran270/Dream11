@@ -49,18 +49,18 @@ def getMactches():
 	cur.execute("select * from matches")
 	rows = cur.fetchall()
 	return rows
-def getteams(id):
+def getteams(matchid):
 	con =create_connection()
 	con.row_factory = sqlite3.Row
 	cur = con.cursor()
-	cur.execute("SELECT * FROM matches where uniqueid = ?",(id))
+	cur.execute("SELECT * FROM matches where uniqueid = ?",[matchid])
 	rows = cur.fetchall()
 	return rows
-def getplayers(id):
+def getplayers(matchid):
 	con =create_connection()
 	con.row_factory = sqlite3.Row
 	cur = con.cursor()
-	cur.execute("SELECT * FROM player where matchid = ?",(id)) 
+	cur.execute("SELECT * FROM player where matchid = ?",[matchid]) 
 	rows = cur.fetchall()
 	return rows
 def removeplayer(playername,matchid):
@@ -79,6 +79,6 @@ def removeplayerByMatchID(matchid):
 def deleteMatch(matchid):
 	con =create_connection()
 	cur = con.cursor()
-	cur.execute("DELETE FROM matches where uniqueid = ?",[matchid])
+	cur.execute("DELETE FROM matches where uniqueid = ?",c)
 	con.commit() 
 	rows = cur.fetchall()
