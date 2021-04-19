@@ -139,7 +139,7 @@ def getvalidcombinations(combinations,teamA,teamB):
                         else:
                                 BATcount=BATcount+1
                 if credits<=100 and Ateamcount<=7 and Bteamcount<=7:
-                        if WKcount<=4:
+                        if WKcount<=4 and WKcount>=1:
                                 if BATcount>=3 and BATcount<=5:
                                         if ALcount >=1 and ALcount<=4:
                                                 if BOWLCount >=3 and BOWLCount<=5:
