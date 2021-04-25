@@ -39,6 +39,8 @@ def matchpage():
 	print(matchid+"match_id")
 	teams=getteams(matchid)
 	players=getplayers(matchid)
+	players=sorted(players, key=operator.itemgetter(5))
+	players.reverse()
 	return render_template("addplayers.html",teams=teams,players=players,matchid=matchid)
 
 @app.route("/addplayer",methods = ["POST","GET"])
@@ -53,6 +55,8 @@ def addplayer():
 	addPlayer(matchid,teamname,role,playername,credits,percentage,points)
 	teams=getteams(matchid)
 	players=getplayers(matchid)
+	players=sorted(players, key=operator.itemgetter(5))
+	players.reverse()
 	return render_template("addplayers.html",teams=teams,players=players,matchid=matchid)
 @app.route("/removePlayer",methods = ["POST","GET"])
 def removePlayer():
@@ -63,19 +67,86 @@ def removePlayer():
 	removeplayer(playername,matchid)
 	teams=getteams(matchid)
 	players=getplayers(matchid)
+	players=sorted(players, key=operator.itemgetter(5))
+	players.reverse()
 	return render_template("addplayers.html",teams=teams,players=players,matchid=matchid)
 @app.route("/generateTeams",methods = ["POST","GET"])
 def generateTeams():
 	matchid=request.form.get('matchid')
 	players=getplayers(matchid)
 	teams=getteams(matchid)
-	combinations=makeCombinations(players)
+	inputcombination=request.form.get('combination')
+	players=sorted(players, key=operator.itemgetter(5))
+	players.reverse()
+	Topcombinations=makeCombinations(players[0:4],3)
+	Midcombinations=makeCombinations(players[4:8],3)
+	Lowcombinations=makeCombinations(players[8:12],3)
+	Lastset=makeCombinations(players[12:16],2)
+	combinations=[]
+	for x in Topcombinations:
+		s1=list(x)
+		for y in Midcombinations:
+			s2=list(y)
+			for z in Lowcombinations:
+				s3=list(z)
+				for k in Lastset:
+					s4=list(k)
+					team=[]
+					team.extend(s1)
+					team.extend(s2)
+					team.extend(s3)
+					team.extend(s4)
+					combinations.append(team)
+	combinations=tuple(combinations)
+	print(len(combinations))
 	validcombinations=getvalidcombinations(combinations,teams[0][1],teams[0][2])
-	confirmedplayers=getconfirmedplayers(players)
-	finalteams=getfinalcombinations(confirmedplayers,validcombinations)
-	# print(len(finalteams))
-	totalteams=len(finalteams)
-	return render_template("finalteams.html",validcombinations=finalteams,totalteams=totalteams)
+	totalteams=len(validcombinations)
+	validcombinations=calculatePercentage(validcombinations)
+	# validcombinations=validcombinations[0:11]
+	if inputcombination!='ALL':
+		validcombinations=filterCombinations(inputcombination,validcombinations)
+
+	return render_template("finalteams.html",validcombinations=validcombinations,totalteams=totalteams)
+def filterCombinations(inputcombination,validcombinations):
+	teams=[]
+	x=inputcombination.split("-")
+	INWKcount=int(x[0])
+	INBATcount=int(x[1])
+	INALcount=int(x[2])
+	INBOWLCount=int(x[3])
+	for team in validcombinations:
+		WKcount=0
+		BATcount=0
+		BOWLCount=0
+		ALcount=0
+		for y in range(0,11):
+			if team[y][2]=="WK":
+				WKcount=WKcount+1
+			elif team[y][2]=="BOWL":
+				BOWLCount=BOWLCount+1
+			elif team[y][2]=="ALL":
+				ALcount=ALcount+1
+			else:
+				BATcount=BATcount+1
+		if INWKcount==WKcount and INBATcount==BATcount and INALcount==ALcount and INBOWLCount == BOWLCount:
+			teams.append(team)
+	return teams
+def calculatePercentage(validcombinations):
+	finalteams=[]
+
+	for x in validcombinations:
+		TotalPercentage=0
+		TotalPoints=0
+		for y in range(0,11):
+			TotalPercentage=TotalPercentage+int(x[y][5])
+			TotalPoints=TotalPoints+int(x[y][6])
+		x.append(TotalPercentage)
+		x.append(TotalPoints)	
+		finalteams.append(x)
+	sorted_list = sorted(finalteams, key=operator.itemgetter(12))
+	sorted_list.reverse()
+	return sorted_list
+
 def getfinalcombinations(confirmedplayers,validcombinations):
 	finalteams=[]
 	length=len(confirmedplayers)
@@ -103,8 +174,8 @@ def getconfirmedplayers(players):
 		if float(player[5])>=65:
 			confirmedplayers.append(player)
 	return confirmedplayers
-def makeCombinations(players):
-	combinations=list(itertools.combinations(players,11))
+def makeCombinations(players,num):
+	combinations=list(itertools.combinations(players,num))
 	return combinations
 def getvalidcombinations(combinations,teamA,teamB):
         validcombinations=[]
