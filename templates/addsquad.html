@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<style type="text/css">
+body {
+    background-size:auto;
+    background-repeat: no-repeat;
+    background-color: rgb(88, 88, 88);
+}
+#anyClass {
+  height:500px;
+  overflow-y: scroll;
+}
+#b {border-style:solid;}
+#teamimage{
+  height:80%;
+  width:100%;
+  padding-top:10px;
+  padding-left:10px;
+  padding-right: 10px;
+}
+</style>
+<body>
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">WebSiteName</a>
+    </div>
+    <ul class="nav navbar-nav">
+      <li class="active"><a href="/">Home</a></li>
+      <li><a href="/addmatch">AddMatch</a></li>
+      <li><a href="/addsquad">AddSquad</a></li>
+      <li><a href="#">Page 3</a></li>
+    </ul>
+  </div>
+</nav>
+<div class="container-fluid">
+  <div class="col-md-4">
+    <div class="panel panel-default">
+      <div class="panel-heading">Add Player</div>
+      <div class="panel-body">
+        <form id="addplayer" action="/addsquad" method="post">
+          <div class="form-group">
+            <label>Player Name</label>
+            <input type="text" class="form-control" id="playername" placeholder="Enter the playername" name="playername">
+          </div>
+          <div class="form-group">
+            <label>Team</label>
+            <input type="text" class="form-control" id="teamname" placeholder="Enter the teamname" name="teamname">
+          </div>
+          <div class="form-group">
+            <label>Role</label>
+            <select class="form-control" name="role" id="role">
+              <option>BAT</option>
+              <option>BOWL</option>
+              <option>ALL</option>
+              <option>WK</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Percentage</label>
+            <input type="text" class="form-control" id="percentage" placeholder="Enter the percentage" name="percentage">
+          </div>
+          <div class="form-group">
+            <label>Credits</label>
+            <input type="text" class="form-control" id="credits" placeholder="Enter the credits" name="credits">
+          </div>
+          <div class="form-group">
+            <label>Current Series Points</label>
+            <input type="text" class="form-control" id="points" placeholder="Enter the points" name="points">
+          </div>
+          <div class="col-md-offset-5">
+            <button type="submit" class="btn btn-success">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

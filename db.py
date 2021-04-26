@@ -14,10 +14,12 @@ def create_connection():
 
 def create_tables():
 	conn=create_connection()
-	conn.execute("drop table matches")
-	conn.execute("drop table player")
-	conn.execute("create table matches (uniqueid INTEGER PRIMARY KEY AUTOINCREMENT, team1 TEXT NOT NULL, team2 TEXT  NOT NULL)")
-	conn.execute("create table player (matchid INTEGER, teamname TEXT NOT NULL, role TEXT NOT NULL,playername TEXT  NOT NULL,credits TEXT  NOT NULL,percentage INTEGER  NOT NULL,points INTEGER)")
+	# conn.execute("drop table matches")
+	# conn.execute("drop table player")
+	# conn.execute("create table matches (uniqueid INTEGER PRIMARY KEY AUTOINCREMENT, team1 TEXT NOT NULL, team2 TEXT  NOT NULL)")
+	# conn.execute("create table player (matchid INTEGER, teamname TEXT NOT NULL, role TEXT NOT NULL,playername TEXT  NOT NULL,credits TEXT  NOT NULL,percentage INTEGER  NOT NULL,points INTEGER)")
+	# conn.execute("create table squad (plyerid INTEGER PRIMARY KEY AUTOINCREMENT, teamname TEXT NOT NULL, role TEXT NOT NULL,playername TEXT  NOT NULL,credits TEXT  NOT NULL,percentage INTEGER  NOT NULL,points INTEGER)")
+
 
 def addMatch(team1,team2):
 	# create_tables()
@@ -25,6 +27,15 @@ def addMatch(team1,team2):
 		con=create_connection()
 		cur = con.cursor()
 		cur.execute("INSERT into matches (team1, team2) values (?,?)",(team1,team2))
+		con.commit()
+	except:
+		con.rollback()
+def addSquad(teamname,role,playername,credits,percentage,points):
+	# create_tables()
+	try:
+		con=create_connection()
+		cur = con.cursor()
+		cur.execute("INSERT into squad (teamname,role,playername,credits,percentage,points) values (?,?,?,?,?,?)",(teamname,role,playername,credits,percentage,points))
 		con.commit()
 	except:
 		con.rollback()

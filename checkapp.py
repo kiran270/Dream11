@@ -1,6 +1,6 @@
 from flask import Flask, render_template
 from flask import * 
-from db import create_connection,addMatch,getMactches,getteams,getplayers,addPlayer,removeplayer,deleteMatch,removeplayerByMatchID
+from db import create_connection,addMatch,getMactches,getteams,getplayers,addSquad,addPlayer,removeplayer,deleteMatch,removeplayerByMatchID
 import requests
 import itertools
 import operator
@@ -20,6 +20,21 @@ def deletematch():
 	removeplayerByMatchID(matchid)
 	matches=getMactches()
 	return render_template("index.html",matches=matches)
+
+@app.route("/addsquad",methods = ["POST","GET"])
+def AddSquad():
+	if request.method == "POST":
+		teamname=request.form.get('teamname')
+		role=request.form.get('role')
+		playername=request.form.get('playername')
+		credits=request.form.get('credits')
+		percentage=request.form.get('percentage')
+		points=request.form.get('points')
+		addSquad(teamname,role,playername,credits,percentage,points)
+		return render_template("addsquad.html")
+	else:
+		return render_template("addsquad.html")
+
 
 @app.route("/addmatch",methods = ["POST","GET"])
 def AddMatches():
@@ -102,7 +117,6 @@ def generateTeams():
 	validcombinations=getvalidcombinations(combinations,teams[0][1],teams[0][2])
 	totalteams=len(validcombinations)
 	validcombinations=calculatePercentage(validcombinations)
-	# validcombinations=validcombinations[0:11]
 	if inputcombination!='ALL':
 		validcombinations=filterCombinations(inputcombination,validcombinations)
 	thiscombinationlength=len(validcombinations)
