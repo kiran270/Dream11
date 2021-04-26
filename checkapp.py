@@ -1,10 +1,12 @@
 from flask import Flask, render_template
 from flask import * 
-from db import create_connection,addMatch,getMactches,getteams,getplayers,addSquad,addPlayer,removeplayer,deleteMatch,removeplayerByMatchID
+from db import getSquad,create_connection,addMatch,getMactches,getteams,getplayers,addSquad,addPlayer,removeplayer,deleteMatch,removeplayerByMatchID
 import requests
 import itertools
 import operator
 from operator import itemgetter,attrgetter, methodcaller
+from filterteams import getImpactCombinations,filterCombinations
+import random
 
 app = Flask(__name__)
 
@@ -91,29 +93,10 @@ def generateTeams():
 	players=getplayers(matchid)
 	teams=getteams(matchid)
 	inputcombination=request.form.get('combination')
+	playersImpact=request.form.get('playerimpact')
 	players=sorted(players, key=operator.itemgetter(5))
 	players.reverse()
-	Topcombinations=makeCombinations(players[0:4],3)
-	Midcombinations=makeCombinations(players[4:8],3)
-	Lowcombinations=makeCombinations(players[8:12],3)
-	Lastset=makeCombinations(players[12:16],2)
-	combinations=[]
-	for x in Topcombinations:
-		s1=list(x)
-		for y in Midcombinations:
-			s2=list(y)
-			for z in Lowcombinations:
-				s3=list(z)
-				for k in Lastset:
-					s4=list(k)
-					team=[]
-					team.extend(s1)
-					team.extend(s2)
-					team.extend(s3)
-					team.extend(s4)
-					combinations.append(team)
-	combinations=tuple(combinations)
-	print(len(combinations))
+	combinations=getImpactCombinations(players,playersImpact)
 	validcombinations=getvalidcombinations(combinations,teams[0][1],teams[0][2])
 	totalteams=len(validcombinations)
 	validcombinations=calculatePercentage(validcombinations)
@@ -121,33 +104,9 @@ def generateTeams():
 		validcombinations=filterCombinations(inputcombination,validcombinations)
 	thiscombinationlength=len(validcombinations)
 	return render_template("finalteams.html",validcombinations=validcombinations,totalteams=totalteams,thiscombinationlength=thiscombinationlength)
-def filterCombinations(inputcombination,validcombinations):
-	teams=[]
-	x=inputcombination.split("-")
-	INWKcount=int(x[0])
-	INBATcount=int(x[1])
-	INALcount=int(x[2])
-	INBOWLCount=int(x[3])
-	for team in validcombinations:
-		WKcount=0
-		BATcount=0
-		BOWLCount=0
-		ALcount=0
-		for y in range(0,11):
-			if team[y][2]=="WK":
-				WKcount=WKcount+1
-			elif team[y][2]=="BOWL":
-				BOWLCount=BOWLCount+1
-			elif team[y][2]=="ALL":
-				ALcount=ALcount+1
-			else:
-				BATcount=BATcount+1
-		if INWKcount==WKcount and INBATcount==BATcount and INALcount==ALcount and INBOWLCount == BOWLCount:
-			teams.append(team)
-	return teams
+
 def calculatePercentage(validcombinations):
 	finalteams=[]
-
 	for x in validcombinations:
 		TotalPercentage=0
 		TotalPoints=0
@@ -157,9 +116,10 @@ def calculatePercentage(validcombinations):
 		x.append(TotalPercentage)
 		x.append(TotalPoints)	
 		finalteams.append(x)
-	sorted_list = sorted(finalteams, key=operator.itemgetter(12))
-	sorted_list.reverse()
-	return sorted_list
+	# sorted_list = sorted(finalteams, key=operator.itemgetter(12))
+	# sorted_list.reverse()
+	random.shuffle(finalteams)
+	return finalteams
 
 def getfinalcombinations(confirmedplayers,validcombinations):
 	finalteams=[]

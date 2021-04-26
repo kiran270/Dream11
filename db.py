@@ -39,6 +39,7 @@ def addSquad(teamname,role,playername,credits,percentage,points):
 		con.commit()
 	except:
 		con.rollback()
+
 def addPlayer(matchid,teamname,role,playername,credits,percentage,points):
 	# create_tables()
 	try:
@@ -93,3 +94,10 @@ def deleteMatch(matchid):
 	cur.execute("DELETE FROM matches where uniqueid = ?",[matchid])
 	con.commit() 
 	rows = cur.fetchall()
+def getSquad(teamA,teamB):
+	con =create_connection()
+	con.row_factory = sqlite3.Row
+	cur = con.cursor()
+	cur.execute("SELECT * FROM squad where teamname = ? or teamname= ?",[teamA,teamB]) 
+	rows = cur.fetchall()
+	return rows
