@@ -105,8 +105,8 @@ def generateTeams():
 	# validcombinations=validcombinations[0:11]
 	if inputcombination!='ALL':
 		validcombinations=filterCombinations(inputcombination,validcombinations)
-
-	return render_template("finalteams.html",validcombinations=validcombinations,totalteams=totalteams)
+	thiscombinationlength=len(validcombinations)
+	return render_template("finalteams.html",validcombinations=validcombinations,totalteams=totalteams,thiscombinationlength=thiscombinationlength)
 def filterCombinations(inputcombination,validcombinations):
 	teams=[]
 	x=inputcombination.split("-")
