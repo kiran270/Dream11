@@ -86,3 +86,48 @@ def filterCombinations(inputcombination,validcombinations):
 		if INWKcount==WKcount and INBATcount==BATcount and INALcount==ALcount and INBOWLCount == BOWLCount:
 			teams.append(team)
 	return teams
+def filterBasedOnMatchWinner(validcombinations,matchwinner):
+	TeamA=""
+	TeamB=""
+	teams=[]
+	for team in validcombinations:
+		TeamA=team[0][1]
+		for y in range(0,11):
+			if team[y][1] !=TeamA:
+				TeamB=team[y][1]
+				break;
+	if matchwinner=="50/50":
+		for team in validcombinations:
+			TeamACount=0
+			TeamBCount=0
+			for y in range(0,11):
+				if team[y][1]==TeamA:
+					TeamACount=TeamACount+1
+				else:
+					TeamBCount=TeamBCount+1
+			if TeamACount == 5 or TeamACount == 6:
+				teams.append(team)
+	elif TeamA==matchwinner:
+		for team in validcombinations:
+			TeamACount=0
+			TeamBCount=0
+			for y in range(0,11):
+				if team[y][1]==TeamA:
+					TeamACount=TeamACount+1
+				else:
+					TeamBCount=TeamBCount+1
+			if TeamACount == 6 or TeamACount == 7:
+				teams.append(team)
+	elif TeamB==matchwinner:
+		for team in validcombinations:
+			TeamACount=0
+			TeamBCount=0
+			for y in range(0,11):
+				if team[y][1]==TeamA:
+					TeamACount=TeamACount+1
+				else:
+					TeamBCount=TeamBCount+1
+			if TeamBCount == 6 or TeamBCount == 7:
+				teams.append(team)
+
+	return teams

@@ -5,8 +5,9 @@ import requests
 import itertools
 import operator
 from operator import itemgetter,attrgetter, methodcaller
-from filterteams import getImpactCombinations,filterCombinations
+from filterteams import getImpactCombinations,filterCombinations,filterBasedOnMatchWinner
 import random
+
 
 app = Flask(__name__)
 
@@ -94,6 +95,7 @@ def generateTeams():
 	teams=getteams(matchid)
 	inputcombination=request.form.get('combination')
 	playersImpact=request.form.get('playerimpact')
+	matchwinner=request.form.get('matchwinner')
 	players=sorted(players, key=operator.itemgetter(5))
 	players.reverse()
 	combinations=getImpactCombinations(players,playersImpact)
@@ -102,8 +104,9 @@ def generateTeams():
 	validcombinations=calculatePercentage(validcombinations)
 	if inputcombination!='ALL':
 		validcombinations=filterCombinations(inputcombination,validcombinations)
+	validcombinations=filterBasedOnMatchWinner(validcombinations,matchwinner)
 	thiscombinationlength=len(validcombinations)
-	return render_template("finalteams.html",validcombinations=validcombinations,totalteams=totalteams,thiscombinationlength=thiscombinationlength)
+	return render_template("finalteams.html",validcombinations=validcombinations,totalteams=totalteams,thiscombinationlength=thiscombinationlength,currentcombination=inputcombination)
 
 def calculatePercentage(validcombinations):
 	finalteams=[]

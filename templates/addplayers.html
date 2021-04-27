@@ -139,22 +139,23 @@ body {
                         <label>Combination</label>
                         <select class="form-control" name="combination" id="combination">
                           <option>ALL</option>
-                          <option>1-3-3-4</option>
-                          <option>2-3-3-3</option>
-                          <option>3-3-2-3</option>
-                          <option>3-4-1-3</option>
-                          <option>1-4-3-3</option>
-                          <option>1-5-2-3</option>
-                          <option>1-4-2-4</option>
-                          <option>2-4-1-4</option>
-                          <option>1-6-1-3</option>
-                          <option>2-4-2-3</option>
-                          <option>1-5-1-4</option>
-                          <option>2-5-1-3</option>
                           <option>1-3-4-3</option>
                           <option>1-3-1-6</option>
                           <option>1-4-1-5</option>
                           <option>1-3-2-5</option>
+                          <option>1-5-1-4</option>
+                          <option>1-6-1-3</option>
+                          <option>1-5-2-3</option>
+                          <option>1-4-2-4</option>
+                          <option>1-4-3-3</option>
+                          <option>1-3-3-4</option>
+                          <option>2-3-2-4</option>
+                          <option>2-3-3-3</option>
+                          <option>3-3-2-3</option>
+                          <option>3-4-1-3</option>
+                          <option>2-4-1-4</option>
+                          <option>2-4-2-3</option>
+                          <option>2-5-1-3</option>
                           <option>2-3-1-5</option>
                         </select>
                       </div>
@@ -164,6 +165,16 @@ body {
                           <option>Average</option>
                           <option>High</option>
                           <option>Low</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label>Match Winner</label>
+                        <select class="form-control" name="matchwinner" id="matchwinner">
+                          <option>50/50</option>
+                          {% for team in teams %}
+                            <option>{{team.team1}}</option>
+                            <option>{{team.team2}}</option>
+                          {% endfor %}
                         </select>
                       </div>
                     </div>
