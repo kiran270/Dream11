@@ -3,7 +3,7 @@ from sqlite3 import Error
 
 
 def create_connection():
-	db_file= r"D:\dream11\Dream11\pythonsqlite.db"
+	db_file= r"C:\Users\user\Desktop\Team6\Dream11\pythonsqlite.db"
 	conn = None
 	try:
 		conn = sqlite3.connect(db_file)
@@ -14,11 +14,13 @@ def create_connection():
 
 def create_tables():
 	conn=create_connection()
+	conn.execute("drop table pitchpoints")
 	# conn.execute("drop table matches")
 	# conn.execute("drop table player")
 	# conn.execute("create table matches (uniqueid INTEGER PRIMARY KEY AUTOINCREMENT, team1 TEXT NOT NULL, team2 TEXT  NOT NULL)")
 	# conn.execute("create table player (matchid INTEGER, teamname TEXT NOT NULL, role TEXT NOT NULL,playername TEXT  NOT NULL,credits TEXT  NOT NULL,percentage INTEGER  NOT NULL,points INTEGER)")
 	# conn.execute("create table squad (plyerid INTEGER PRIMARY KEY AUTOINCREMENT, teamname TEXT NOT NULL, role TEXT NOT NULL,playername TEXT  NOT NULL,credits TEXT  NOT NULL,percentage INTEGER  NOT NULL,points INTEGER)")
+	conn.execute("create table pitchpoints (role TEXT NOT NULL ,playername TEXT  NOT NULL PRIMARY KEY,battingpitch INTEGER  NOT NULL,balancedpitch INTEGER  NOT NULL,bowlingpitch INTEGER NOT NULL)")
 
 
 def addMatch(team1,team2):
@@ -30,15 +32,21 @@ def addMatch(team1,team2):
 		con.commit()
 	except:
 		con.rollback()
-def addSquad(teamname,role,playername,credits,percentage,points):
+def addSquad(role,playername,battingpitch,balancedpitch,bowlingpitch):
 	# create_tables()
 	try:
 		con=create_connection()
 		cur = con.cursor()
-		cur.execute("INSERT into squad (teamname,role,playername,credits,percentage,points) values (?,?,?,?,?,?)",(teamname,role,playername,credits,percentage,points))
+		cur.execute("INSERT into pitchpoints (role,playername,battingpitch,balancedpitch,bowlingpitch) values (?,?,?,?,?)",(role,playername,battingpitch,balancedpitch,bowlingpitch))
 		con.commit()
 	except:
 		con.rollback()
+def removeSquad(playername):
+	con =create_connection()
+	cur = con.cursor()
+	cur.execute("DELETE FROM pitchpoints where playername = ?",[playername])
+	con.commit() 
+	rows = cur.fetchall()
 
 def addPlayer(matchid,teamname,role,playername,credits,percentage,points):
 	# create_tables()
@@ -94,10 +102,17 @@ def deleteMatch(matchid):
 	cur.execute("DELETE FROM matches where uniqueid = ?",[matchid])
 	con.commit() 
 	rows = cur.fetchall()
-def getSquad(teamA,teamB):
+def getSquad():
 	con =create_connection()
 	con.row_factory = sqlite3.Row
 	cur = con.cursor()
-	cur.execute("SELECT * FROM squad where teamname = ? or teamname= ?",[teamA,teamB]) 
+	cur.execute("SELECT * FROM pitchpoints") 
+	rows = cur.fetchall()
+	return rows
+def getPitchpointsWithPlayerName(playername):
+	con =create_connection()
+	con.row_factory = sqlite3.Row
+	cur = con.cursor()
+	cur.execute("SELECT * FROM pitchpoints where playername = ?",[playername]) 
 	rows = cur.fetchall()
 	return rows

@@ -1,4 +1,4 @@
-from db import getSquad,create_connection,addMatch,getMactches,getteams,getplayers,addSquad,addPlayer,removeplayer,deleteMatch,removeplayerByMatchID
+from db import getPitchpointsWithPlayerName,getSquad,create_connection,addMatch,getMactches,getteams,getplayers,addSquad,addPlayer,removeplayer,deleteMatch,removeplayerByMatchID
 import requests
 import itertools
 import operator
@@ -86,10 +86,27 @@ def filterCombinations(inputcombination,validcombinations):
 		if INWKcount==WKcount and INBATcount==BATcount and INALcount==ALcount and INBOWLCount == BOWLCount:
 			teams.append(team)
 	return teams
-def filterBasedOnMatchWinner(validcombinations,matchwinner):
+def filterBasedOnMatchWinnerAndPitchType(validcombinations,matchwinner,pitchtype,players):
 	TeamA=""
 	TeamB=""
 	teams=[]
+	pitchpoints={}
+	if pitchtype!="None":
+		if pitchtype=="BattingPitch":
+			for x in players:
+				rows=getPitchpointsWithPlayerName(x[3])
+				if len(rows) > 0:
+					pitchpoints[x[3]]=rows[0][2]
+		if pitchtype=="BalancedPitch":
+			for x in players:
+				rows=getPitchpointsWithPlayerName(x[3])
+				if len(rows) > 0:
+					pitchpoints[x[3]]=rows[0][3]
+		if pitchtype=="BowlingPitch":
+			for x in players:
+				rows=getPitchpointsWithPlayerName(x[3])
+				if len(rows) > 0:
+					pitchpoints[x[3]]=rows[0][4]
 	for team in validcombinations:
 		TeamA=team[0][1]
 		for y in range(0,11):
@@ -100,34 +117,64 @@ def filterBasedOnMatchWinner(validcombinations,matchwinner):
 		for team in validcombinations:
 			TeamACount=0
 			TeamBCount=0
+			totalpitchpints=0
 			for y in range(0,11):
 				if team[y][1]==TeamA:
 					TeamACount=TeamACount+1
+					try:
+						totalpitchpints=totalpitchpints+int(pitchpoints[team[y][3]])
+					except KeyError:
+						print("Player Not Exist:"+team[y][3])
 				else:
 					TeamBCount=TeamBCount+1
+					try:
+						totalpitchpints=totalpitchpints+int(pitchpoints[team[y][3]])
+					except KeyError:
+						print("Player Not Exist:"+team[y][3])
 			if TeamACount == 5 or TeamACount == 6:
+				team.append(totalpitchpints)
 				teams.append(team)
 	elif TeamA==matchwinner:
 		for team in validcombinations:
 			TeamACount=0
 			TeamBCount=0
+			totalpitchpints=0
 			for y in range(0,11):
 				if team[y][1]==TeamA:
 					TeamACount=TeamACount+1
+					try:
+						totalpitchpints=totalpitchpints+int(pitchpoints[team[y][3]])
+					except KeyError:
+						print("Player Not Exist:"+team[y][3])
 				else:
 					TeamBCount=TeamBCount+1
+					try:
+						totalpitchpints=totalpitchpints+int(pitchpoints[team[y][3]])
+					except KeyError:
+						print("Player Not Exist:"+team[y][3])
 			if TeamACount == 6 or TeamACount == 7:
+				team.append(totalpitchpints)
 				teams.append(team)
 	elif TeamB==matchwinner:
 		for team in validcombinations:
 			TeamACount=0
 			TeamBCount=0
+			totalpitchpints=0
 			for y in range(0,11):
 				if team[y][1]==TeamA:
 					TeamACount=TeamACount+1
+					try:
+						totalpitchpints=totalpitchpints+int(pitchpoints[team[y][3]])
+					except KeyError:
+						print("Player Not Exist:"+team[y][3])
 				else:
 					TeamBCount=TeamBCount+1
+					try:
+						totalpitchpints=totalpitchpints+int(pitchpoints[team[y][3]])
+					except KeyError:
+						print("Player Not Exist:"+team[y][3])
 			if TeamBCount == 6 or TeamBCount == 7:
+				team.append(totalpitchpints)
 				teams.append(team)
 
 	return teams

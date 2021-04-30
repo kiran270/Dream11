@@ -52,34 +52,64 @@ body {
             <input type="text" class="form-control" id="playername" placeholder="Enter the playername" name="playername">
           </div>
           <div class="form-group">
-            <label>Team</label>
-            <input type="text" class="form-control" id="teamname" placeholder="Enter the teamname" name="teamname">
-          </div>
-          <div class="form-group">
             <label>Role</label>
             <select class="form-control" name="role" id="role">
               <option>BAT</option>
               <option>BOWL</option>
               <option>ALL</option>
-              <option>WK</option>
             </select>
           </div>
           <div class="form-group">
-            <label>Percentage</label>
-            <input type="text" class="form-control" id="percentage" placeholder="Enter the percentage" name="percentage">
+            <label>Batting Pitch</label>
+            <input type="text" class="form-control" id="battingpitch" placeholder="Enter the points" name="battingpitch">
           </div>
           <div class="form-group">
-            <label>Credits</label>
-            <input type="text" class="form-control" id="credits" placeholder="Enter the credits" name="credits">
+            <label>Balanced Pitch</label>
+            <input type="text" class="form-control" id="balancedpitch" placeholder="Enter the points" name="balancedpitch">
           </div>
           <div class="form-group">
-            <label>Current Series Points</label>
-            <input type="text" class="form-control" id="points" placeholder="Enter the points" name="points">
+            <label>Bowling Pitch</label>
+            <input type="text" class="form-control" id="bowlingpitch" placeholder="Enter the points" name="bowlingpitch">
           </div>
           <div class="col-md-offset-5">
             <button type="submit" class="btn btn-success">Submit</button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="panel panel-default">
+      <div class="panel-heading">Selected Players</div>
+      <div class="panel-body" id="anyClass">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Role</th>
+              <th>BattingPitch</th>
+              <th>BalancedPitch</th>
+              <th>BowlingPitch</th>
+            </tr>
+          </thead>
+          <tbody id="tablebody">
+            {% for x in squad %}
+              <tr>
+                <td>{{x.playername}}</td>
+                <td>{{x.role}}</td>
+                <td>{{x.battingpitch}}</td>
+                <td>{{x.balancedpitch}}</td>
+                <td>{{x.bowlingpitch}}</td>
+                <td>
+                  <form action="/removeSquad" method="post">
+                    <input type="hidden" id="playername" name="playername" value="{{x.playername}}">
+                    <button type="submit" class="btn btn-danger" id="{{x.playername}}">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
     </div>
   </div>

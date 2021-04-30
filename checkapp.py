@@ -1,11 +1,11 @@
 from flask import Flask, render_template
 from flask import * 
-from db import getSquad,create_connection,addMatch,getMactches,getteams,getplayers,addSquad,addPlayer,removeplayer,deleteMatch,removeplayerByMatchID
+from db import removeSquad,getSquad,create_connection,addMatch,getMactches,getteams,getplayers,addSquad,addPlayer,removeplayer,deleteMatch,removeplayerByMatchID
 import requests
 import itertools
 import operator
 from operator import itemgetter,attrgetter, methodcaller
-from filterteams import getImpactCombinations,filterCombinations,filterBasedOnMatchWinner
+from filterteams import getImpactCombinations,filterCombinations,filterBasedOnMatchWinnerAndPitchType
 import random
 
 
@@ -14,6 +14,7 @@ app = Flask(__name__)
 @app.route("/")
 def home():
 	matches=getMactches()
+	matches.reverse()
 	return render_template("index.html",matches=matches)
 
 @app.route("/deletematch",methods = ["POST","GET"])
@@ -26,18 +27,26 @@ def deletematch():
 
 @app.route("/addsquad",methods = ["POST","GET"])
 def AddSquad():
+	
 	if request.method == "POST":
-		teamname=request.form.get('teamname')
 		role=request.form.get('role')
 		playername=request.form.get('playername')
-		credits=request.form.get('credits')
-		percentage=request.form.get('percentage')
-		points=request.form.get('points')
-		addSquad(teamname,role,playername,credits,percentage,points)
-		return render_template("addsquad.html")
+		battingpitch=request.form.get('battingpitch')
+		balancedpitch=request.form.get('balancedpitch')
+		bowlingpitch=request.form.get('bowlingpitch')
+		addSquad(role,playername,battingpitch,balancedpitch,bowlingpitch)
+		squad=getSquad()
+		return render_template("addsquad.html",squad=squad)
 	else:
-		return render_template("addsquad.html")
-
+		squad=getSquad()
+		return render_template("addsquad.html",squad=squad)
+@app.route("/removeSquad",methods = ["POST","GET"])
+def removesquad():
+	if request.method == "POST":
+		playername=request.form.get('playername')
+		removeSquad(playername)
+	squad=getSquad()
+	return render_template("addsquad.html",squad=squad)
 
 @app.route("/addmatch",methods = ["POST","GET"])
 def AddMatches():
@@ -49,6 +58,7 @@ def AddMatches():
 			teamB = request.form["teamb"]
 			addMatch(teamA,teamB)
 	matches=getMactches()
+	matches.reverse()
 	return render_template("home.html",matches=matches)
 
 @app.route("/matchpage",methods = ["POST","GET"])
@@ -96,6 +106,7 @@ def generateTeams():
 	inputcombination=request.form.get('combination')
 	playersImpact=request.form.get('playerimpact')
 	matchwinner=request.form.get('matchwinner')
+	pitchtype=request.form.get('pitchtype')
 	players=sorted(players, key=operator.itemgetter(5))
 	players.reverse()
 	combinations=getImpactCombinations(players,playersImpact)
@@ -104,7 +115,7 @@ def generateTeams():
 	validcombinations=calculatePercentage(validcombinations)
 	if inputcombination!='ALL':
 		validcombinations=filterCombinations(inputcombination,validcombinations)
-	validcombinations=filterBasedOnMatchWinner(validcombinations,matchwinner)
+	validcombinations=filterBasedOnMatchWinnerAndPitchType(validcombinations,matchwinner,pitchtype,players)
 	thiscombinationlength=len(validcombinations)
 	return render_template("finalteams.html",validcombinations=validcombinations,totalteams=totalteams,thiscombinationlength=thiscombinationlength,currentcombination=inputcombination)
 
@@ -117,11 +128,11 @@ def calculatePercentage(validcombinations):
 			TotalPercentage=TotalPercentage+int(x[y][5])
 			TotalPoints=TotalPoints+int(x[y][6])
 		x.append(TotalPercentage)
-		x.append(TotalPoints)	
+		x.append(TotalPoints)
 		finalteams.append(x)
-	# sorted_list = sorted(finalteams, key=operator.itemgetter(12))
-	# sorted_list.reverse()
-	random.shuffle(finalteams)
+	sorted_list = sorted(finalteams, key=operator.itemgetter(12))
+	sorted_list.reverse()
+	# random.shuffle(finalteams)
 	return finalteams
 
 def getfinalcombinations(confirmedplayers,validcombinations):
