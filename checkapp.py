@@ -5,7 +5,7 @@ import requests
 import itertools
 import operator
 from operator import itemgetter,attrgetter, methodcaller
-from filterteams import getImpactCombinations,filterCombinations,filterBasedOnMatchWinnerAndPitchType
+from filterteams import getLeagueTypeCombinations,filterCombinations,filterBasedOnMatchWinnerAndPitchType
 import random
 
 
@@ -104,12 +104,12 @@ def generateTeams():
 	players=getplayers(matchid)
 	teams=getteams(matchid)
 	inputcombination=request.form.get('combination')
-	playersImpact=request.form.get('playerimpact')
+	leaguetype=request.form.get('leaguetype')
 	matchwinner=request.form.get('matchwinner')
 	pitchtype=request.form.get('pitchtype')
 	players=sorted(players, key=operator.itemgetter(5))
 	players.reverse()
-	combinations=getImpactCombinations(players,playersImpact)
+	combinations=getLeagueTypeCombinations(players,leaguetype)
 	validcombinations=getvalidcombinations(combinations,teams[0][1],teams[0][2])
 	totalteams=len(validcombinations)
 	validcombinations=calculatePercentage(validcombinations)

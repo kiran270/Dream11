@@ -160,16 +160,17 @@ body {
                         </select>
                       </div>
                       <div class="form-group">
-                        <label>Players Impact</label>
-                        <select class="form-control" name="playerimpact" id="playerimpact">
-                          <option>Average</option>
-                          <option>High</option>
-                          <option>Low</option>
+                        <label>League Type</label>
+                        <select class="form-control" name="leaguetype" id="leaguetype">
+                          <option>Grand</option>
+                          <option>52</option>
+                          <option>339</option>
                         </select>
                       </div>
                       <div class="form-group">
                         <label>Match Winner</label>
                         <select class="form-control" name="matchwinner" id="matchwinner">
+                          <option>None</option>
                           <option>50/50</option>
                           {% for team in teams %}
                             <option>{{team.team1}}</option>

@@ -3,7 +3,7 @@ from sqlite3 import Error
 
 
 def create_connection():
-	db_file= r"C:\Users\user\Desktop\Team6\Dream11\pythonsqlite.db"
+	db_file= r"E:\Dream11\pythonsqlite.db"
 	conn = None
 	try:
 		conn = sqlite3.connect(db_file)

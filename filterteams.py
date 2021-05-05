@@ -3,8 +3,8 @@ import requests
 import itertools
 import operator
 from operator import itemgetter,attrgetter, methodcaller
-def getImpactCombinations(players,impact):
-	if impact == 'Average':
+def getLeagueTypeCombinations(players,leagueType):
+	if leagueType == 'Grand':
 		Topcombinations=makeCombinations(players[0:4],3)
 		Midcombinations=makeCombinations(players[4:8],3)
 		Lowcombinations=makeCombinations(players[8:12],3)
@@ -24,40 +24,28 @@ def getImpactCombinations(players,impact):
 						team.extend(s3)
 						team.extend(s4)
 						combinations.append(team)
-	elif impact == 'High':
-		Topcombinations=makeCombinations(players[0:9],7)
-		Midcombinations=makeCombinations(players[9:14],4)
+	elif leagueType == '52':
+		Topcombinations=players[0:7]
+		# print(str(len(Topcombinations))+"......")
+		Midcombinations=makeCombinations(players[7:14],4)
 		combinations=[]
-		for x in Topcombinations:
-			s1=list(x)
-			for y in Midcombinations:
-				s2=list(y)
-				team=[]
-				team.extend(s1)
-				team.extend(s2)
-				combinations.append(team)
-		combinations=tuple(combinations)
+		for y in Midcombinations:
+			s2=list(y)
+			team=[]
+			team.extend(Topcombinations)
+			team.extend(s2)
+			combinations.append(team)
+		# combinations=tuple(combinations)
 	else:
-		Topcombinations=makeCombinations(players[0:4],4)
-		Midcombinations=makeCombinations(players[4:10],3)
-		Lowcombinations=makeCombinations(players[10:15],2)
-		Lastset=makeCombinations(players[15:18],2)
+		Topcombinations=players[0:6]
+		Midcombinations=makeCombinations(players[6:14],5)
 		combinations=[]
-		for x in Topcombinations:
-			s1=list(x)
-			for y in Midcombinations:
-				s2=list(y)
-				for z in Lowcombinations:
-					s3=list(z)
-					for k in Lastset:
-						s4=list(k)
-						team=[]
-						team.extend(s1)
-						team.extend(s2)
-						team.extend(s3)
-						team.extend(s4)
-						combinations.append(team)
-
+		for y in Midcombinations:
+			s2=list(y)
+			team=[]
+			team.extend(Topcombinations)
+			team.extend(s2)
+			combinations.append(team)
 	return combinations
 def makeCombinations(players,num):
 	combinations=list(itertools.combinations(players,num))
@@ -124,13 +112,15 @@ def filterBasedOnMatchWinnerAndPitchType(validcombinations,matchwinner,pitchtype
 					try:
 						totalpitchpints=totalpitchpints+int(pitchpoints[team[y][3]])
 					except KeyError:
-						print("Player Not Exist:"+team[y][3])
+						team[y][3]
+						# print("Player Not Exist:"+team[y][3])
 				else:
 					TeamBCount=TeamBCount+1
 					try:
 						totalpitchpints=totalpitchpints+int(pitchpoints[team[y][3]])
 					except KeyError:
-						print("Player Not Exist:"+team[y][3])
+						team[y][3]
+						# print("Player Not Exist:"+team[y][3])
 			if TeamACount == 5 or TeamACount == 6:
 				team.append(totalpitchpints)
 				teams.append(team)
@@ -176,5 +166,7 @@ def filterBasedOnMatchWinnerAndPitchType(validcombinations,matchwinner,pitchtype
 			if TeamBCount == 6 or TeamBCount == 7:
 				team.append(totalpitchpints)
 				teams.append(team)
+	elif matchwinner=="None":
+		teams=validcombinations
 
 	return teams
