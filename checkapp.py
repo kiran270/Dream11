@@ -1,6 +1,6 @@
 from flask import Flask, render_template
 from flask import * 
-from db import removeSquad,getSquad,create_connection,addMatch,getMactches,getteams,getplayers,addSquad,addPlayer,removeplayer,deleteMatch,removeplayerByMatchID
+from db import removeSquad,getDreamTeams,getSquad,addDreamTeam,create_connection,addMatch,getMactches,getteams,getplayers,addSquad,addPlayer,removeplayer,deleteMatch,removeplayerByMatchID
 import requests
 import itertools
 import operator
@@ -16,6 +16,28 @@ def home():
 	matches=getMactches()
 	matches.reverse()
 	return render_template("index.html",matches=matches)
+
+@app.route("/adddreamteam",methods = ["POST","GET"])
+def adddreamteam():
+	if request.method == "POST":
+		matchbetween=request.form.get('matchbetween')
+		stadium=request.form.get('stadium')
+		wininning=request.form.get('wininning')
+		one=request.form.get('1')
+		two=request.form.get('2')
+		three=request.form.get('3')
+		four=request.form.get('4')
+		five=request.form.get('5')
+		six=request.form.get('6')
+		seven=request.form.get('7')
+		eight=request.form.get('8')
+		nine=request.form.get('9')
+		ten=request.form.get('10')
+		eleven=request.form.get('11')
+		addDreamTeam(matchbetween,stadium,wininning,one,two,three,four,five,six,seven,eight,nine,ten,eleven)
+		return render_template("adddreamteam.html")
+	else:
+		return render_template("adddreamteam.html")
 
 @app.route("/deletematch",methods = ["POST","GET"])
 def deletematch():
@@ -79,8 +101,8 @@ def addplayer():
 	playername=request.form.get('playername')
 	credits=request.form.get('credits')
 	percentage=request.form.get('percentage')
-	points=request.form.get('points')
-	addPlayer(matchid,teamname,role,playername,credits,percentage,points)
+	matchrole=request.form.get('matchrole')
+	addPlayer(matchid,teamname,role,playername,credits,percentage,matchrole)
 	teams=getteams(matchid)
 	players=getplayers(matchid)
 	players=sorted(players, key=operator.itemgetter(5))
@@ -107,28 +129,57 @@ def generateTeams():
 	leaguetype=request.form.get('leaguetype')
 	matchwinner=request.form.get('matchwinner')
 	pitchtype=request.form.get('pitchtype')
-	players=sorted(players, key=operator.itemgetter(5))
-	players.reverse()
-	combinations=getLeagueTypeCombinations(players,leaguetype)
-	validcombinations=getvalidcombinations(combinations,teams[0][1],teams[0][2])
-	totalteams=len(validcombinations)
-	validcombinations=calculatePercentage(validcombinations)
-	if inputcombination!='ALL':
-		validcombinations=filterCombinations(inputcombination,validcombinations)
-	validcombinations=filterBasedOnMatchWinnerAndPitchType(validcombinations,matchwinner,pitchtype,players)
-	thiscombinationlength=len(validcombinations)
-	return render_template("finalteams.html",validcombinations=validcombinations,totalteams=totalteams,thiscombinationlength=thiscombinationlength,currentcombination=inputcombination)
+	battingfirst=request.form.get('battingfirst')
+	if battingfirst!="None":
+		playersdict={}
+		templatecombinations=[]
+		gettemplateteams=getDreamTeams()
+		for player in players:
+			if player[1]==battingfirst:
+				playercurrentrole='A'+player[6]
+				playersdict[playercurrentrole]=player
+			else:
+				playercurrentrole='B'+player[6]
+				playersdict[playercurrentrole]=player
+		print(playersdict)
+		for temp in gettemplateteams:
+			team=[]
+			team.append(playersdict[temp[4]])
+			team.append(playersdict[temp[5]])
+			team.append(playersdict[temp[6]])
+			team.append(playersdict[temp[7]])
+			team.append(playersdict[temp[8]])
+			team.append(playersdict[temp[9]])
+			team.append(playersdict[temp[10]])
+			team.append(playersdict[temp[11]])
+			team.append(playersdict[temp[12]])
+			team.append(playersdict[temp[13]])
+			team.append(playersdict[temp[14]])
+			templatecombinations.append(team)
+		return render_template("finalteams.html",validcombinations=templatecombinations)
+	else:
+		print("coming")
+		players=sorted(players, key=operator.itemgetter(5))
+		players.reverse()
+		combinations=getLeagueTypeCombinations(players,leaguetype)
+		print(len(combinations))
+		validcombinations=getvalidcombinations(combinations,teams[0][1],teams[0][2])
+		totalteams=len(validcombinations)
+		print(totalteams)
+		# validcombinations=calculatePercentage(validcombinations)
+		if inputcombination!='ALL':
+			validcombinations=filterCombinations(inputcombination,validcombinations)
+		validcombinations=filterBasedOnMatchWinnerAndPitchType(validcombinations,matchwinner,pitchtype,players)
+		thiscombinationlength=len(validcombinations)
+		return render_template("finalteams.html",validcombinations=validcombinations,totalteams=totalteams,thiscombinationlength=thiscombinationlength,currentcombination=inputcombination)
 
 def calculatePercentage(validcombinations):
 	finalteams=[]
 	for x in validcombinations:
 		TotalPercentage=0
-		TotalPoints=0
 		for y in range(0,11):
 			TotalPercentage=TotalPercentage+int(x[y][5])
-			TotalPoints=TotalPoints+int(x[y][6])
 		x.append(TotalPercentage)
-		x.append(TotalPoints)
 		finalteams.append(x)
 	sorted_list = sorted(finalteams, key=operator.itemgetter(12))
 	sorted_list.reverse()
@@ -145,12 +196,9 @@ def getfinalcombinations(confirmedplayers,validcombinations):
 				count=count+1
 		if count==length:
 			TotalPercentage=0
-			TotalPoints=0
 			for z in x:
 				TotalPercentage=TotalPercentage+int(z[5])
-				TotalPoints=TotalPoints+int(z[6])
 			x.append(TotalPercentage)
-			x.append(TotalPoints)
 			finalteams.append(x)
 	sorted_list = sorted(finalteams, key=operator.itemgetter(11))
 	sorted_list.reverse()
@@ -166,38 +214,41 @@ def makeCombinations(players,num):
 	combinations=list(itertools.combinations(players,num))
 	return combinations
 def getvalidcombinations(combinations,teamA,teamB):
-        validcombinations=[]
-        for x in range(0,len(combinations)):
-                credits=0
-                team=list(combinations[x])
-                Ateamcount=0
-                Bteamcount=0
-                WKcount=0
-                BATcount=0
-                BOWLCount=0
-                ALcount=0
-                TotalPercentage=0
-                for y in range(0,11):
-                        credits=credits+float(team[y][4])
-                        if team[y][1]==teamA:
-                                Ateamcount=Ateamcount+1
-                        else:
-                                Bteamcount=Bteamcount+1
-                        if team[y][2]=="WK":
-                                WKcount=WKcount+1
-                        elif team[y][2]=="BOWL":
-                                BOWLCount=BOWLCount+1
-                        elif team[y][2]=="ALL":
-                                ALcount=ALcount+1
-                        else:
-                                BATcount=BATcount+1
-                if credits<=100 and Ateamcount<=7 and Bteamcount<=7:
-                        if WKcount<=4 and WKcount>=1:
-                                if BATcount>=3 and BATcount<=5:
-                                        if ALcount >=1 and ALcount<=4:
-                                                if BOWLCount >=3 and BOWLCount<=5:
-                                                	validcombinations.append(team)
-        return validcombinations
+	print(len(combinations))
+	print(teamA)
+	print(teamB)
+	validcombinations=[]
+	for x in range(0,len(combinations)):
+		credits=0
+		team=list(combinations[x])
+		Ateamcount=0
+		Bteamcount=0
+		WKcount=0
+		BATcount=0
+		BOWLCount=0
+		ALcount=0
+		TotalPercentage=0
+		for y in range(0,11):
+			credits=credits+float(team[y][4])
+			if team[y][1]==teamA:
+				Ateamcount=Ateamcount+1
+			else:
+				Bteamcount=Bteamcount+1
+				if team[y][2]=="WK":
+					WKcount=WKcount+1
+				elif team[y][2]=="BOWL":
+					BOWLCount=BOWLCount+1
+				elif team[y][2]=="ALL":
+					ALcount=ALcount+1
+				else:
+					BATcount=BATcount+1
+		if credits<=100 and Ateamcount<=7 and Bteamcount<=7:
+			if WKcount<=4 and WKcount>=1:
+				if BATcount>=3 and BATcount<=5:
+					if ALcount >=1 and ALcount<=4:
+						if BOWLCount >=3 and BOWLCount<=5:
+							validcombinations.append(team)
+	return validcombinations
 
 
 if __name__ == "__main__":

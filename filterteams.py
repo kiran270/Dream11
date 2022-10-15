@@ -8,7 +8,7 @@ def getLeagueTypeCombinations(players,leagueType):
 		Topcombinations=makeCombinations(players[0:4],3)
 		Midcombinations=makeCombinations(players[4:8],3)
 		Lowcombinations=makeCombinations(players[8:12],3)
-		Lastset=makeCombinations(players[12:16],2)
+		Lastset=makeCombinations(players[12:21],2)
 		combinations=[]
 		for x in Topcombinations:
 			s1=list(x)
@@ -27,7 +27,7 @@ def getLeagueTypeCombinations(players,leagueType):
 	elif leagueType == '52':
 		Topcombinations=players[0:7]
 		# print(str(len(Topcombinations))+"......")
-		Midcombinations=makeCombinations(players[7:14],4)
+		Midcombinations=makeCombinations(players[7:21],4)
 		combinations=[]
 		for y in Midcombinations:
 			s2=list(y)
@@ -38,7 +38,7 @@ def getLeagueTypeCombinations(players,leagueType):
 		# combinations=tuple(combinations)
 	else:
 		Topcombinations=players[0:6]
-		Midcombinations=makeCombinations(players[6:14],5)
+		Midcombinations=makeCombinations(players[6:21],5)
 		combinations=[]
 		for y in Midcombinations:
 			s2=list(y)

@@ -79,8 +79,20 @@ body {
             <input type="text" class="form-control" id="credits" placeholder="Enter the credits" name="credits">
           </div>
           <div class="form-group">
-            <label>Current Series Points</label>
-            <input type="text" class="form-control" id="points" placeholder="Enter the points" name="points">
+            <label>Current Match Role</label>
+            <select class="form-control" id="matchrole" name="matchrole">
+                <option>OB1</option>
+                <option>OB2</option>
+                <option>1D</option>
+                <option>2D</option>
+                <option>F</option>
+                <option>PS</option>
+                <option>OBO1</option>
+                <option>OBO2</option>
+                <option>DBO1</option>
+                <option>DBO2</option>
+                <option>BBO</option>
+            </select>
           </div>
           <div class="col-md-offset-5">
             <button type="submit" class="btn btn-success">Submit</button>
@@ -101,7 +113,7 @@ body {
               <th>Team</th>
               <th>percentage</th>
               <th>credits</th>
-              <th>points</th>
+              <th>matchrole</th>
               <th>Delete</th>
             </tr>
           </thead>
@@ -113,7 +125,7 @@ body {
                 <td>{{player.teamname}}</td>
                 <td>{{player.percentage}}</td>
                 <td>{{player.credits}}</td>
-                <td>{{player.points}}</td>
+                <td>{{player.matchrole}}</td>
                 <td>
                   <form action="/removePlayer" method="post">
                     <input type="hidden" id="playername" name="playername" value="{{player.playername}}">
@@ -187,6 +199,24 @@ body {
                             <option>BowlingPitch</option>
                         </select>
                       </div>
+                      <div class="form-group">
+                        <label>Batting First</label>
+                        <select class="form-control" name="battingfirst" id="battingfirst">
+                            <option>None</option>
+                            {% for team in teams %}
+                            <option>{{team.team1}}</option>
+                            <option>{{team.team2}}</option>
+                            {% endfor %}
+                        </select>
+                      </div>
+                      <!-- <div class="form-group">
+                        <label>Win Prediction</label>
+                        <select class="form-control" name="winprediction" id="winprediction">
+                            <option>None</option>
+                            <option>Batting</option>
+                            <option>Chaseing</option>
+                        </select>
+                      </div> -->
                     </div>
                     <div class="modal-footer">
                       <button type="submit" class="btn btn-success">Generate Teams</button>

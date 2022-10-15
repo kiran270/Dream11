@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">WebSiteName</a>
+    </div>
+    <ul class="nav navbar-nav">
+      <li class="active"><a href="#">Home</a></li>
+      <li><a href="#">Page 1</a></li>
+      <li><a href="#">Page 2</a></li>
+      <li><a href="#">Page 3</a></li>
+    </ul>
+  </div>
+</nav>
+<div class="container">
+  <div class="col-md-6">
+    <div class="panel panel-default">
+        <div class="panel-heading">ADD Drem Team</div>
+        <div class="panel-body">
+      <form id="adddreamteam" action="/adddreamteam" method="post">
+        <div class="form-group">
+            <label>MatchBetween</label>
+            <input type="text" class="form-control" id="matchbetween" placeholder="Enter the matchbetween" name="matchbetween">
+        </div>
+        <div class="form-group">
+            <label>Stadium</label>
+            <input type="text" class="form-control" id="stadium" placeholder="Enter the stadium" name="stadium">
+        </div>
+        <div class="form-group">
+            <label>Win Inning</label>
+            <select class="form-control" id="wininning" name="wininning">
+                <option>Batting</option>
+                <option>Chaseing</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="sel1">Captian</label>
+            <select class="form-control" id="1" name="1">
+                <option>AOB1</option>
+                <option>AOB2</option>
+                <option>A1D</option>
+                <option>A2D</option>
+                <option>AF</option>
+                <option>APS</option>
+                <option>AOBO1</option>
+                <option>AOBO2</option>
+                <option>ADBO1</option>
+                <option>ADBO2</option>
+                <option>ABBO</option>
+                <option>BOB1</option>
+                <option>BOB2</option>
+                <option>B1D</option>
+                <option>B2D</option>
+                <option>BF</option>
+                <option>BPS</option>
+                <option>BOBO1</option>
+                <option>BOBO2</option>
+                <option>BDBO1</option>
+                <option>BDBO2</option>
+                <option>BBBO</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="sel1">Vice Captian</label>
+            <select class="form-control" id="2" name="2">
+                <option>AOB1</option>
+                <option>AOB2</option>
+                <option>A1D</option>
+                <option>A2D</option>
+                <option>AF</option>
+                <option>APS</option>
+                <option>AOBO1</option>
+                <option>AOBO2</option>
+                <option>ADBO1</option>
+                <option>ADBO2</option>
+                <option>ABBO</option>
+                <option>BOB1</option>
+                <option>BOB2</option>
+                <option>B1D</option>
+                <option>B2D</option>
+                <option>BF</option>
+                <option>BPS</option>
+                <option>BOBO1</option>
+                <option>BOBO2</option>
+                <option>BDBO1</option>
+                <option>BDBO2</option>
+                <option>BBBO</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="sel1">Dream Player</label>
+            <select class="form-control" id="3" name="3">
+                <option>AOB1</option>
+                <option>AOB2</option>
+                <option>A1D</option>
+                <option>A2D</option>
+                <option>AF</option>
+                <option>APS</option>
+                <option>AOBO1</option>
+                <option>AOBO2</option>
+                <option>ADBO1</option>
+                <option>ADBO2</option>
+                <option>ABBO</option>
+                <option>BOB1</option>
+                <option>BOB2</option>
+                <option>B1D</option>
+                <option>B2D</option>
+                <option>BF</option>
+                <option>BPS</option>
+                <option>BOBO1</option>
+                <option>BOBO2</option>
+                <option>BDBO1</option>
+                <option>BDBO2</option>
+                <option>BBBO</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="sel1">Dream Player</label>
+            <select class="form-control" id="4" name="4">
+                <option>AOB1</option>
+                <option>AOB2</option>
+                <option>A1D</option>
+                <option>A2D</option>
+                <option>AF</option>
+                <option>APS</option>
+                <option>AOBO1</option>
+                <option>AOBO2</option>
+                <option>ADBO1</option>
+                <option>ADBO2</option>
+                <option>ABBO</option>
+                <option>BOB1</option>
+                <option>BOB2</option>
+                <option>B1D</option>
+                <option>B2D</option>
+                <option>BF</option>
+                <option>BPS</option>
+                <option>BOBO1</option>
+                <option>BOBO2</option>
+                <option>BDBO1</option>
+                <option>BDBO2</option>
+                <option>BBBO</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="sel1">Dream Player</label>
+            <select class="form-control" id="5" name="5">
+                <option>AOB1</option>
+                <option>AOB2</option>
+                <option>A1D</option>
+                <option>A2D</option>
+                <option>AF</option>
+                <option>APS</option>
+                <option>AOBO1</option>
+                <option>AOBO2</option>
+                <option>ADBO1</option>
+                <option>ADBO2</option>
+                <option>ABBO</option>
+                <option>BOB1</option>
+                <option>BOB2</option>
+                <option>B1D</option>
+                <option>B2D</option>
+                <option>BF</option>
+                <option>BPS</option>
+                <option>BOBO1</option>
+                <option>BOBO2</option>
+                <option>BDBO1</option>
+                <option>BDBO2</option>
+                <option>BBBO</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="sel1">Dream Player</label>
+            <select class="form-control" id="6" name="6">
+                <option>AOB1</option>
+                <option>AOB2</option>
+                <option>A1D</option>
+                <option>A2D</option>
+                <option>AF</option>
+                <option>APS</option>
+                <option>AOBO1</option>
+                <option>AOBO2</option>
+                <option>ADBO1</option>
+                <option>ADBO2</option>
+                <option>ABBO</option>
+                <option>BOB1</option>
+                <option>BOB2</option>
+                <option>B1D</option>
+                <option>B2D</option>
+                <option>BF</option>
+                <option>BPS</option>
+                <option>BOBO1</option>
+                <option>BOBO2</option>
+                <option>BDBO1</option>
+                <option>BDBO2</option>
+                <option>BBBO</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="sel1">Dream Player</label>
+            <select class="form-control" id="7" name="7">
+                <option>AOB1</option>
+                <option>AOB2</option>
+                <option>A1D</option>
+                <option>A2D</option>
+                <option>AF</option>
+                <option>APS</option>
+                <option>AOBO1</option>
+                <option>AOBO2</option>
+                <option>ADBO1</option>
+                <option>ADBO2</option>
+                <option>ABBO</option>
+                <option>BOB1</option>
+                <option>BOB2</option>
+                <option>B1D</option>
+                <option>B2D</option>
+                <option>BF</option>
+                <option>BPS</option>
+                <option>BOBO1</option>
+                <option>BOBO2</option>
+                <option>BDBO1</option>
+                <option>BDBO2</option>
+                <option>BBBO</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="sel1">Dream Player</label>
+            <select class="form-control" id="8" name="8">
+                <option>AOB1</option>
+                <option>AOB2</option>
+                <option>A1D</option>
+                <option>A2D</option>
+                <option>AF</option>
+                <option>APS</option>
+                <option>AOBO1</option>
+                <option>AOBO2</option>
+                <option>ADBO1</option>
+                <option>ADBO2</option>
+                <option>ABBO</option>
+                <option>BOB1</option>
+                <option>BOB2</option>
+                <option>B1D</option>
+                <option>B2D</option>
+                <option>BF</option>
+                <option>BPS</option>
+                <option>BOBO1</option>
+                <option>BOBO2</option>
+                <option>BDBO1</option>
+                <option>BDBO2</option>
+                <option>BBBO</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="sel1">Dream Player</label>
+            <select class="form-control" id="9" name="9">
+                <option>AOB1</option>
+                <option>AOB2</option>
+                <option>A1D</option>
+                <option>A2D</option>
+                <option>AF</option>
+                <option>APS</option>
+                <option>AOBO1</option>
+                <option>AOBO2</option>
+                <option>ADBO1</option>
+                <option>ADBO2</option>
+                <option>ABBO</option>
+                <option>BOB1</option>
+                <option>BOB2</option>
+                <option>B1D</option>
+                <option>B2D</option>
+                <option>BF</option>
+                <option>BPS</option>
+                <option>BOBO1</option>
+                <option>BOBO2</option>
+                <option>BDBO1</option>
+                <option>BDBO2</option>
+                <option>BBBO</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="sel1">Dream Player</label>
+            <select class="form-control" id="10" name="10">
+                <option>AOB1</option>
+                <option>AOB2</option>
+                <option>A1D</option>
+                <option>A2D</option>
+                <option>AF</option>
+                <option>APS</option>
+                <option>AOBO1</option>
+                <option>AOBO2</option>
+                <option>ADBO1</option>
+                <option>ADBO2</option>
+                <option>ABBO</option>
+                <option>BOB1</option>
+                <option>BOB2</option>
+                <option>B1D</option>
+                <option>B2D</option>
+                <option>BF</option>
+                <option>BPS</option>
+                <option>BOBO1</option>
+                <option>BOBO2</option>
+                <option>BDBO1</option>
+                <option>BDBO2</option>
+                <option>BBBO</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="sel1">Dream Player</label>
+            <select class="form-control" id="11" name="11">
+                <option>AOB1</option>
+                <option>AOB2</option>
+                <option>A1D</option>
+                <option>A2D</option>
+                <option>AF</option>
+                <option>APS</option>
+                <option>AOBO1</option>
+                <option>AOBO2</option>
+                <option>ADBO1</option>
+                <option>ADBO2</option>
+                <option>ABBO</option>
+                <option>BOB1</option>
+                <option>BOB2</option>
+                <option>B1D</option>
+                <option>B2D</option>
+                <option>BF</option>
+                <option>BPS</option>
+                <option>BOBO1</option>
+                <option>BOBO2</option>
+                <option>BDBO1</option>
+                <option>BDBO2</option>
+                <option>BBBO</option>
+            </select>
+        </div>
+        <div class="col-md-offset-5">
+            <button type="submit" class="btn btn-success">Submit</button>
+        </div>
+      </form>
+        </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
