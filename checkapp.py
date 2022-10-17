@@ -144,17 +144,50 @@ def generateTeams():
 		print(playersdict)
 		for temp in gettemplateteams:
 			team=[]
-			team.append(playersdict[temp[4]])
-			team.append(playersdict[temp[5]])
-			team.append(playersdict[temp[6]])
-			team.append(playersdict[temp[7]])
-			team.append(playersdict[temp[8]])
-			team.append(playersdict[temp[9]])
-			team.append(playersdict[temp[10]])
-			team.append(playersdict[temp[11]])
-			team.append(playersdict[temp[12]])
-			team.append(playersdict[temp[13]])
-			team.append(playersdict[temp[14]])
+			if temp[4] in playersdict:
+				team.append(playersdict[temp[4]])
+			else:
+				team.append("------")
+			if temp[5] in playersdict:
+				team.append(playersdict[temp[5]])
+			else:
+				team.append("------")
+			if temp[6] in playersdict:
+				team.append(playersdict[temp[6]])
+			else:
+				team.append("------")
+			if temp[7] in playersdict:
+				team.append(playersdict[temp[7]])
+			else:
+				team.append("------")
+			if temp[8] in playersdict:
+				team.append(playersdict[temp[8]])
+			else:
+				team.append("------")
+			if temp[9] in playersdict:
+				team.append(playersdict[temp[9]])
+			else:
+				team.append("------")
+			if temp[10] in playersdict:
+				team.append(playersdict[temp[10]])
+			else:
+				team.append("------")
+			if temp[11] in playersdict:
+				team.append(playersdict[temp[11]])
+			else:
+				team.append("------")
+			if temp[12] in playersdict:
+				team.append(playersdict[temp[12]])
+			else:
+				team.append("------")
+			if temp[13] in playersdict:
+				team.append(playersdict[temp[13]])
+			else:
+				team.append("------")
+			if temp[14] in playersdict:
+				team.append(playersdict[temp[14]])
+			else:
+				team.append("------")
 			templatecombinations.append(team)
 		return render_template("finalteams.html",validcombinations=templatecombinations)
 	else:
