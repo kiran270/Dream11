@@ -76,5 +76,63 @@ if not clicked:
     print("❌ Match not found.")
 
 time.sleep(10)
+WebDriverWait(driver, 10).until(
+    EC.presence_of_all_elements_located((By.CSS_SELECTOR, "nav.top-nav .role.sport-icon"))
+)
+
+tab_elements = driver.find_elements(By.CSS_SELECTOR, "nav.top-nav .role.sport-icon")
+
+all_players = []
+
+for tab in tab_elements:
+    try:
+        role = tab.text.strip().split("(")[0]  # Get WK, BAT, AL, BOWL
+
+        # Click tab via JavaScript to ensure compatibility
+        driver.execute_script("arguments[0].click();", tab)
+        print(f"📌 Clicked tab: {role}")
+        time.sleep(2)
+
+        player_containers = driver.find_elements(By.CLASS_NAME, "player-container")
+
+        for container in player_containers:
+            try:
+                name = container.find_element(By.CSS_SELECTOR, ".bobby-name span").text.strip()
+                selected_by = container.find_element(By.CLASS_NAME, "bobby-percentage").text.strip()
+                team = container.find_element(By.CLASS_NAME, "p-team").text.strip()
+                credits = container.find_elements(By.CLASS_NAME, "player-item-two")[1].text.strip()
+
+                all_players.append({
+                    "name": name,
+                    "team": team,
+                    "selected_by": selected_by,
+                    "credits": credits,
+                    "role": role
+                })
+            except Exception as e:
+                print(f"⚠️ Skipped a player due to error: {e}")
+
+    except Exception as e:
+        print(f"❌ Could not process tab: {e}")
+
+match_id = 4  # Replace with your match ID
+default_matchrole = "MID-HIT"  # or customize per player
+
+for p in all_players:
+    name = p['name'].replace("'", "''")  # Escape single quotes
+    team = p['team']
+    role = p['role']
+    credits = p['credits'].replace(" Cr", "").strip()
+    try:
+        percentage = float(p['selected_by'].replace("Sel by", "").replace("%", "").strip())
+    except:
+        percentage = 0
+
+    sql = f"""INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES ({match_id}, '{team}', '{role}', '{name}', '{credits}', {percentage}, '{default_matchrole}');"""
+
+    print(sql)
 
 driver.quit()
+
