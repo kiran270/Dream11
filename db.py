@@ -3,7 +3,7 @@ from sqlite3 import Error
 
 
 def create_connection():
-	db_file= r"C:\Users\kiran.koribilli\Documents\Dream11\Dream11\pythonsqlite.db"
+	db_file= r"C:\Users\korubilli lakshmi\OneDrive\Desktop\Kiran\Dream11\pythonsqlite.db"
 	conn = None
 	try:
 		conn = sqlite3.connect(db_file)
@@ -85,7 +85,7 @@ def getDreamTeams():
 	con =create_connection()
 	con.row_factory = sqlite3.Row
 	cur = con.cursor()
-	cur.execute("select * from dreamteams")
+	cur.execute("select * from templates")
 	rows = cur.fetchall()
 	return rows
 def getteams(matchid):

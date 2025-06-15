@@ -142,54 +142,77 @@ def generateTeams():
 				playercurrentrole='B'+player[6]
 				playersdict[playercurrentrole]=player
 		print(playersdict)
-		for temp in gettemplateteams:
-			team=[]
-			if temp[4] in playersdict:
-				team.append(playersdict[temp[4]])
+		atop=[]
+		amid=[]
+		ahit=[]
+		bpow=[]
+		bbre=[]
+		bdea=[]
+		btop=[]
+		bmid=[]
+		bhit=[]
+		apow=[]
+		abre=[]
+		adea=[]
+		for player in players:
+			if player[1]==battingfirst:
+				temp=player[6].split("-")
+				if temp[0]=="TOP":
+					atop.append(player)
+				if temp[0]=="MID":
+					amid.append(player)
+				if temp[0]=="HIT":
+					ahit.append(player)
+				if temp[0]=="POW":
+					apow.append(player)
+				if temp[0]=="BRE":
+					abre.append(player)
+				if temp[0]=="DEA":
+					adea.append(player)
+				if len(temp) > 1:
+					if temp[1]=="TOP":
+						atop.append(player)
+					if temp[1]=="MID":
+						amid.append(player)
+					if temp[1]=="HIT":
+						ahit.append(player)
+					if temp[1]=="POW":
+						apow.append(player)
+					if temp[1]=="BRE":
+						abre.append(player)
+					if temp[1]=="DEA":
+						adea.append(player)
 			else:
-				team.append("------")
-			if temp[5] in playersdict:
-				team.append(playersdict[temp[5]])
-			else:
-				team.append("------")
-			if temp[6] in playersdict:
-				team.append(playersdict[temp[6]])
-			else:
-				team.append("------")
-			if temp[7] in playersdict:
-				team.append(playersdict[temp[7]])
-			else:
-				team.append("------")
-			if temp[8] in playersdict:
-				team.append(playersdict[temp[8]])
-			else:
-				team.append("------")
-			if temp[9] in playersdict:
-				team.append(playersdict[temp[9]])
-			else:
-				team.append("------")
-			if temp[10] in playersdict:
-				team.append(playersdict[temp[10]])
-			else:
-				team.append("------")
-			if temp[11] in playersdict:
-				team.append(playersdict[temp[11]])
-			else:
-				team.append("------")
-			if temp[12] in playersdict:
-				team.append(playersdict[temp[12]])
-			else:
-				team.append("------")
-			if temp[13] in playersdict:
-				team.append(playersdict[temp[13]])
-			else:
-				team.append("------")
-			if temp[14] in playersdict:
-				team.append(playersdict[temp[14]])
-			else:
-				team.append("------")
-			templatecombinations.append(team)
-		return render_template("finalteams.html",validcombinations=templatecombinations)
+				temp=player[6].split("-")
+				if temp[0]=="TOP":
+					btop.append(player)
+				if temp[0]=="MID":
+					bmid.append(player)
+				if temp[0]=="HIT":
+					bhit.append(player)
+				if temp[0]=="POW":
+					bpow.append(player)
+				if temp[0]=="BRE":
+					bbre.append(player)
+				if temp[0]=="DEA":
+					bdea.append(player)
+				if len(temp) > 1:
+					if temp[1]=="TOP":
+						btop.append(player)
+					if temp[1]=="MID":
+						bmid.append(player)
+					if temp[1]=="HIT":
+						bhit.append(player)
+					if temp[1]=="POW":
+						bpow.append(player)
+					if temp[1]=="BRE":
+						bbre.append(player)
+					if temp[1]=="DEA":
+						bdea.append(player)
+		# print(gettemplateteams[0][0])
+		templatecombinations=getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,ahit)
+		validcombinations=calculatePercentage(templatecombinations)
+		return render_template("finalteams.html",validcombinations=validcombinations)
 	else:
 		print("coming")
 		players=sorted(players, key=operator.itemgetter(5))
@@ -206,6 +229,125 @@ def generateTeams():
 		thiscombinationlength=len(validcombinations)
 		return render_template("finalteams.html",validcombinations=validcombinations,totalteams=totalteams,thiscombinationlength=thiscombinationlength,currentcombination=inputcombination)
 
+def intersection(lst1, lst2):
+    lst3 = [value for value in lst1 if value in lst2]
+    return len(lst3)
+def safe_sample(source_list, count):
+    if count > 0 and len(source_list) >= count:
+        return random.sample(source_list, count)
+    elif 0 < len(source_list) < count:
+        print(f"Only {len(source_list)} available in , using all.")
+        return source_list[:]
+    else:
+        print(f"Cannot sample from: requested {count}, available {len(source_list)}")
+        return []
+def getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea):
+	templates=getDreamTeams()
+	teams=[]
+	for z in templates:
+		for k in range(0,300):
+			team=[]
+			team.extend(safe_sample(atop,z[4]))
+			team.extend(safe_sample(amid,z[5]))
+			team.extend(safe_sample(ahit,z[6]))
+			team.extend(safe_sample(bpow,z[7]))
+			team.extend(safe_sample(bbre,z[8]))
+			team.extend(safe_sample(bdea,z[9]))
+			team.extend(safe_sample(btop,z[10]))
+			team.extend(safe_sample(bmid,z[11]))
+			team.extend(safe_sample(bhit,z[12]))
+			team.extend(safe_sample(apow,z[13]))
+			team.extend(safe_sample(abre,z[14]))
+			team.extend(safe_sample(adea,z[15]))
+			if team not in teams:
+				team=set(team)
+				team=list(team)
+				print(team)
+				if len(team)==11:
+					team=sorted(team, key=operator.itemgetter(2))
+					count=0
+					for x in teams:
+						l=intersection(x,team)
+						if l > count:
+							count=l
+					print(count)
+					if count <= 9:
+						if z[16]==0:
+							valid_choices = [p for p in atop if p in team]
+							team.extend(random.sample(valid_choices,1))
+						elif z[16]==1:
+							valid_choices = [p for p in amid if p in team]
+							team.extend(random.sample(valid_choices,1))
+						elif z[16]==2:
+							valid_choices = [p for p in ahit if p in team]
+							team.extend(random.sample(valid_choices,1))
+						elif z[16]==3:
+							valid_choices = [p for p in bpow if p in team]
+							team.extend(random.sample(valid_choices,1))
+						elif z[16]==4:
+							valid_choices = [p for p in bbre if p in team]
+							team.extend(random.sample(valid_choices,1))
+						elif z[16]==5:
+							valid_choices = [p for p in bdea if p in team]
+							team.extend(random.sample(valid_choices,1))
+						elif z[16]==6:
+							valid_choices = [p for p in btop if p in team]
+							team.extend(random.sample(valid_choices,1))
+						elif z[16]==7:
+							valid_choices = [p for p in bmid if p in team]
+							team.extend(random.sample(valid_choices,1))
+						elif z[16]==8:
+							valid_choices = [p for p in bhit if p in team]
+							team.extend(random.sample(valid_choices,1))
+						elif z[16]==9:
+							valid_choices = [p for p in apow if p in team]
+							team.extend(random.sample(valid_choices,1))
+						elif z[16]==10:
+							valid_choices = [p for p in abre if p in team]
+							team.extend(random.sample(valid_choices,1))
+						elif z[16]==11:
+							valid_choices = [p for p in adea if p in team]
+							team.extend(random.sample(valid_choices,1))
+						if z[17]==0:
+							valid_choices = [p for p in atop if p in team]
+							team.extend(random.sample(valid_choices,1))
+						elif z[17]==1:
+							valid_choices = [p for p in amid if p in team]
+							team.extend(random.sample(valid_choices,1))
+						elif z[17]==2:
+							valid_choices = [p for p in ahit if p in team]
+							team.extend(random.sample(valid_choices,1))
+						elif z[17]==3:
+							valid_choices = [p for p in bpow if p in team]
+							team.extend(random.sample(valid_choices,1))
+						elif z[17]==4:
+							valid_choices = [p for p in bbre if p in team]
+							team.extend(random.sample(valid_choices,1))
+						elif z[17]==5:
+							valid_choices = [p for p in bdea if p in team]
+							team.extend(random.sample(valid_choices,1))
+						elif z[17]==6:
+							valid_choices = [p for p in btop if p in team]
+							team.extend(random.sample(valid_choices,1))
+						elif z[17]==7:
+							valid_choices = [p for p in bmid if p in team]
+							team.extend(random.sample(valid_choices,1))
+						elif z[17]==8:
+							valid_choices = [p for p in bhit if p in team]
+							team.extend(random.sample(valid_choices,1))
+						elif z[17]==9:
+							valid_choices = [p for p in apow if p in team]
+							team.extend(random.sample(valid_choices,1))
+						elif z[17]==10:
+							valid_choices = [p for p in abre if p in team]
+							team.extend(random.sample(valid_choices,1))
+						elif z[17]==11:
+							valid_choices = [p for p in adea if p in team]
+							team.extend(random.sample(valid_choices,1))
+						teams.append(team)
+	print(len(teams))
+	return teams
+
 def calculatePercentage(validcombinations):
 	finalteams=[]
 	for x in validcombinations:
@@ -214,8 +356,8 @@ def calculatePercentage(validcombinations):
 			TotalPercentage=TotalPercentage+int(x[y][5])
 		x.append(TotalPercentage)
 		finalteams.append(x)
-	sorted_list = sorted(finalteams, key=operator.itemgetter(12))
-	sorted_list.reverse()
+	# sorted_list = sorted(finalteams, key=operator.itemgetter(11))
+	# sorted_list.reverse()
 	# random.shuffle(finalteams)
 	return finalteams
 
