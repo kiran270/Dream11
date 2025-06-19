@@ -6,8 +6,15 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 import time
+from flask import * 
+from db import addMatch,addPlayer
 
 # Configure Chrome driver with options
+target_team_1 = "MCC"
+target_team_2 = "PRD"
+match_id = 13  # Replace with your match ID
+default_matchrole = "MID-HIT"  # or customize per player
+
 options = Options()
 options.add_argument("--start-maximized")
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
@@ -49,10 +56,8 @@ except Exception as e:
     print("❌ Login failed:", str(e))
 
 # Wait for post-login page load (adjust if needed)
-time.sleep(5)
+time.sleep(10)
 
-target_team_1 = "IRE"
-target_team_2 = "WI"
 
 # Find all match cards
 cards = driver.find_elements(By.CLASS_NAME, "card-middle")
@@ -115,8 +120,6 @@ for tab in tab_elements:
     except Exception as e:
         print(f"❌ Could not process tab: {e}")
 
-match_id = 4  # Replace with your match ID
-default_matchrole = "MID-HIT"  # or customize per player
 
 for p in all_players:
     name = p['name'].replace("'", "''")  # Escape single quotes
@@ -127,12 +130,28 @@ for p in all_players:
         percentage = float(p['selected_by'].replace("Sel by", "").replace("%", "").strip())
     except:
         percentage = 0
+    addPlayer(match_id,team,role,name,credits,percentage,default_matchrole)
 
-    sql = f"""INSERT INTO "main"."player" 
-("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
-VALUES ({match_id}, '{team}', '{role}', '{name}', '{credits}', {percentage}, '{default_matchrole}');"""
 
-    print(sql)
+
+# with open("player_inserts.txt", "w", encoding="utf-8") as file:
+#     for p in all_players:
+#         name = p['name'].replace("'", "''")  # Escape single quotes
+#         team = p['team']
+#         role = p['role']
+#         credits = p['credits'].replace(" Cr", "").strip()
+#         try:
+#             percentage = float(p['selected_by'].replace("Sel by", "").replace("%", "").strip())
+#         except:
+#             percentage = 0
+
+#         sql = f"""INSERT INTO "main"."player" 
+# ("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+# VALUES ({match_id}, '{team}', '{role}', '{name}', '{credits}', {percentage}, '{default_matchrole}');"""
+
+#         file.write(sql + "\n")
+
+# print("✅ SQL statements written to player_inserts.txt")
 
 driver.quit()
 

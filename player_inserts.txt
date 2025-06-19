@@ -1,0 +1,144 @@
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'PRD', 'WK', 'J Goswami', '7.5', 9.26, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'WK', 'N Kumar', '7.5', 9.95, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'PRD', 'WK', 'M Hasam', '7', 93.2, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'WK', 'S Muralina', '7', 19.78, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'PRD', 'WK', 'S Alam-Sha', '6', 0.62, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'PRD', 'BAT', 'A Azad', '8', 10.04, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'BAT', 'M Adnan', '8', 69.49, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'BAT', 'A Ghosh', '8', 4.92, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'PRD', 'BAT', 'S Ahmed', '7.5', 3.93, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'BAT', 'S Goud', '7.5', 1.83, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'BAT', 'V Hasa', '7.5', 1.09, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'PRD', 'BAT', 'R Haque', '7', 8.5, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'BAT', 'P Sharma', '7', 14.29, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'BAT', 'J Jacob', '7', 0.25, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'BAT', 'A Muiz', '7', 85.78, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'PRD', 'BAT', 'R Ernest', '6.5', 0.14, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'PRD', 'BAT', 'R Vatupali', '6.5', 1.99, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'BAT', 'R Kumar', '6.5', 10.58, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'PRD', 'BAT', 'S Ahmed', '6', 48.26, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'PRD', 'BAT', 'P Sai', '6', 1.14, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'BAT', 'B Ahmad', '6', 0.75, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'PRD', 'AL', 'H U Rashid', '8.5', 95.78, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'PRD', 'AL', 'R Soroardi', '8.5', 92.53, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'AL', 'S Chaudhar', '8.5', 8.09, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'PRD', 'AL', 'H Rongdi', '8', 2.11, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'PRD', 'AL', 'S Arif', '7.5', 35.32, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'AL', 'N Tiwari', '7.5', 35.12, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'AL', 'V Margasah', '7.5', 75.42, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'AL', 'A Hayat', '7.5', 1.57, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'AL', 'F Sadique', '7', 65.11, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'AL', 'O Dennis', '7', 0.18, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'PRD', 'AL', 'U Kodali', '6.5', 0.32, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'PRD', 'AL', 'S Vamsi-Pr', '6', 0.48, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'AL', 'F Imtiaz', '6', 0.74, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'PRD', 'BOWL', 'A A Mahmud', '8.5', 89.68, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'PRD', 'BOWL', 'M A Akbar', '8', 4.88, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'BOWL', 'J Cope', '8', 4.61, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'PRD', 'BOWL', 'A M Alam', '7.5', 1.77, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'PRD', 'BOWL', 'N Absar-Sh', '7', 1.15, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'BOWL', 'A Soucek', '7', 12.19, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'BOWL', 'P Tanwar', '7', 0.46, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'PRD', 'BOWL', 'A Sandhu', '6.5', 16.79, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'BOWL', 'A Sharma', '6.5', 0.37, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'BOWL', 'S Beragu', '6.5', 0.13, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'BOWL', 'H Bolland', '6.5', 76.71, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'BOWL', 'M Faizan', '6.5', 65.81, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'PRD', 'BOWL', 'N Islam', '6', 0.16, 'MID-HIT');
+INSERT INTO "main"."player" 
+("matchid", "teamname", "role", "playername", "credits", "percentage", "matchrole") 
+VALUES (11, 'VCC', 'BOWL', 'S Ravisank', '6', 0.41, 'MID-HIT');

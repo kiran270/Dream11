@@ -1,83 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Bootstrap Example</title>
+  <title>Dream11 Team Viewer</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <style>
+    body {
+      background-color: #f1f4f9;
+    }
+    .team-card {
+      background-color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+      padding: 15px;
+      transition: transform 0.3s;
+    }
+    .team-card:hover {
+      transform: scale(1.02);
+    }
+    .player-name {
+      background-color: #f5f5f5;
+      border-radius: 4px;
+      padding: 6px;
+      margin: 4px 0;
+      text-align: center;
+    }
+    .captain {
+      color: #d9534f;
+      font-weight: bold;
+    }
+    .vicecaptain {
+      color: #5bc0de;
+      font-weight: bold;
+    }
+    .team-info {
+      border-top: 1px solid #ddd;
+      padding-top: 10px;
+      margin-top: 10px;
+      font-size: 13px;
+      text-align: right;
+    }
+  </style>
 </head>
 <body>
-<nav class="navbar navbar-default">
-  <div class="container-fluid">
-    <div class="navbar-header">
-      <a class="navbar-brand" href="#">WebSiteName</a>
-    </div>
-    <ul class="nav navbar-nav">
-      <li class="active"><a href="/">Home</a></li>
-      <li><a href="/addmatch">AddMatch</a></li>
-      <li><a href="/addsquad">AddSquad</a></li>
-      <li><a href="#">Page 3</a></li>
-    </ul>
+
+<div class="container">
+  <h2 class="text-center">Dream11 Team Combinations</h2>
+<!--   <p><strong>Total Teams:</strong> {{ totalteams }} |
+     <strong>This Combination:</strong> {{ thiscombinationlength }} |
+     <strong>Input Combi:</strong> {{ currentcombination }}</p>
+ -->
+  <div class="row">
+    {% for team in validcombinations %}
+      <div class="col-sm-4">
+        <div class="team-card">
+          <!-- <h4 class="text-center">Team {{ loop.index }}</h4> -->
+
+          {% for player in team[0:11] %}
+            <div class="player-name">
+              {{ player.playername }}
+              {% if player.playername == team[11].playername %}
+                <span class="captain"> (C)</span>
+              {% endif %}
+              {% if player.playername == team[12].playername %}
+                <span class="vicecaptain"> (VC)</span>
+              {% endif %}
+            </div>
+          {% endfor %}
+
+          <div class="team-info">
+            <strong>Total %:</strong> {{ team[13] }}
+          </div>
+        </div>
+      </div>
+
+      {% if loop.index % 3 == 0 %}
+        </div><div class="row">
+      {% endif %}
+    {% endfor %}
   </div>
-</nav>
-<div class="container-fluid">
-  <div class="panel panel-default">
-    <div class="panel-heading" >
-      Panel Heading
-    </div>
-    <div class="panel-body">
-      <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>TotalTeams:{{totalteams}}</th>
-      </tr>
-      <tr>
-        <th>ThisCombination:{{thiscombinationlength}}</th>
-      </tr>
-      <tr>
-        <th>InputCombi:{{currentcombination}}</th>
-      </tr>
-      <tr>
-        <th>player1</th>
-        <th>player2</th>
-        <th>player3</th>
-        <th>player4</th>
-        <th>player5</th>
-        <th>player6</th>
-        <th>player7</th>
-        <th>player8</th>
-        <th>player9</th>
-        <th>player10</th>
-        <th>player11</th>
-        <th>captain</th>
-        <th>VC</th>
-        <th>Total %</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for team in validcombinations %}
-      <tr>
-        <td>{{team[0].playername}}</td>
-        <td>{{team[1].playername}}</td>
-        <td>{{team[2].playername}}</td>
-        <td>{{team[3].playername}}</td>
-        <td>{{team[4].playername}}</td>
-        <td>{{team[5].playername}}</td>
-        <td>{{team[6].playername}}</td>
-        <td>{{team[7].playername}}</td>
-        <td>{{team[8].playername}}</td>
-        <td>{{team[9].playername}}</td>
-        <td>{{team[10].playername}}</td>
-        <td>{{team[11].playername}}</td>
-        <td>{{team[12].playername}}</td>
-        <td>{{team[13]}}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-    </div>
-  </div>
+</div>
+
 </body>
 </html>

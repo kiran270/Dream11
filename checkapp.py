@@ -134,14 +134,14 @@ def generateTeams():
 		playersdict={}
 		templatecombinations=[]
 		gettemplateteams=getDreamTeams()
-		for player in players:
-			if player[1]==battingfirst:
-				playercurrentrole='A'+player[6]
-				playersdict[playercurrentrole]=player
-			else:
-				playercurrentrole='B'+player[6]
-				playersdict[playercurrentrole]=player
-		print(playersdict)
+		# for player in players:
+		# 	if player[1]==battingfirst:
+		# 		playercurrentrole='A'+player[6]
+		# 		playersdict[playercurrentrole]=player
+		# 	else:
+		# 		playercurrentrole='B'+player[6]
+		# 		playersdict[playercurrentrole]=player
+		# # print(playersdict)
 		atop=[]
 		amid=[]
 		ahit=[]
@@ -211,8 +211,9 @@ def generateTeams():
 						bdea.append(player)
 		# print(gettemplateteams[0][0])
 		templatecombinations=getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,ahit)
-		validcombinations=calculatePercentage(templatecombinations)
-		return render_template("finalteams.html",validcombinations=validcombinations)
+		# templatecombinations=getvalidcombinations(templatecombinations,teams[0][1],teams[0][2])
+		# validcombinations=calculatePercentage(templatecombinations)
+		return render_template("finalteams.html",validcombinations=templatecombinations)
 	else:
 		print("coming")
 		players=sorted(players, key=operator.itemgetter(5))
@@ -236,16 +237,19 @@ def safe_sample(source_list, count):
     if count > 0 and len(source_list) >= count:
         return random.sample(source_list, count)
     elif 0 < len(source_list) < count:
-        print(f"Only {len(source_list)} available in , using all.")
+        # print(f"Only {len(source_list)} available in , using all.")
         return source_list[:]
     else:
-        print(f"Cannot sample from: requested {count}, available {len(source_list)}")
+        # print(f"Cannot sample from: requested {count}, available {len(source_list)}")
         return []
 def getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea):
 	templates=getDreamTeams()
-	teams=[]
+	finalteams=[]
+	all_players = atop + amid + ahit + bpow + bbre + bdea + btop + bmid + bhit + apow + abre + adea
+	top_11 = sorted(all_players, key=lambda x: float(x[4]), reverse=True)[:11]
 	for z in templates:
-		for k in range(0,300):
+		teams=[]
+		for k in range(0,5000):
 			team=[]
 			team.extend(safe_sample(atop,z[4]))
 			team.extend(safe_sample(amid,z[5]))
@@ -262,7 +266,7 @@ def getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea):
 			if team not in teams:
 				team=set(team)
 				team=list(team)
-				print(team)
+				# print(team)
 				if len(team)==11:
 					team=sorted(team, key=operator.itemgetter(2))
 					count=0
@@ -270,8 +274,8 @@ def getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea):
 						l=intersection(x,team)
 						if l > count:
 							count=l
-					print(count)
-					if count <= 9:
+					# print(count)
+					if count <= 8:
 						if z[16]==0:
 							valid_choices = [p for p in atop if p in team]
 							team.extend(random.sample(valid_choices,1))
@@ -344,9 +348,20 @@ def getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea):
 						elif z[17]==11:
 							valid_choices = [p for p in adea if p in team]
 							team.extend(random.sample(valid_choices,1))
-						teams.append(team)
-	print(len(teams))
-	return teams
+						top_count = sum(1 for p in team if p in top_11)
+						if top_count >= 7:
+						    teams.append(team)
+		teams=calculatePercentage(teams)
+		finalteams.extend(teams[0:200])
+	tgtcteams=[]
+	for i in finalteams:
+		temp=[]
+		for j in range(0,len(i)-1):
+			temp.append(i[j][3])
+		tgtcteams.append(temp)
+	print(len(tgtcteams))
+	print(tgtcteams)
+	return finalteams
 
 def calculatePercentage(validcombinations):
 	finalteams=[]
@@ -356,10 +371,10 @@ def calculatePercentage(validcombinations):
 			TotalPercentage=TotalPercentage+int(x[y][5])
 		x.append(TotalPercentage)
 		finalteams.append(x)
-	# sorted_list = sorted(finalteams, key=operator.itemgetter(11))
-	# sorted_list.reverse()
+	sorted_list = sorted(finalteams, key=operator.itemgetter(13))
+	sorted_list.reverse()
 	# random.shuffle(finalteams)
-	return finalteams
+	return sorted_list
 
 def getfinalcombinations(confirmedplayers,validcombinations):
 	finalteams=[]
@@ -417,11 +432,11 @@ def getvalidcombinations(combinations,teamA,teamB):
 					ALcount=ALcount+1
 				else:
 					BATcount=BATcount+1
-		if credits<=100 and Ateamcount<=7 and Bteamcount<=7:
-			if WKcount<=4 and WKcount>=1:
-				if BATcount>=3 and BATcount<=5:
-					if ALcount >=1 and ALcount<=4:
-						if BOWLCount >=3 and BOWLCount<=5:
+		if credits<=100 and Ateamcount<=9 and Bteamcount<=9:
+			if WKcount<=7 and WKcount>=1:
+				if BATcount>=1 and BATcount<=7:
+					if ALcount >=1 and ALcount<=7:
+						if BOWLCount >=1 and BOWLCount<=7:
 							validcombinations.append(team)
 	return validcombinations
 
