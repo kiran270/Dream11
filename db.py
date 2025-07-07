@@ -58,12 +58,12 @@ def removeSquad(playername):
 	con.commit() 
 	rows = cur.fetchall()
 
-def addPlayer(matchid,teamname,role,playername,credits,percentage,matchrole):
+def addPlayer(matchid,teamname,role,playername,credits,percentage,matchrole,run):
 	# create_tables()
 	try:
 		con=create_connection()
 		cur = con.cursor()
-		cur.execute("INSERT into player (matchid,teamname,role,playername,credits,percentage,matchrole) values (?,?,?,?,?,?,?)",(matchid,teamname,role,playername,credits,percentage,matchrole))
+		cur.execute("INSERT into player (matchid,teamname,role,playername,credits,percentage,matchrole,run) values (?,?,?,?,?,?,?,?)",(matchid,teamname,role,playername,credits,percentage,matchrole,run))
 		con.commit()
 	except:
 		con.rollback()

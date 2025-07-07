@@ -1,235 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Bootstrap Example</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dream11 Fantasy Builder</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: radial-gradient(circle at top, #0f2027, #203a43, #2c5364);
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+    .role-section h5 {
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 10px;
+      padding-bottom: 5px;
+    }
+    .player-card {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 12px;
+      transition: transform 0.2s;
+    }
+    .player-card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+    }
+    .btn-float {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 999;
+    }
+  </style>
 </head>
-<style type="text/css">
-body {
-    background-size:auto;
-    background-repeat: no-repeat;
-    background-color: rgb(88, 88, 88);
-}
-#anyClass {
-  height:500px;
-  overflow-y: scroll;
-}
-#b {border-style:solid;}
-#teamimage{
-  height:80%;
-  width:100%;
-  padding-top:10px;
-  padding-left:10px;
-  padding-right: 10px;
-}
-</style>
 <body>
-<nav class="navbar navbar-default">
-  <div class="container-fluid">
-    <div class="navbar-header">
-      <a class="navbar-brand" href="#">WebSiteName</a>
-    </div>
-    <ul class="nav navbar-nav">
-      <li class="active"><a href="/">Home</a></li>
-      <li><a href="/addmatch">AddMatch</a></li>
-      <li><a href="/addsquad">AddSquad</a></li>
-      <li><a href="#">Page 3</a></li>
-    </ul>
+
+<div class="container-fluid py-3">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>⚔️ Dream11 Team Builder</h2>
+    <button class="btn btn-outline-light" onclick="document.getElementById('addPlayerForm').classList.toggle('d-none')">+ Add Player</button>
   </div>
-</nav>
-<div class="container-fluid">
-  <div class="col-md-4">
-    <div class="panel panel-default">
-      <div class="panel-heading">Add Player</div>
-      <div class="panel-body">
-        <form id="addplayer" action="/addplayer" method="post">
-          <input type="hidden" id="matchid" name="matchid" value="{{matchid}}">
-          <div class="form-group">
-            <label>Player Name</label>
-            <input type="text" class="form-control" id="playername" placeholder="Enter the playername" name="playername">
-          </div>
-          <div class="form-group">
-            <label>Team</label>
-            <select class="form-control" name="teamname" id="teamname">
-              {% for team in teams %}
-              <option>{{team.team1}}</option>
-              <option>{{team.team2}}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Role</label>
-            <select class="form-control" name="role" id="role">
-              <option>BAT</option>
-              <option>BOWL</option>
-              <option>ALL</option>
-              <option>WK</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Percentage</label>
-            <input type="text" class="form-control" id="percentage" placeholder="Enter the percentage" name="percentage">
-          </div>
-          <div class="form-group">
-            <label>Credits</label>
-            <input type="text" class="form-control" id="credits" placeholder="Enter the credits" name="credits">
-          </div>
-          <div class="form-group">
-            <label>Current Match Role</label>
-            <select class="form-control" id="matchrole" name="matchrole">
-                <option>OB1</option>
-                <option>OB2</option>
-                <option>1D</option>
-                <option>2D</option>
-                <option>F</option>
-                <option>PS</option>
-                <option>OBO1</option>
-                <option>OBO2</option>
-                <option>DBO1</option>
-                <option>DBO2</option>
-                <option>BBO</option>
-            </select>
-          </div>
-          <div class="col-md-offset-5">
-            <button type="submit" class="btn btn-success">Submit</button>
-          </div>
-        </form>
+
+  <!-- 📊 Toggle Analysis Card -->
+  <div class="d-flex justify-content-end mb-2">
+    <button class="btn btn-warning btn-sm" onclick="toggleAnalysis()">📊 Show/Hide Analysis</button>
+  </div>
+
+  <!-- 📋 Analysis Card -->
+  <div id="analysisCard" class="glass-panel mb-4 d-none">
+    <h5 class="text-center mb-3">Match Summary Analysis</h5>
+    <div class="row text-white">
+      <div class="col-md-6">
+        <h6>Team A</h6>
+        <ul>
+          <li><strong>Total %:</strong> {{ summary.TeamA_Total }}</li>
+          <li><strong>BAT:</strong> {{ summary.TeamA_BAT }}</li>
+          <li><strong>BOWL:</strong> {{ summary.TeamA_BOWL }}</li>
+          <li><strong>ALL:</strong> {{ summary.TeamA_ALL }}</li>
+          <li><strong>WK:</strong> {{ summary.TeamA_WK }}</li>
+        </ul>
+      </div>
+      <div class="col-md-6">
+        <h6>Team B</h6>
+        <ul>
+          <li><strong>Total %:</strong> {{ summary.TeamB_Total }}</li>
+          <li><strong>BAT:</strong> {{ summary.TeamB_BAT }}</li>
+          <li><strong>BOWL:</strong> {{ summary.TeamB_BOWL }}</li>
+          <li><strong>ALL:</strong> {{ summary.TeamB_ALL }}</li>
+          <li><strong>WK:</strong> {{ summary.TeamB_WK }}</li>
+        </ul>
       </div>
     </div>
   </div>
-  <div class="col-md-8">
-    <div class="panel panel-default">
-      <div class="panel-heading">Selected Players</div>
-      <div class="panel-body" id="anyClass">
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Role</th>
-              <th>Team</th>
-              <th>percentage</th>
-              <th>credits</th>
-              <th>matchrole</th>
-              <th>Delete</th>
-            </tr>
-          </thead>
-          <tbody id="tablebody">
-            {% for player in players %}
+
+  <!-- Add Player Form -->
+  <div id="addPlayerForm" class="glass-panel d-none mb-4">
+    <form action="/addplayer" method="post" class="row g-2">
+      <input type="hidden" name="matchid" value="{{matchid}}">
+      <div class="col-md-2"><input name="playername" class="form-control form-control-sm" placeholder="Name"></div>
+      <div class="col-md-2">
+        <select name="teamname" class="form-select form-select-sm">
+          {% for team in teams %}<option>{{team.team1}}</option><option>{{team.team2}}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-1">
+        <select name="role" class="form-select form-select-sm">
+          <option>BAT</option><option>BOWL</option><option>ALL</option><option>WK</option>
+        </select>
+      </div>
+      <div class="col-md-1"><input name="percentage" class="form-control form-control-sm" placeholder="%"></div>
+      <div class="col-md-2">
+        <select name="matchrole" class="form-select form-select-sm">
+          <option>OB1</option><option>OB2</option><option>1D</option><option>2D</option>
+          <option>F</option><option>PS</option><option>OBO1</option><option>OBO2</option>
+          <option>DBO1</option><option>DBO2</option><option>BBO</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-success btn-sm w-100">Add</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- View Tabs -->
+  <ul class="nav nav-tabs mb-3" id="viewTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="card-tab" data-bs-toggle="tab" data-bs-target="#cardView" type="button" role="tab">Card View</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="table-tab" data-bs-toggle="tab" data-bs-target="#tableView" type="button" role="tab">Table View</button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="viewTabsContent">
+    <!-- Card View -->
+    <div class="tab-pane fade show active" id="cardView" role="tabpanel">
+      <div class="row">
+        {% for role in ["BAT", "BOWL", "AL", "WK"] %}
+        <div class="col-md-3">
+          <div class="glass-panel role-section">
+            <h5 class="text-center">{{ role }} {% set count = players|selectattr("role", "equalto", role)|list|length %}<span class="badge bg-info ms-2">{{ count }}</span></h5>
+            {% for player in players if player.role == role %}
+            <div class="player-card">
+              <strong>{{ player.playername }}</strong><br>
+              <small>{{ player.teamname }} | %: {{ player.percentage }} | MR: {{ player.matchrole }}</small>
+              <form action="/removePlayer" method="post" class="mt-1">
+                <input type="hidden" name="playername" value="{{ player.playername }}">
+                <input type="hidden" name="matchid" value="{{ player.matchid }}">
+                <button type="submit" class="btn btn-sm btn-outline-danger mt-1">Remove</button>
+              </form>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Table View -->
+    <div class="tab-pane fade" id="tableView" role="tabpanel">
+      <div class="glass-panel">
+        <h5 class="mb-3 text-white">All Players Table</h5>
+        <div class="table-responsive">
+          <table class="table table-bordered table-sm table-striped bg-white text-dark">
+            <thead class="table-light">
               <tr>
-                <td>{{player.playername}}</td>
-                <td>{{player.role}}</td>
-                <td>{{player.teamname}}</td>
-                <td>{{player.percentage}}</td>
-                <td>{{player.credits}}</td>
-                <td>{{player.matchrole}}</td>
+                <th>Player Name</th>
+                <th>Team</th>
+                <th>Role</th>
+                <th>Percentage</th>
+                <th>Match Role</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for player in players %}
+              <tr>
+                <td>{{ player.playername }}</td>
+                <td>{{ player.teamname }}</td>
+                <td>{{ player.role }}</td>
+                <td>{{ player.percentage }}</td>
+                <td>{{ player.matchrole }}</td>
                 <td>
-                  <form action="/removePlayer" method="post">
-                    <input type="hidden" id="playername" name="playername" value="{{player.playername}}">
-                    <input type="hidden" id="matchid" name="matchid" value="{{player.matchid}}">
-                    <button type="submit" class="btn btn-danger" id="{{player.playername}}">Delete</button>
+                  <form action="/removePlayer" method="post" class="d-inline">
+                    <input type="hidden" name="playername" value="{{ player.playername }}">
+                    <input type="hidden" name="matchid" value="{{ player.matchid }}">
+                    <button type="submit" class="btn btn-sm btn-danger">Remove</button>
                   </form>
                 </td>
               </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-        <form action="/generateTeams" method="post">
-          <input type="hidden" id="matchid" name="matchid" value="{{matchid}}">
-          <div class="form-group">
-            <div class="col-md-offset-5 col-md-10">
-              <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Generate Teams</button>
-              <div class="modal fade" id="myModal" role="dialog">
-                <div class="modal-dialog">
-                  <!-- Modal content-->
-                  <div class="modal-content">
-                    <div class="modal-body">
-                      <div class="form-group">
-                        <label>Combination</label>
-                        <select class="form-control" name="combination" id="combination">
-                          <option>ALL</option>
-                          <option>1-3-4-3</option>
-                          <option>1-3-1-6</option>
-                          <option>1-4-1-5</option>
-                          <option>1-3-2-5</option>
-                          <option>1-5-1-4</option>
-                          <option>1-6-1-3</option>
-                          <option>1-5-2-3</option>
-                          <option>1-4-2-4</option>
-                          <option>1-4-3-3</option>
-                          <option>1-3-3-4</option>
-                          <option>2-3-2-4</option>
-                          <option>2-3-3-3</option>
-                          <option>3-3-2-3</option>
-                          <option>3-4-1-3</option>
-                          <option>2-4-1-4</option>
-                          <option>2-4-2-3</option>
-                          <option>2-5-1-3</option>
-                          <option>2-3-1-5</option>
-                        </select>
-                      </div>
-                      <div class="form-group">
-                        <label>League Type</label>
-                        <select class="form-control" name="leaguetype" id="leaguetype">
-                          <option>Grand</option>
-                          <option>52</option>
-                          <option>339</option>
-                        </select>
-                      </div>
-                      <div class="form-group">
-                        <label>Match Winner</label>
-                        <select class="form-control" name="matchwinner" id="matchwinner">
-                          <option>None</option>
-                          <option>50/50</option>
-                          {% for team in teams %}
-                            <option>{{team.team1}}</option>
-                            <option>{{team.team2}}</option>
-                          {% endfor %}
-                        </select>
-                      </div>
-                      <div class="form-group">
-                        <label>Pitch Type</label>
-                        <select class="form-control" name="pitchtype" id="pitchtype">
-                            <option>None</option>
-                            <option>BattingPitch</option>
-                            <option>BalancedPitch</option>
-                            <option>BowlingPitch</option>
-                        </select>
-                      </div>
-                      <div class="form-group">
-                        <label>Batting First</label>
-                        <select class="form-control" name="battingfirst" id="battingfirst">
-                            <option>None</option>
-                            {% for team in teams %}
-                            <option>{{team.team1}}</option>
-                            <option>{{team.team2}}</option>
-                            {% endfor %}
-                        </select>
-                      </div>
-                      <!-- <div class="form-group">
-                        <label>Win Prediction</label>
-                        <select class="form-control" name="winprediction" id="winprediction">
-                            <option>None</option>
-                            <option>Batting</option>
-                            <option>Chaseing</option>
-                        </select>
-                      </div> -->
-                    </div>
-                    <div class="modal-footer">
-                      <button type="submit" class="btn btn-success">Generate Teams</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </form>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Toggle Script -->
+<script>
+  function toggleAnalysis() {
+    const card = document.getElementById('analysisCard');
+    card.classList.toggle('d-none');
+  }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,127 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Bootstrap Example</title>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
+  <title>Match Manager</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="css/main.css">
-  <script src="js/jquery.min.js"></script>
-  <script src="js/bootstrap.min.js"></script>
-  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-  <!-- <link rel="stylesheet" href="style.css" type="text/css"> -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(145deg, #1f1f1f, #121212);
+      color: #ffffff;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+    }
+
+    .match-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+      transition: transform 0.3s ease;
+    }
+
+    .match-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .team-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .card-actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+    }
+
+    .btn-play {
+      background-color: #0dcaf0;
+      border: none;
+    }
+
+    .btn-delete {
+      background-color: #dc3545;
+      border: none;
+    }
+
+    .match-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+  </style>
 </head>
-<style type="text/css">
-body {
-    background-size:auto;
-    background-repeat: no-repeat;
-    background-color: rgb(88, 88, 88);
-}
-#anyClass {
-  height:500px;
-  overflow-y: scroll;
-}
-#b {border-style:solid;}
-#teamimage{
-  height:80%;
-  width:100%;
-  padding-top:10px;
-  padding-left:10px;
-  padding-right: 10px;
-}
-</style>
 <body>
-  <nav class="navbar navbar-default">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <a class="navbar-brand" href="#">WebSiteName</a>
+
+  <h2 class="mb-4 text-center">📅 Upcoming Matches</h2>
+
+  <div class="match-grid">
+    {% for match in matches %}
+      <div class="match-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="team-name">{{ match.team1 }}</div>
+          <span class="text-muted">vs</span>
+          <div class="team-name">{{ match.team2 }}</div>
         </div>
-        <ul class="nav navbar-nav">
-          <li class="active"><a href="/">Home</a></li>
-          <li><a href="/addmatch">AddMatch</a></li>
-          <li><a href="/addsquad">AddSquad</a></li>
-          <li><a href="/adddreamteam">AddDreamTeam</a></li>
-        </ul>
+
+        <div class="card-actions">
+          <form action="/matchpage" method="post">
+            <input type="hidden" name="matchid" value="{{ match.uniqueid }}">
+            <button type="submit" class="btn btn-play btn-sm text-dark">Play</button>
+          </form>
+          <form action="/deletematch" method="post">
+            <input type="hidden" name="matchid" value="{{ match.uniqueid }}">
+            <button type="submit" class="btn btn-delete btn-sm text-white">Delete</button>
+          </form>
+        </div>
       </div>
-  </nav>
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-md-4" style="padding-top: 20px">
-          <div class="panel panel-primary">
-            <div class="panel-heading text-center">
-              UP coming matches
-            </div>
-            <div class="panel-body text-center" id="anyClass">
-              <div class="panel">
-                <div class="panel-body">
-                  {% for match in matches %}
-                  <form action="/matchpage" method="post" id="b">
-                    <input type="hidden" id="matchid" name="matchid" value="{{match.uniqueid}}">
-                    <div class="row">
-                      <div class="col-md-4 text-center">
-                        <div>
-                          <p>{{match.team1}}</p>
-                        </div>
-                      </div>
-                      <div class="col-md-4" style="padding-top: 30px">
-                        <button type="submit" class="btn btn-success">Play Now</button>
-                      </div>
-                      <div class="col-md-4 text-center">
-                        <div>
-                          <p>{{match.team2}}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </form>
-                  <br>
-                  {% endfor %}
-                </div>
-              </div>
-              <br>
-            </div>
-          </div>
-      </div>
-      <div class="col-md-4" style="padding-top: 20px">
-          <div class="panel panel-primary">
-            <div class="panel-heading text-center">
-              UP coming matches
-            </div>
-            <div class="panel-body text-center" id="anyClass">
-              <div class="panel">
-                <div class="panel-body">
-                  {% for match in matches %}
-                  <form action="/deletematch" method="post" id="b">
-                    <input type="hidden" id="matchid" name="matchid" value="{{match.uniqueid}}">
-                    <div class="row">
-                      <div class="col-md-4 text-center">
-                        <div>
-                          <p>{{match.team1}}</p>
-                        </div>
-                      </div>
-                      <div class="col-md-4" style="padding-top: 30px">
-                        <button type="submit" class="btn btn-danger">Delete Match</beutton>
-                      </div>
-                      <div class="col-md-4 text-center">
-                        <div>
-                          <p>{{match.team2}}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </form>
-                  <br>
-                  {% endfor %}
-                </div>
-              </div>
-              <br>
-            </div>
-          </div>
-      </div>
-    </div>
+    {% endfor %}
   </div>
-<script type="text/javascript">
-</script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
-

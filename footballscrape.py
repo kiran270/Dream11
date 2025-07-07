@@ -11,7 +11,7 @@ from db import addPlayer
 # Config
 target_team_1 = "MCI"
 target_team_2 = "WYD"
-match_id = 12
+match_id = 13
 default_matchrole = "MID-HIT"
 
 # Launch Chrome

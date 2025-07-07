@@ -91,7 +91,8 @@ def matchpage():
 	players=getplayers(matchid)
 	players=sorted(players, key=operator.itemgetter(5))
 	players.reverse()
-	return render_template("addplayers.html",teams=teams,players=players,matchid=matchid)
+	analysis=getAnalysis(players,teams)
+	return render_template("addplayers.html",teams=teams,players=players,summary=analysis,matchid=matchid)
 
 @app.route("/addplayer",methods = ["POST","GET"])
 def addplayer():
@@ -107,7 +108,8 @@ def addplayer():
 	players=getplayers(matchid)
 	players=sorted(players, key=operator.itemgetter(5))
 	players.reverse()
-	return render_template("addplayers.html",teams=teams,players=players,matchid=matchid)
+	analysis=getAnalysis(players,teams)
+	return render_template("addplayers.html",teams=teams,players=players,summary=analysis,matchid=matchid)
 @app.route("/removePlayer",methods = ["POST","GET"])
 def removePlayer():
 	playername=request.form.get('playername')
@@ -119,7 +121,8 @@ def removePlayer():
 	players=getplayers(matchid)
 	players=sorted(players, key=operator.itemgetter(5))
 	players.reverse()
-	return render_template("addplayers.html",teams=teams,players=players,matchid=matchid)
+	analysis=getAnalysis(players,teams)
+	return render_template("addplayers.html",teams=teams,players=players,summary=analysis,matchid=matchid)
 @app.route("/generateTeams",methods = ["POST","GET"])
 def generateTeams():
 	matchid=request.form.get('matchid')
@@ -210,7 +213,7 @@ def generateTeams():
 					if temp[1]=="DEA":
 						bdea.append(player)
 		# print(gettemplateteams[0][0])
-		templatecombinations=getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,ahit)
+		templatecombinations=getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,ahit,teams[0][1],teams[0][2])
 		# templatecombinations=getvalidcombinations(templatecombinations,teams[0][1],teams[0][2])
 		# validcombinations=calculatePercentage(templatecombinations)
 		return render_template("finalteams.html",validcombinations=templatecombinations)
@@ -242,14 +245,14 @@ def safe_sample(source_list, count):
     else:
         # print(f"Cannot sample from: requested {count}, available {len(source_list)}")
         return []
-def getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea):
+def getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teamA,teamB):
 	templates=getDreamTeams()
 	finalteams=[]
 	all_players = atop + amid + ahit + bpow + bbre + bdea + btop + bmid + bhit + apow + abre + adea
-	top_11 = sorted(all_players, key=lambda x: float(x[4]), reverse=True)[:11]
+	top5 = sorted(all_players, key=lambda x: float(x[4]), reverse=True)[0:7]
 	for z in templates:
 		teams=[]
-		for k in range(0,5000):
+		for k in range(0,30000):
 			team=[]
 			team.extend(safe_sample(atop,z[4]))
 			team.extend(safe_sample(amid,z[5]))
@@ -275,7 +278,7 @@ def getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea):
 						if l > count:
 							count=l
 					# print(count)
-					if count <= 8:
+					if count <= 11:
 						if z[16]==0:
 							valid_choices = [p for p in atop if p in team]
 							team.extend(random.sample(valid_choices,1))
@@ -348,19 +351,22 @@ def getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea):
 						elif z[17]==11:
 							valid_choices = [p for p in adea if p in team]
 							team.extend(random.sample(valid_choices,1))
-						top_count = sum(1 for p in team if p in top_11)
-						if top_count >= 7:
+						top_count = sum(1 for p in team if p in top5)
+						# print(top_count)
+						if top_count == 5:
 						    teams.append(team)
+						    break
 		teams=calculatePercentage(teams)
-		finalteams.extend(teams[0:200])
-	tgtcteams=[]
-	for i in finalteams:
-		temp=[]
-		for j in range(0,len(i)-1):
-			temp.append(i[j][3])
-		tgtcteams.append(temp)
-	print(len(tgtcteams))
-	print(tgtcteams)
+		finalteams.extend(teams)
+	# finalteams=getvalidcombinations(finalteams,teamA,teamB)
+	# tgtcteams=[]
+	# for i in finalteams:
+	# 	temp=[]
+	# 	for j in range(0,len(i)-1):
+	# 		temp.append(i[j][3])
+	# 	tgtcteams.append(temp)
+	# print(len(tgtcteams))
+	# print(tgtcteams)
 	return finalteams
 
 def calculatePercentage(validcombinations):
@@ -375,6 +381,59 @@ def calculatePercentage(validcombinations):
 	sorted_list.reverse()
 	# random.shuffle(finalteams)
 	return sorted_list
+
+def getAnalysis(players,teams):
+    TeamApercentage = 0
+    TeamBpercentage = 0
+    TeamABat = 0
+    TeamABowl = 0
+    TeamAAll = 0
+    TeamAWK = 0
+    TeamBBat = 0
+    TeamBBowl = 0
+    TeamBAll = 0
+    TeamBWK = 0
+    for player in players:
+        team_percentage = 0
+        perc = float(player[5]) if player[5] else 0
+        team_percentage += perc
+        teamname = player[1]
+        role = player[2]
+        if teamname == teams[0][1]:
+            TeamApercentage += perc
+            if role == 'BAT':
+                TeamABat += perc
+            elif role == 'BOWL':
+                TeamABowl += perc
+            elif role == 'AL':
+                TeamAAll += perc
+            elif role == 'WK':
+                TeamAWK += perc
+        elif teamname == teams[0][2]:
+            TeamBpercentage += perc
+            if role == 'BAT':
+                TeamBBat += perc
+            elif role == 'BOWL':
+                TeamBBowl += perc
+            elif role == 'AL':
+                TeamBAll += perc
+            elif role == 'WK':
+                TeamBWK += perc
+    summary = {
+        'TeamA_Total': TeamApercentage,
+        'TeamB_Total': TeamBpercentage,
+        'TeamA_BAT': TeamABat,
+        'TeamA_BOWL': TeamABowl,
+        'TeamA_ALL': TeamAAll,
+        'TeamA_WK': TeamAWK,
+        'TeamB_BAT': TeamBBat,
+        'TeamB_BOWL': TeamBBowl,
+        'TeamB_ALL': TeamBAll,
+        'TeamB_WK': TeamBWK
+    }
+
+    return summary
+
 
 def getfinalcombinations(confirmedplayers,validcombinations):
 	finalteams=[]
@@ -432,6 +491,10 @@ def getvalidcombinations(combinations,teamA,teamB):
 					ALcount=ALcount+1
 				else:
 					BATcount=BATcount+1
+		print(ALcount)
+		print(Ateamcount)
+		print(Bteamcount)
+		print(WKcount)
 		if credits<=100 and Ateamcount<=9 and Bteamcount<=9:
 			if WKcount<=7 and WKcount>=1:
 				if BATcount>=1 and BATcount<=7:
