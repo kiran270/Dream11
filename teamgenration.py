@@ -10,18 +10,18 @@ from flask import *
 from db import addMatch,addPlayer
 
 # Configure Chrome driver with options
-target_team_1 = "EN-A-W"
-target_team_2 = "NZ-A-W"
-match_id = 25  # Replace with your match ID
+target_team_1 = "TRT"
+target_team_2 = "SOB"
+match_id = 27  # Replace with your match ID
 run=1
 default_matchrole = "MID-HIT"  # or customize per player
 
 options = Options()
 options.add_argument("--start-maximized")
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-driver.get("https://www.teamgeneration.in/")
+driver.get("https://team-generation.netlify.app/")
 time.sleep(2)
-driver.get("https://www.teamgeneration.in/")
+driver.get("https://team-generation.netlify.app/")
 time.sleep(2)
 try:
     card = WebDriverWait(driver, 10).until(
@@ -53,7 +53,7 @@ except Exception as e:
     print("❌ Login failed:", str(e))
 
 # Wait for post-login page load (adjust if needed)
-time.sleep(2)
+time.sleep(10)
 
 
 # Find all match cards

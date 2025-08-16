@@ -85,7 +85,7 @@ def getDreamTeams():
 	con =create_connection()
 	con.row_factory = sqlite3.Row
 	cur = con.cursor()
-	cur.execute("select * from templates where stadium='ALL'")
+	cur.execute("select * from templates")
 	rows = cur.fetchall()
 	return rows
 def getteams(matchid):

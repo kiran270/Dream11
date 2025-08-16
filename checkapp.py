@@ -160,57 +160,57 @@ def generateTeams():
 		for player in players:
 			if player[1]==battingfirst:
 				temp=player[6].split("-")
-				if temp[0]=="TOP":
+				if temp[0]=="TOP" and player not in atop:
 					atop.append(player)
-				if temp[0]=="MID":
+				if temp[0]=="MID" and player not in amid:
 					amid.append(player)
-				if temp[0]=="HIT":
+				if temp[0]=="HIT" and player not in ahit:
 					ahit.append(player)
-				if temp[0]=="POW":
+				if temp[0]=="POW" and player not in apow:
 					apow.append(player)
-				if temp[0]=="BRE":
+				if temp[0]=="BRE" and player not in abre:
 					abre.append(player)
-				if temp[0]=="DEA":
+				if temp[0]=="DEA" and player not in adea:
 					adea.append(player)
 				if len(temp) > 1:
-					if temp[1]=="TOP":
+					if temp[1]=="TOP" and player not in atop:
 						atop.append(player)
-					if temp[1]=="MID":
+					if temp[1]=="MID" and player not in amid:
 						amid.append(player)
-					if temp[1]=="HIT":
+					if temp[1]=="HIT" and player not in ahit:
 						ahit.append(player)
-					if temp[1]=="POW":
+					if temp[1]=="POW" and player not in apow:
 						apow.append(player)
-					if temp[1]=="BRE":
+					if temp[1]=="BRE" and player not in abre:
 						abre.append(player)
-					if temp[1]=="DEA":
+					if temp[1]=="DEA" and player not in adea:
 						adea.append(player)
 			else:
 				temp=player[6].split("-")
-				if temp[0]=="TOP":
+				if temp[0]=="TOP" and player not in btop:
 					btop.append(player)
-				if temp[0]=="MID":
+				if temp[0]=="MID" and player not in bmid:
 					bmid.append(player)
-				if temp[0]=="HIT":
+				if temp[0]=="HIT" and player not in bhit:
 					bhit.append(player)
-				if temp[0]=="POW":
+				if temp[0]=="POW" and player not in bpow:
 					bpow.append(player)
-				if temp[0]=="BRE":
+				if temp[0]=="BRE" and player not in bbre:
 					bbre.append(player)
-				if temp[0]=="DEA":
+				if temp[0]=="DEA" and player not in bdea:
 					bdea.append(player)
 				if len(temp) > 1:
-					if temp[1]=="TOP":
+					if temp[1]=="TOP" and player not in btop:
 						btop.append(player)
-					if temp[1]=="MID":
+					if temp[1]=="MID" and player not in bmid:
 						bmid.append(player)
-					if temp[1]=="HIT":
+					if temp[1]=="HIT" and player not in bhit:
 						bhit.append(player)
-					if temp[1]=="POW":
+					if temp[1]=="POW" and player not in bpow:
 						bpow.append(player)
-					if temp[1]=="BRE":
+					if temp[1]=="BRE" and player not in bbre:
 						bbre.append(player)
-					if temp[1]=="DEA":
+					if temp[1]=="DEA" and player not in bdea:
 						bdea.append(player)
 		# print(gettemplateteams[0][0])
 		templatecombinations=getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,ahit,teams[0][1],teams[0][2])
@@ -226,7 +226,7 @@ def generateTeams():
 		validcombinations=getvalidcombinations(combinations,teams[0][1],teams[0][2])
 		totalteams=len(validcombinations)
 		print(totalteams)
-		# validcombinations=calculatePercentage(validcombinations)
+		validcombinations=calculatePercentage(validcombinations)
 		if inputcombination!='ALL':
 			validcombinations=filterCombinations(inputcombination,validcombinations)
 		validcombinations=filterBasedOnMatchWinnerAndPitchType(validcombinations,matchwinner,pitchtype,players)
@@ -240,20 +240,54 @@ def safe_sample(source_list, count):
     if count > 0 and len(source_list) >= count:
         return random.sample(source_list, count)
     elif 0 < len(source_list) < count:
-        # print(f"Only {len(source_list)} available in , using all.")
+        # If we don't have enough players, return all available players
         return source_list[:]
     else:
-        # print(f"Cannot sample from: requested {count}, available {len(source_list)}")
+        # If count is 0 or source_list is empty, return empty list
         return []
+
+def can_generate_team(atop, amid, ahit, bpow, bbre, bdea, btop, bmid, bhit, apow, abre, adea, template):
+    """Check if we have enough players to generate a team based on template requirements"""
+    required_counts = [
+        (atop, template[4]),   # atop count
+        (amid, template[5]),   # amid count  
+        (ahit, template[6]),   # ahit count
+        (bpow, template[7]),   # bpow count
+        (bbre, template[8]),   # bbre count
+        (bdea, template[9]),   # bdea count
+        (btop, template[10]),  # btop count
+        (bmid, template[11]),  # bmid count
+        (bhit, template[12]),  # bhit count
+        (apow, template[13]),  # apow count
+        (abre, template[14]),  # abre count
+        (adea, template[15])   # adea count
+    ]
+    
+    total_available = 0
+    for player_list, required in required_counts:
+        available = min(len(player_list), required)
+        total_available += available
+    
+    # We need at least 11 players to form a team
+    return total_available >= 11
 def getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teamA,teamB):
 	templates=getDreamTeams()
 	finalteams=[]
 	all_players = atop + amid + ahit + bpow + bbre + bdea + btop + bmid + bhit + apow + abre + adea
-	top5 = sorted(all_players, key=lambda x: float(x[4]), reverse=True)[0:7]
+	
+	# If we don't have enough total players, return empty
+	if len(all_players) < 11:
+		print(f"Not enough total players: {len(all_players)}")
+		return []
+	
+	top5 = sorted(all_players, key=lambda x: float(x[4]), reverse=True)[0:min(7, len(all_players))]
+	
 	for z in templates:
 		teams=[]
-		for k in range(0,30000):
+		for k in range(0,1000):  # Reduced iterations for better performance
 			team=[]
+			
+			# Try to get players from each category
 			team.extend(safe_sample(atop,z[4]))
 			team.extend(safe_sample(amid,z[5]))
 			team.extend(safe_sample(ahit,z[6]))
@@ -266,11 +300,43 @@ def getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teamA,t
 			team.extend(safe_sample(apow,z[13]))
 			team.extend(safe_sample(abre,z[14]))
 			team.extend(safe_sample(adea,z[15]))
-			if team not in teams:
-				team=set(team)
-				team=list(team)
-				# print(team)
-				if len(team)==11:
+			
+			# Remove duplicates while preserving order
+			seen = set()
+			unique_team = []
+			for player in team:
+				player_id = (player[3], player[1])  # Use name and team as unique identifier
+				if player_id not in seen:
+					seen.add(player_id)
+					unique_team.append(player)
+			team = unique_team
+			
+			# If we don't have 11 players, try to fill from remaining players
+			if len(team) < 11:
+				remaining_players = [p for p in all_players if (p[3], p[1]) not in seen]
+				needed = 11 - len(team)
+				if len(remaining_players) >= needed:
+					additional_players = random.sample(remaining_players, needed)
+					team.extend(additional_players)
+					
+					# Update seen set with new players
+					for player in additional_players:
+						seen.add((player[3], player[1]))
+			
+			# Final check: ensure no duplicates and exactly 11 players
+			if len(team) == 11:
+				player_names = [p[3] for p in team]
+				if len(player_names) == len(set(player_names)):
+					# No duplicates found, proceed with this team
+					pass
+				else:
+					print(f"DUPLICATE FOUND: {[name for name in player_names if player_names.count(name) > 1]}")
+					continue  # Skip this team if duplicates found
+			else:
+				continue  # Skip if not exactly 11 players
+			
+			# Only proceed if we have exactly 11 players
+			if len(team) == 11 and team not in teams:
 					team=sorted(team, key=operator.itemgetter(2))
 					count=0
 					for x in teams:
@@ -278,84 +344,32 @@ def getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teamA,t
 						if l > count:
 							count=l
 					# print(count)
-					if count <= 11:
-						if z[16]==0:
-							valid_choices = [p for p in atop if p in team]
-							team.extend(random.sample(valid_choices,1))
-						elif z[16]==1:
-							valid_choices = [p for p in amid if p in team]
-							team.extend(random.sample(valid_choices,1))
-						elif z[16]==2:
-							valid_choices = [p for p in ahit if p in team]
-							team.extend(random.sample(valid_choices,1))
-						elif z[16]==3:
-							valid_choices = [p for p in bpow if p in team]
-							team.extend(random.sample(valid_choices,1))
-						elif z[16]==4:
-							valid_choices = [p for p in bbre if p in team]
-							team.extend(random.sample(valid_choices,1))
-						elif z[16]==5:
-							valid_choices = [p for p in bdea if p in team]
-							team.extend(random.sample(valid_choices,1))
-						elif z[16]==6:
-							valid_choices = [p for p in btop if p in team]
-							team.extend(random.sample(valid_choices,1))
-						elif z[16]==7:
-							valid_choices = [p for p in bmid if p in team]
-							team.extend(random.sample(valid_choices,1))
-						elif z[16]==8:
-							valid_choices = [p for p in bhit if p in team]
-							team.extend(random.sample(valid_choices,1))
-						elif z[16]==9:
-							valid_choices = [p for p in apow if p in team]
-							team.extend(random.sample(valid_choices,1))
-						elif z[16]==10:
-							valid_choices = [p for p in abre if p in team]
-							team.extend(random.sample(valid_choices,1))
-						elif z[16]==11:
-							valid_choices = [p for p in adea if p in team]
-							team.extend(random.sample(valid_choices,1))
-						if z[17]==0:
-							valid_choices = [p for p in atop if p in team]
-							team.extend(random.sample(valid_choices,1))
-						elif z[17]==1:
-							valid_choices = [p for p in amid if p in team]
-							team.extend(random.sample(valid_choices,1))
-						elif z[17]==2:
-							valid_choices = [p for p in ahit if p in team]
-							team.extend(random.sample(valid_choices,1))
-						elif z[17]==3:
-							valid_choices = [p for p in bpow if p in team]
-							team.extend(random.sample(valid_choices,1))
-						elif z[17]==4:
-							valid_choices = [p for p in bbre if p in team]
-							team.extend(random.sample(valid_choices,1))
-						elif z[17]==5:
-							valid_choices = [p for p in bdea if p in team]
-							team.extend(random.sample(valid_choices,1))
-						elif z[17]==6:
-							valid_choices = [p for p in btop if p in team]
-							team.extend(random.sample(valid_choices,1))
-						elif z[17]==7:
-							valid_choices = [p for p in bmid if p in team]
-							team.extend(random.sample(valid_choices,1))
-						elif z[17]==8:
-							valid_choices = [p for p in bhit if p in team]
-							team.extend(random.sample(valid_choices,1))
-						elif z[17]==9:
-							valid_choices = [p for p in apow if p in team]
-							team.extend(random.sample(valid_choices,1))
-						elif z[17]==10:
-							valid_choices = [p for p in abre if p in team]
-							team.extend(random.sample(valid_choices,1))
-						elif z[17]==11:
-							valid_choices = [p for p in adea if p in team]
-							team.extend(random.sample(valid_choices,1))
-						top_count = sum(1 for p in team if p in top5)
-						# print(top_count)
-						if top_count == 5:
-						    teams.append(team)
-						    break
+					if count <= 3:  # Changed from 7 to 3 for more team diversity
+						# Select captain and vice-captain from the team and add as positions 11 and 12
+						captain = None
+						vice_captain = None
+						
+						# Simple captain selection - pick from team based on highest percentage
+						team_sorted_by_percentage = sorted(team, key=lambda x: int(x[5]) if x[5] else 0, reverse=True)
+						if len(team_sorted_by_percentage) > 0:
+							captain = team_sorted_by_percentage[0]  # Highest percentage player as captain
+						
+						# Vice-captain selection - pick second highest percentage player (different from captain)
+						if len(team_sorted_by_percentage) > 1:
+							vice_captain = team_sorted_by_percentage[1]  # Second highest as vice-captain
+						elif len(team_sorted_by_percentage) > 0 and captain:
+							# If only one player, pick any other player as vice-captain
+							other_players = [p for p in team if p != captain]
+							if other_players:
+								vice_captain = random.choice(other_players)
+						
+						# Add captain and vice-captain as positions 11 and 12 (these are references, not duplicates)
+						if captain:
+							team.append(captain)  # Position 11
+						if vice_captain:
+							team.append(vice_captain)  # Position 12
+						
+						teams.append(team)
 		teams=calculatePercentage(teams)
 		finalteams.extend(teams)
 	# finalteams=getvalidcombinations(finalteams,teamA,teamB)
@@ -373,14 +387,23 @@ def calculatePercentage(validcombinations):
 	finalteams=[]
 	for x in validcombinations:
 		TotalPercentage=0
-		for y in range(0,11):
-			TotalPercentage=TotalPercentage+int(x[y][5])
+		# Calculate percentage for first 11 players only (excluding captain/vice-captain duplicates)
+		for y in range(0, min(11, len(x))):
+			try:
+				if x[y] and len(x[y]) > 5:  # Ensure player data exists and has percentage field
+					percentage_value = int(x[y][5]) if x[y][5] else 0
+					TotalPercentage += percentage_value
+			except (IndexError, ValueError, TypeError):
+				# Skip if there's any issue accessing the percentage
+				continue
 		x.append(TotalPercentage)
 		finalteams.append(x)
-	sorted_list = sorted(finalteams, key=operator.itemgetter(13))
-	sorted_list.reverse()
-	# random.shuffle(finalteams)
-	return sorted_list
+	
+	# Sort by total percentage (last element) - highest percentage first
+	if finalteams:
+		sorted_list = sorted(finalteams, key=lambda team: team[-1], reverse=True)
+		return sorted_list
+	return []
 
 def getAnalysis(players,teams):
     TeamApercentage = 0
@@ -500,6 +523,27 @@ def getvalidcombinations(combinations,teamA,teamB):
 				if BATcount>=1 and BATcount<=7:
 					if ALcount >=1 and ALcount<=7:
 						if BOWLCount >=1 and BOWLCount<=7:
+							# Select captain and vice-captain without adding duplicates
+							team_sorted_by_percentage = sorted(team, key=lambda x: int(x[5]) if x[5] else 0, reverse=True)
+							captain = None
+							vice_captain = None
+							
+							if len(team_sorted_by_percentage) > 0:
+								captain = team_sorted_by_percentage[0]  # Highest percentage player as captain
+							
+							if len(team_sorted_by_percentage) > 1:
+								vice_captain = team_sorted_by_percentage[1]  # Second highest as vice-captain
+							elif len(team_sorted_by_percentage) > 0 and captain:
+								other_players = [p for p in team if p != captain]
+								if other_players:
+									vice_captain = random.choice(other_players)
+							
+							# Add captain and vice-captain as positions 11 and 12 (these are references, not duplicates)
+							if captain:
+								team.append(captain)  # Position 11
+							if vice_captain:
+								team.append(vice_captain)  # Position 12
+								
 							validcombinations.append(team)
 	return validcombinations
 
