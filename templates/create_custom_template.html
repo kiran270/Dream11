@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Custom Template - Dream11 Team Generator</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: radial-gradient(circle at top, #0f2027, #203a43, #2c5364);
+      min-height: 100vh;
+      color: white;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 30px;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    }
+
+    .btn-glass {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+
+    .btn-glass:hover {
+      background: rgba(255, 255, 255, 0.3);
+      color: white;
+    }
+
+    .form-control, .form-select {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+    }
+
+    .form-control:focus, .form-select:focus {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.5);
+      color: white;
+      box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
+    }
+
+    .form-select option {
+      background: #2c5364;
+      color: white;
+    }
+
+    .position-input {
+      width: 60px;
+    }
+
+    .team-section {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+
+    .total-display {
+      font-size: 1.2rem;
+      font-weight: bold;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    .total-valid {
+      background: rgba(40, 167, 69, 0.3);
+      color: #28a745;
+    }
+
+    .total-invalid {
+      background: rgba(220, 53, 69, 0.3);
+      color: #dc3545;
+    }
+
+    .preset-btn {
+      margin: 2px;
+      font-size: 0.8rem;
+      padding: 4px 8px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container mt-4">
+  <div class="glass-card">
+    <div class="text-center mb-4">
+      <h2><i class="fas fa-plus-circle"></i> Create Custom Template</h2>
+      <p class="text-muted">Manually create a Dream11 template with custom player distribution</p>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger" role="alert">
+      <i class="fas fa-exclamation-triangle"></i> {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="POST" action="/createCustomTemplate" id="templateForm">
+      <!-- Basic Info -->
+      <div class="row mb-4">
+        <div class="col-md-4">
+          <label class="form-label">Template Name *</label>
+          <input type="text" class="form-control" name="template_name" 
+                 value="{{ template_data.matchbetween if template_data else '' }}" 
+                 placeholder="e.g., MI-vs-CSK" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Stadium</label>
+          <input type="text" class="form-control" name="stadium" 
+                 value="{{ template_data.stadium if template_data else 'Custom' }}" 
+                 placeholder="Stadium name">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Winning Condition</label>
+          <select class="form-select" name="winning_condition">
+            <option value="Batting" {% if template_data and template_data.wininning == 'Batting' %}selected{% endif %}>Batting</option>
+            <option value="Bowling" {% if template_data and template_data.wininning == 'Bowling' %}selected{% endif %}>Bowling</option>
+            <option value="Balanced" {% if template_data and template_data.wininning == 'Balanced' %}selected{% endif %}>Balanced</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Preset Templates -->
+      <div class="mb-4">
+        <h6><i class="fas fa-magic"></i> Quick Presets:</h6>
+        <button type="button" class="btn btn-sm btn-info preset-btn" onclick="setPreset('balanced')">Balanced (5-3-3)</button>
+        <button type="button" class="btn btn-sm btn-success preset-btn" onclick="setPreset('batting')">Batting Heavy (6-2-3)</button>
+        <button type="button" class="btn btn-sm btn-warning preset-btn" onclick="setPreset('bowling')">Bowling Heavy (4-3-4)</button>
+        <button type="button" class="btn btn-sm btn-secondary preset-btn" onclick="clearAll()">Clear All</button>
+      </div>
+
+      <!-- Team A Positions -->
+      <div class="team-section">
+        <h5><i class="fas fa-users"></i> Team A Positions</h5>
+        <div class="row">
+          <div class="col-md-3">
+            <label class="form-label">A-TOP (Top Order)</label>
+            <input type="number" class="form-control position-input" name="atop" min="0" max="11" 
+                   value="{{ template_data.atop if template_data else 0 }}" onchange="updateTotal()">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">A-MID (Middle Order)</label>
+            <input type="number" class="form-control position-input" name="amid" min="0" max="11" 
+                   value="{{ template_data.amid if template_data else 0 }}" onchange="updateTotal()">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">A-HIT (Hitters)</label>
+            <input type="number" class="form-control position-input" name="ahit" min="0" max="11" 
+                   value="{{ template_data.ahit if template_data else 0 }}" onchange="updateTotal()">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">A-POW (Power Bowlers)</label>
+            <input type="number" class="form-control position-input" name="apow" min="0" max="11" 
+                   value="{{ template_data.apow if template_data else 0 }}" onchange="updateTotal()">
+          </div>
+        </div>
+        <div class="row mt-2">
+          <div class="col-md-6">
+            <label class="form-label">A-BRE (Breakthrough Bowlers)</label>
+            <input type="number" class="form-control position-input" name="abre" min="0" max="11" 
+                   value="{{ template_data.abre if template_data else 0 }}" onchange="updateTotal()">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">A-DEA (Death Bowlers)</label>
+            <input type="number" class="form-control position-input" name="adea" min="0" max="11" 
+                   value="{{ template_data.adea if template_data else 0 }}" onchange="updateTotal()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Team B Positions -->
+      <div class="team-section">
+        <h5><i class="fas fa-users"></i> Team B Positions</h5>
+        <div class="row">
+          <div class="col-md-3">
+            <label class="form-label">B-TOP (Top Order)</label>
+            <input type="number" class="form-control position-input" name="btop" min="0" max="11" 
+                   value="{{ template_data.btop if template_data else 0 }}" onchange="updateTotal()">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">B-MID (Middle Order)</label>
+            <input type="number" class="form-control position-input" name="bmid" min="0" max="11" 
+                   value="{{ template_data.bmid if template_data else 0 }}" onchange="updateTotal()">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">B-HIT (Hitters)</label>
+            <input type="number" class="form-control position-input" name="bhit" min="0" max="11" 
+                   value="{{ template_data.bhit if template_data else 0 }}" onchange="updateTotal()">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">B-POW (Power Bowlers)</label>
+            <input type="number" class="form-control position-input" name="bpow" min="0" max="11" 
+                   value="{{ template_data.bpow if template_data else 0 }}" onchange="updateTotal()">
+          </div>
+        </div>
+        <div class="row mt-2">
+          <div class="col-md-6">
+            <label class="form-label">B-BRE (Breakthrough Bowlers)</label>
+            <input type="number" class="form-control position-input" name="bbre" min="0" max="11" 
+                   value="{{ template_data.bbre if template_data else 0 }}" onchange="updateTotal()">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">B-DEA (Death Bowlers)</label>
+            <input type="number" class="form-control position-input" name="bdea" min="0" max="11" 
+                   value="{{ template_data.bdea if template_data else 0 }}" onchange="updateTotal()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Captain/Vice-Captain -->
+      <div class="team-section">
+        <h5><i class="fas fa-crown"></i> Captain & Vice-Captain</h5>
+        <div class="row">
+          <div class="col-md-6">
+            <label class="form-label">Captain Position (0-10)</label>
+            <input type="number" class="form-control" name="cap" min="0" max="10" 
+                   value="{{ template_data.cap if template_data else 0 }}">
+            <small class="text-muted">Position index for captain selection</small>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Vice-Captain Position (0-10)</label>
+            <input type="number" class="form-control" name="vc" min="0" max="10" 
+                   value="{{ template_data.vc if template_data else 6 }}">
+            <small class="text-muted">Position index for vice-captain selection</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Display -->
+      <div class="mb-4">
+        <div id="totalDisplay" class="total-display total-invalid">
+          Total Players: <span id="totalCount">0</span> / 11
+        </div>
+      </div>
+
+      <!-- Submit Buttons -->
+      <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+        <a href="/viewTemplates" class="btn btn-glass me-md-2">
+          <i class="fas fa-arrow-left"></i> Back to Templates
+        </a>
+        <button type="submit" class="btn btn-glass" id="submitBtn" disabled>
+          <i class="fas fa-save"></i> Create Template
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function updateTotal() {
+  const inputs = document.querySelectorAll('input[type="number"]:not([name="cap"]):not([name="vc"])');
+  let total = 0;
+  
+  inputs.forEach(input => {
+    total += parseInt(input.value) || 0;
+  });
+  
+  document.getElementById('totalCount').textContent = total;
+  const display = document.getElementById('totalDisplay');
+  const submitBtn = document.getElementById('submitBtn');
+  
+  if (total === 11) {
+    display.className = 'total-display total-valid';
+    submitBtn.disabled = false;
+  } else {
+    display.className = 'total-display total-invalid';
+    submitBtn.disabled = true;
+  }
+}
+
+function setPreset(type) {
+  const presets = {
+    balanced: {atop: 1, amid: 2, ahit: 1, bpow: 0, bbre: 1, bdea: 1, btop: 2, bmid: 1, bhit: 0, apow: 1, abre: 1, adea: 0},
+    batting: {atop: 2, amid: 2, ahit: 1, bpow: 0, bbre: 1, bdea: 0, btop: 2, bmid: 1, bhit: 1, apow: 1, abre: 0, adea: 0},
+    bowling: {atop: 1, amid: 1, ahit: 0, bpow: 1, bbre: 1, bdea: 1, btop: 1, bmid: 1, bhit: 0, apow: 2, abre: 1, adea: 1}
+  };
+  
+  const preset = presets[type];
+  for (const [key, value] of Object.entries(preset)) {
+    const input = document.querySelector(`input[name="${key}"]`);
+    if (input) input.value = value;
+  }
+  
+  updateTotal();
+}
+
+function clearAll() {
+  const inputs = document.querySelectorAll('input[type="number"]:not([name="cap"]):not([name="vc"])');
+  inputs.forEach(input => input.value = 0);
+  updateTotal();
+}
+
+// Initialize total on page load
+document.addEventListener('DOMContentLoaded', updateTotal);
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

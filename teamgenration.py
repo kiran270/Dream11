@@ -10,9 +10,9 @@ from flask import *
 from db import addMatch,addPlayer
 
 # Configure Chrome driver with options
-target_team_1 = "TRT"
-target_team_2 = "SOB"
-match_id = 27  # Replace with your match ID
+target_team_1 = "MNR"
+target_team_2 = "NOS"
+match_id = 28  # Replace with your match ID
 run=1
 default_matchrole = "MID-HIT"  # or customize per player
 

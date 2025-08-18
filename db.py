@@ -3,7 +3,7 @@ from sqlite3 import Error
 
 
 def create_connection():
-	db_file= r"C:\Users\korubilli lakshmi\OneDrive\Desktop\Kiran\Dream11\pythonsqlite.db"
+	db_file= "pythonsqlite.db"  # Use relative path for cross-platform compatibility
 	conn = None
 	try:
 		conn = sqlite3.connect(db_file)
@@ -85,9 +85,15 @@ def getDreamTeams():
 	con =create_connection()
 	con.row_factory = sqlite3.Row
 	cur = con.cursor()
-	cur.execute("select * from templates")
-	rows = cur.fetchall()
-	return rows
+	# Only return templates from database, never default templates
+	try:
+		cur.execute("select * from templates")
+		rows = cur.fetchall()
+		print(f"Found {len(rows)} templates in database")
+		return rows
+	except Exception as e:
+		print(f"Error querying templates table: {e}")
+		return []  # Return empty list if no database templates
 def getteams(matchid):
 	con =create_connection()
 	con.row_factory = sqlite3.Row
@@ -135,3 +141,29 @@ def getPitchpointsWithPlayerName(playername):
 	cur.execute("SELECT * FROM pitchpoints where playername = ?",[playername]) 
 	rows = cur.fetchall()
 	return rows
+
+def updatePlayerRole(playername, matchid, new_role):
+	"""Update player role in the database"""
+	try:
+		con = create_connection()
+		cur = con.cursor()
+		cur.execute("UPDATE player SET role = ? WHERE playername = ? AND matchid = ?", (new_role, playername, matchid))
+		con.commit()
+		return True
+	except Exception as e:
+		print(f"Error updating player role: {e}")
+		con.rollback()
+		return False
+
+def updatePlayerMatchRole(playername, matchid, new_matchrole):
+	"""Update player match role in the database"""
+	try:
+		con = create_connection()
+		cur = con.cursor()
+		cur.execute("UPDATE player SET matchrole = ? WHERE playername = ? AND matchid = ?", (new_matchrole, playername, matchid))
+		con.commit()
+		return True
+	except Exception as e:
+		print(f"Error updating player match role: {e}")
+		con.rollback()
+		return False
