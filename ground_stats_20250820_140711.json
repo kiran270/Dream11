@@ -1,0 +1,335 @@
+{
+  "ground_name": "Aggregate/overall records",
+  "url": "https://stats.espncricinfo.com/ci/engine/ground/56874.html?class=23;template=results;type=aggregate;view=results",
+  "scrape_time": "2025-08-20 14:07:11",
+  "tables": [
+    {
+      "index": 0,
+      "caption": "Table 1",
+      "headers": [
+        "Viewmatch results"
+      ],
+      "data": [
+        [
+          "Totals in terms ofbatting team"
+        ],
+        [
+          "Ordered bystart date (ascending)"
+        ]
+      ],
+      "row_count": 2,
+      "column_count": 1
+    },
+    {
+      "index": 2,
+      "caption": "Overall figures",
+      "headers": [
+        "",
+        "Span",
+        "Mat",
+        "Won",
+        "Lost",
+        "Tied",
+        "NR",
+        "W/L",
+        "Runs",
+        "Wkts",
+        "Balls",
+        "Ave",
+        "RPO",
+        ""
+      ],
+      "data": [
+        [
+          "overall",
+          "2015-2025",
+          "20",
+          "20",
+          "20",
+          "0",
+          "0",
+          "1.000",
+          "4829",
+          "234",
+          "4013",
+          "20.63",
+          "7.22",
+          "Profile"
+        ]
+      ],
+      "row_count": 1,
+      "column_count": 14
+    },
+    {
+      "index": 3,
+      "caption": "Match result list",
+      "headers": [
+        "Winner",
+        "Result",
+        "Margin",
+        "BR",
+        "",
+        "Match",
+        "Start Date",
+        ""
+      ],
+      "data": [
+        [
+          "ENG Women",
+          "won",
+          "5 wickets",
+          "11",
+          "",
+          "ENG Women v AUS Women",
+          "31 Aug 2015",
+          "Women T20 # 315"
+        ],
+        [
+          "Brave",
+          "won",
+          "8 wickets",
+          "16",
+          "",
+          "Fire v Brave",
+          "27 Jul 2021",
+          "Women's T20"
+        ],
+        [
+          "Fire",
+          "won",
+          "9 wickets",
+          "12",
+          "",
+          "Fire v Originals",
+          "31 Jul 2021",
+          "Women's T20"
+        ],
+        [
+          "Rockets",
+          "won",
+          "4 wickets",
+          "8",
+          "",
+          "Fire v Rockets",
+          "6 Aug 2021",
+          "Women's T20"
+        ],
+        [
+          "Spirit",
+          "won",
+          "7 wickets",
+          "42",
+          "",
+          "Fire v Spirit",
+          "18 Aug 2021",
+          "Women's T20"
+        ],
+        [
+          "Phoenix",
+          "won",
+          "19 runs",
+          "",
+          "",
+          "Fire v Phoenix",
+          "13 Aug 2022",
+          "Women's T20"
+        ],
+        [
+          "Brave",
+          "won",
+          "14 runs",
+          "",
+          "",
+          "Fire v Brave",
+          "22 Aug 2022",
+          "Women's T20"
+        ],
+        [
+          "Fire",
+          "won",
+          "11 runs",
+          "",
+          "",
+          "Fire v N S-Chargers",
+          "26 Aug 2022",
+          "Women's T20"
+        ],
+        [
+          "The Blaze",
+          "won",
+          "7 wickets",
+          "8",
+          "",
+          "Storm v The Blaze",
+          "7 Jun 2023",
+          "Women's T20"
+        ],
+        [
+          "",
+          "aban",
+          "-",
+          "",
+          "",
+          "Originals v Fire",
+          "2 Aug 2023",
+          "Women's T20"
+        ],
+        [
+          "Brave",
+          "won",
+          "2 wickets",
+          "0",
+          "",
+          "Brave v Fire",
+          "12 Aug 2023",
+          "Women's T20"
+        ],
+        [
+          "Fire",
+          "won",
+          "41 runs",
+          "",
+          "",
+          "Rockets v Fire",
+          "14 Aug 2023",
+          "Women's T20"
+        ],
+        [
+          "Fire",
+          "won",
+          "23 runs",
+          "",
+          "",
+          "Spirit v Fire",
+          "20 Aug 2023",
+          "Women's T20"
+        ],
+        [
+          "",
+          "aban",
+          "-",
+          "",
+          "",
+          "Storm v Thunder",
+          "13 Jun 2024",
+          "Women's T20"
+        ],
+        [
+          "Invincibles",
+          "won",
+          "6 wickets",
+          "12",
+          "",
+          "Fire v Invincibles",
+          "28 Jul 2024",
+          "Women's T20"
+        ],
+        [
+          "Fire",
+          "won",
+          "7 wickets",
+          "10",
+          "",
+          "Fire v Brave",
+          "5 Aug 2024",
+          "Women's T20"
+        ],
+        [
+          "",
+          "aban",
+          "-",
+          "",
+          "",
+          "Fire v N S-Chargers",
+          "8 Aug 2024",
+          "Women's T20"
+        ],
+        [
+          "Phoenix",
+          "won",
+          "9 runs",
+          "",
+          "",
+          "Fire v Phoenix",
+          "10 Aug 2024",
+          "Women's T20"
+        ],
+        [
+          "Glam Women",
+          "won",
+          "48 runs",
+          "",
+          "",
+          "Glam Women v Sussex Women",
+          "10 May 2025",
+          "Women's T20"
+        ],
+        [
+          "Glam Women",
+          "won",
+          "9 wickets",
+          "38",
+          "",
+          "Glam Women v Gloucs Women",
+          "13 Jul 2025",
+          "Women's T20"
+        ],
+        [
+          "Kent Women",
+          "won",
+          "6 wickets",
+          "0",
+          "",
+          "Glam Women v Kent Women",
+          "18 Jul 2025",
+          "Women's T20"
+        ],
+        [
+          "Spirit",
+          "won",
+          "2 runs",
+          "",
+          "",
+          "Fire v Spirit",
+          "9 Aug 2025",
+          "Women's T20"
+        ],
+        [
+          "Originals",
+          "won",
+          "7 wickets",
+          "19",
+          "",
+          "Fire v Originals",
+          "13 Aug 2025",
+          "Women's T20"
+        ]
+      ],
+      "row_count": 23,
+      "column_count": 8
+    },
+    {
+      "index": 4,
+      "caption": "Table 5",
+      "headers": [
+        "Statsguru includes the following current or recent Women's Twenty20:"
+      ],
+      "data": [
+        [
+          "Trent Rockets (Women) v Manchester Originals (Women) at Nottingham, The Hundred Women's Competition 20th match, Aug 19, 2025 [Match]"
+        ],
+        [
+          "Southern Brave (Women) v Oval Invincibles (Women) at Southampton, The Hundred Women's Competition 19th match, Aug 18, 2025 [Match]"
+        ],
+        [
+          "Birmingham Phoenix (Women) v London Spirit (Women) at Birmingham, The Hundred Women's Competition 18th match, Aug 17, 2025 [Match]"
+        ],
+        [
+          "Manchester Originals (Women) v Northern Superchargers (Women) at Manchester, The Hundred Women's Competition 17th match, Aug 17, 2025 [Match]"
+        ]
+      ],
+      "row_count": 4,
+      "column_count": 1
+    }
+  ]
+}

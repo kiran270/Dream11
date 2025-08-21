@@ -1662,8 +1662,29 @@ def generateTeams():
 	bdea = [p for p in teamB_players if 'DEA' in str(p[6])]
 	
 	# If no match role data, use all players in general categories
+	if not any([atop, amid, ahit, apow, abre, adea, btop, bmid, bhit, bpow, bbre, bdea]):
+		print("No match role data found, using general player distribution")
+		
+		# Distribute players more evenly across all categories for better team generation
+		teamA_third = len(teamA_players) // 6 if teamA_players else 0
+		teamB_third = len(teamB_players) // 6 if teamB_players else 0
+		
+		atop = teamA_players[:teamA_third] if teamA_players else []
+		amid = teamA_players[teamA_third:teamA_third*2] if teamA_players else []
+		ahit = teamA_players[teamA_third*2:teamA_third*3] if teamA_players else []
+		apow = teamA_players[teamA_third*3:teamA_third*4] if teamA_players else []
+		abre = teamA_players[teamA_third*4:teamA_third*5] if teamA_players else []
+		adea = teamA_players[teamA_third*5:] if teamA_players else []
+		
+		btop = teamB_players[:teamB_third] if teamB_players else []
+		bmid = teamB_players[teamB_third:teamB_third*2] if teamB_players else []
+		bhit = teamB_players[teamB_third*2:teamB_third*3] if teamB_players else []
+		bpow = teamB_players[teamB_third*3:teamB_third*4] if teamB_players else []
+		bbre = teamB_players[teamB_third*4:teamB_third*5] if teamB_players else []
+		bdea = teamB_players[teamB_third*5:] if teamB_players else []
+	
 	# Generate teams using templates
-	templatecombinations = getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teams[0][1],teams[0][2])
+	templatecombinations = getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teams[0][1],teams[0][2],top13_names,None,enforce_top13,ensure_diversity)
 	
 	# Final validation: ensure exactly 1 team per template
 	expected_teams = len(getDreamTeams()) if getDreamTeams() else 0
@@ -1684,16 +1705,16 @@ def generateTeams():
 		print(f"❌ Complete failure: No templates could generate valid teams")
 	
 	# Remove duplicates and validate team diversity if enabled
-	# if ensure_diversity and templatecombinations:
-	# 	print(f"\n🔄 DIVERSITY PROCESSING:")
+	if ensure_diversity and templatecombinations:
+		print(f"\n🔄 DIVERSITY PROCESSING:")
 		
-	# 	# First, remove obvious duplicates
-	# 	templatecombinations = remove_duplicate_teams(templatecombinations)
+		# First, remove obvious duplicates
+		templatecombinations = remove_duplicate_teams(templatecombinations)
 		
-	# 	# Then validate remaining diversity
-	# 	check_final_team_diversity(templatecombinations)
+		# Then validate remaining diversity
+		check_final_team_diversity(templatecombinations)
 		
-	# 	print(f"📊 Final team count after duplicate removal: {len(templatecombinations)}")
+		print(f"📊 Final team count after duplicate removal: {len(templatecombinations)}")
 	
 	# Validate final teams against top 13 requirement and add top 13 count to each team
 	valid_teams_count = 0
@@ -1813,7 +1834,7 @@ def generateTeams():
 		print("❌ DEBUG: No enhanced_teams to save to JSON")
 	
 	return render_template("finalteams.html",
-	                      validcombinations=templatecombinations,
+	                      validcombinations=enhanced_teams,
 	                      teamA=teams[0][1],
 	                      teamB=teams[0][2],
 	                      top13_players=top13_players,
@@ -1821,8 +1842,36 @@ def generateTeams():
 	                      ground_insights=ground_insights)
 
 def intersection(lst1, lst2):
-    lst3 = [value for value in lst1 if value in lst2]
-    return len(lst3)
+    """
+    Calculate intersection between two teams by comparing player IDs
+    lst1 and lst2 should be lists of player objects where player[0] is the ID
+    """
+    if not lst1 or not lst2:
+        return 0
+    
+    # Extract player IDs for comparison
+    ids1 = set()
+    ids2 = set()
+    
+    for player in lst1:
+        if player and len(player) > 0:
+            ids1.add(player[0])  # player[0] is the player ID
+    
+    for player in lst2:
+        if player and len(player) > 0:
+            ids2.add(player[0])  # player[0] is the player ID
+    
+    # Calculate intersection
+    common_players = ids1.intersection(ids2)
+    
+    # Debug for high similarity cases - now more aggressive logging
+    if len(common_players) > 4:  # Log cases with more than 4 common players
+        print(f"   ⚠️ SIMILARITY ALERT: {len(common_players)} common players detected!")
+        print(f"      Team 1 IDs: {sorted(list(ids1))}")
+        print(f"      Team 2 IDs: {sorted(list(ids2))}")
+        print(f"      Common IDs: {sorted(list(common_players))}")
+    
+    return len(common_players)
 
 def validate_team_diversity(teams, min_difference=4):
     """
@@ -2301,269 +2350,115 @@ def get_top13_summary(team, top13_names):
 		"valid": True  # All teams are valid regardless of top 13 count
 	}
 
-def getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teamA,teamB):
+def getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teamA,teamB,top13_names=None,fixed_players_names=None,enforce_top13=True,ensure_diversity=True):
 	templates=getDreamTeams()
 	print(f"Loaded templates: {len(templates) if templates else 0}")
-	if templates:
-		print(f"Templates source: {'Database' if hasattr(templates[0], 'keys') and 'id' in templates[0] else 'Default'}")
-		print(f"First template type: {type(templates[0])}")
-		if hasattr(templates[0], 'keys'):
-			print(f"First template keys: {list(templates[0].keys())}")
-			print(f"First template values: {dict(templates[0])}")
-		else:
-			print(f"First template dir: {[attr for attr in dir(templates[0]) if not attr.startswith('_')]}")
 	
 	finalteams=[]
-	total_teams_generated = 0
-	target_teams = 500
 	all_players = atop + amid + ahit + bpow + bbre + bdea + btop + bmid + bhit + apow + abre + adea
 	
-	# If we don't have enough total players, return empty
 	if len(all_players) < 11:
 		print(f"Not enough total players: {len(all_players)}")
 		return []
 	
 	print(f"Total players available: {len(all_players)}")
-	print(f"Templates to process: {len(templates)}")
+	print(f"Templates available: {len(templates)}")
 	
-	for z in templates:
-		# Debug: Check what columns are available in the template
-		print(f"\n=== Template Debug Info ===")
-		if hasattr(z, 'keys'):
-			print(f"Template keys: {list(z.keys())}")
-		else:
-			print(f"Template attributes: {[attr for attr in dir(z) if not attr.startswith('_')]}")
-		
-		# Simple template name - use matchbetween if available, otherwise name
-		template_name = get_template_value(z, 'matchbetween', None) or get_template_value(z, 'name', f"Template {templates.index(z) + 1}")
-		
-		print(f"\n=== Processing template: {template_name} ===")
-		
-		# Debug template requirements vs available players
-		template_total = sum(get_template_value(z, key) for key in ['atop', 'amid', 'ahit', 'bpow', 'bbre', 'bdea', 'btop', 'bmid', 'bhit', 'apow', 'abre', 'adea'])
-		print(f"Template '{template_name}' requires {template_total} total players")
-		
-		# Temporarily disable strict template validation - let's see what happens
-		# if not can_satisfy_template(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,z):
-		# 	print(f"Skipping template '{template_name}' - insufficient players to satisfy requirements")
-		# 	continue
-		
-		# Show detailed template requirements vs available players
-		requirements = {
-			'atop': get_template_value(z,'atop'), 'amid': get_template_value(z,'amid'), 'ahit': get_template_value(z,'ahit'),
-			'bpow': get_template_value(z,'bpow'), 'bbre': get_template_value(z,'bbre'), 'bdea': get_template_value(z,'bdea'),
-			'btop': get_template_value(z,'btop'), 'bmid': get_template_value(z,'bmid'), 'bhit': get_template_value(z,'bhit'),
-			'apow': get_template_value(z,'apow'), 'abre': get_template_value(z,'abre'), 'adea': get_template_value(z,'adea')
-		}
-		available = {
-			'atop': len(atop), 'amid': len(amid), 'ahit': len(ahit),
-			'bpow': len(bpow), 'bbre': len(bbre), 'bdea': len(bdea),
-			'btop': len(btop), 'bmid': len(bmid), 'bhit': len(bhit),
-			'apow': len(apow), 'abre': len(abre), 'adea': len(adea)
-		}
-		
-		print(f"Template requirements: {requirements}")
-		print(f"Available players: {available}")
-		
-		# Check which categories are insufficient
-		insufficient = []
-		for key in requirements:
-			if available[key] < requirements[key]:
-				insufficient.append(f"{key}: need {requirements[key]}, have {available[key]}")
-		
-		if insufficient:
-			print(f"Insufficient categories: {insufficient}")
-		else:
-			print("All categories have sufficient players")
-		
-		teams=[]
-		attempts = 0
-		for k in range(0,500):  # Generate 20 teams per template
-			attempts += 1
-			team=[]
-			print(f"Attempt {attempts} for template {template_name}")
-			
-			# Try to get players from each category in the correct order
-			initial_team_size = len(team)
-			team.extend(safe_sample(atop,get_template_value(z,'atop')))
-			team.extend(safe_sample(amid,get_template_value(z,'amid')))
-			team.extend(safe_sample(ahit,get_template_value(z,'ahit')))
-			team.extend(safe_sample(bpow,get_template_value(z,'bpow')))
-			team.extend(safe_sample(bbre,get_template_value(z,'bbre')))
-			team.extend(safe_sample(bdea,get_template_value(z,'bdea')))
-			team.extend(safe_sample(btop,get_template_value(z,'btop')))
-			team.extend(safe_sample(bmid,get_template_value(z,'bmid')))
-			team.extend(safe_sample(bhit,get_template_value(z,'bhit')))
-			team.extend(safe_sample(apow,get_template_value(z,'apow')))
-			team.extend(safe_sample(abre,get_template_value(z,'abre')))
-			team.extend(safe_sample(adea,get_template_value(z,'adea')))
-			
-			print(f"Team size after adding players: {len(team)} (added {len(team) - initial_team_size} players)")
-			
-			# Remove duplicates while preserving order
-			seen = set()
-			unique_team = []
-			for player in team:
-				player_id = (player[3], player[1])  # Use name and team as unique identifier
-				if player_id not in seen:
-					seen.add(player_id)
-					unique_team.append(player)
-			team = unique_team
-			
-			# STRICT TEMPLATE MATCHING: Only accept teams that exactly match template requirements
-			# Calculate expected team size from template (cap and vc are indices, not counts)
-			expected_size = (get_template_value(z,'atop') + get_template_value(z,'amid') + get_template_value(z,'ahit') + 
-			                get_template_value(z,'bpow') + get_template_value(z,'bbre') + get_template_value(z,'bdea') + 
-			                get_template_value(z,'btop') + get_template_value(z,'bmid') + get_template_value(z,'bhit') + 
-			                get_template_value(z,'apow') + get_template_value(z,'abre') + get_template_value(z,'adea'))
-			
-			print(f"Team size: {len(team)}, Expected size: {expected_size}")
-			
-			# Skip teams that don't exactly match template requirements
-			if len(team) != expected_size or len(team) != 11:
-				print(f"Skipping team - doesn't match template (got {len(team)}, expected {expected_size})")
-				continue  # Skip teams that don't exactly match template requirements
-			
-			# Final check: ensure no duplicates and exactly 11 players
-			if len(team) == 11:
-				player_names = [p[3] for p in team]
-				if len(player_names) == len(set(player_names)):
-					# No duplicates found, proceed with this team
-					pass
-				else:
-					print(f"DUPLICATE FOUND: {[name for name in player_names if player_names.count(name) > 1]}")
-					continue  # Skip this team if duplicates found
-			else:
-				continue  # Skip if not exactly 11 players
-			
-			# Debug: Check validation conditions
-			has_11_players = len(team) == 11
-			is_not_duplicate = team not in finalteams
-			has_valid_roles = validate_team_roles(team) if has_11_players else False
-			
-			print(f"Team validation: 11 players={has_11_players}, not duplicate={is_not_duplicate}, valid roles={has_valid_roles}")
-			
-			# Validate team composition - must have at least 1 of each role
-			if has_11_players and is_not_duplicate and has_valid_roles:
-					team=sorted(team, key=operator.itemgetter(2))
-					count=0
-					team_player_ids = [player[7] for player in team[0:11]]
-					for x in finalteams:
-						# Extract player IDs for comparison instead of full player objects
-						x_player_ids = [player[7] for player in x[0:11]]
-						l=intersection(x_player_ids, team_player_ids)
-						print(x_player_ids)
-						print(team_player_ids)
-						print("coming here")
-						print(l)
-						if l > count:
-							count=l
-					print(count)
-					if count <= 6:  # Changed from 7 to 3 for more team diversity
-						# Select captain and vice-captain based on category indices - NO FALLBACK
-						captain = None
-						vice_captain = None
-						print("coming here")
-						# Get captain and vice-captain category indices from template
-						cap_category_index = get_template_value(z, 'cap', 0)
-						vc_category_index = get_template_value(z, 'vc', 1)
-						
-						# Define category order (same as team building order)
-						categories = ['atop', 'amid', 'ahit', 'bpow', 'bbre', 'bdea', 'btop', 'bmid', 'bhit', 'apow', 'abre', 'adea']
-						category_players = [atop, amid, ahit, bpow, bbre, bdea, btop, bmid, bhit, apow, abre, adea]
-						
-						print(f"Template cap category index: {cap_category_index}, vc category index: {vc_category_index}")
-						
-						# Select captain from the specified category - STRICT ONLY
-						if 0 <= cap_category_index < len(categories):
-							cap_category = categories[cap_category_index]
-							cap_players = category_players[cap_category_index]
-							
-							# Find a player from this category in the team
-							for player in team:
-								if player in cap_players:
-									captain = player
-									print(f"Captain selected from {cap_category}: {captain[3]}")
-									break
-						
-						# Select vice-captain from the specified category - STRICT ONLY
-						if 0 <= vc_category_index < len(categories):
-							vc_category = categories[vc_category_index]
-							vc_players = category_players[vc_category_index]
-							
-							# Find a player from this category in the team (different from captain)
-							for player in team:
-								if player in vc_players and player != captain:
-									vice_captain = player
-									print(f"Vice-captain selected from {vc_category}: {vice_captain[3]}")
-									break
-						
-						# Only add captain and vice-captain if they were found according to template
-						if captain:
-							team.append(captain)  # Position 11
-							print(f"Captain added: {captain[3]}")
-						else:
-							print("No captain found matching template requirements")
-							
-						if vice_captain:
-							team.append(vice_captain)  # Position 12
-							print(f"Vice-captain added: {vice_captain[3]}")
-						else:
-							print("No vice-captain found matching template requirements")
-						
-						print(f"Team length before adding template name: {len(team)}")
-						
-						# Debug: Show all available columns in template
-						if hasattr(z, 'keys'):
-							print(f"Available template columns: {list(z.keys())}")
-							for key in z.keys():
-								print(f"  {key}: '{z[key]}'")
-						
-						# Use the same access method as in debug - direct bracket access
-						try:
-							matchbetween_value = z['matchbetween']
-							print(f"Direct access matchbetween: '{matchbetween_value}'")
-							final_template_name = str(matchbetween_value) if matchbetween_value else f"Template {templates.index(z) + 1}"
-						except (KeyError, TypeError):
-							print("Direct access failed, trying get method")
-							if hasattr(z, 'get'):
-								matchbetween_value = z.get('matchbetween', None)
-							else:
-								matchbetween_value = getattr(z, 'matchbetween', None)
-							final_template_name = str(matchbetween_value) if matchbetween_value else f"Template {templates.index(z) + 1}"
-						
-						print(f"Final template name: '{final_template_name}'")
-						team.append(final_template_name)
-						
-						print(f"Team length after adding template name: {len(team)}")
-						
-						teams.append(team)
-						total_teams_generated += 1
-						print(f"Generated team {total_teams_generated}/{target_teams}")
-						
-						# Stop if we've reached the target
-						if total_teams_generated >= target_teams:
-							break
-		teams=calculatePercentage(teams)
-		finalteams.extend(teams)
-		print(f"Template '{template_name}' generated {len(teams)} teams")
-		
-		# Stop processing templates if we've reached the target
-		if total_teams_generated >= target_teams:
-			print(f"Reached target of {target_teams} teams, stopping template processing")
+	# Generate teams using random template selection
+	failed_attempts = 0
+	for iteration in range(500):  # Generate up to 500 teams
+		if not templates:
+			print("❌ No templates available. Cannot generate teams without templates.")
 			break
-	# finalteams=getvalidcombinations(finalteams,teamA,teamB)
-	# tgtcteams=[]
-	# for i in finalteams:
-	# 	temp=[]
-	# 	for j in range(0,len(i)-1):
-	# 		temp.append(i[j][3])
-	# 	tgtcteams.append(temp)
-	# print(len(tgtcteams))
-	# print(tgtcteams)
-	print(f"\n=== FINAL SUMMARY ===")
-	print(f"Total teams generated: {len(finalteams)}")
-	return finalteams
+			
+		z = random.choice(templates)
+		template_name = get_template_value(z, 'matchbetween', None) or get_template_value(z, 'name', f"Template {random.randint(1, len(templates))}")
+		
+		# Generate a team
+		team = []
+		max_attempts = 50
+		
+		for attempt in range(max_attempts):
+			team = []
+			
+			# Get template requirements
+			atop_req = get_template_value(z, 'atop', 0)
+			amid_req = get_template_value(z, 'amid', 0)
+			ahit_req = get_template_value(z, 'ahit', 0)
+			bpow_req = get_template_value(z, 'bpow', 0)
+			bbre_req = get_template_value(z, 'bbre', 0)
+			bdea_req = get_template_value(z, 'bdea', 0)
+			btop_req = get_template_value(z, 'btop', 0)
+			bmid_req = get_template_value(z, 'bmid', 0)
+			bhit_req = get_template_value(z, 'bhit', 0)
+			apow_req = get_template_value(z, 'apow', 0)
+			abre_req = get_template_value(z, 'abre', 0)
+			adea_req = get_template_value(z, 'adea', 0)
+			
+			# Select players for each category
+			try:
+				team.extend(random.sample(atop, atop_req) if len(atop) >= atop_req else atop)
+				team.extend(random.sample(amid, amid_req) if len(amid) >= amid_req else amid)
+				team.extend(random.sample(ahit, ahit_req) if len(ahit) >= ahit_req else ahit)
+				team.extend(random.sample(bpow, bpow_req) if len(bpow) >= bpow_req else bpow)
+				team.extend(random.sample(bbre, bbre_req) if len(bbre) >= bbre_req else bbre)
+				team.extend(random.sample(bdea, bdea_req) if len(bdea) >= bdea_req else bdea)
+				team.extend(random.sample(btop, btop_req) if len(btop) >= btop_req else btop)
+				team.extend(random.sample(bmid, bmid_req) if len(bmid) >= bmid_req else bmid)
+				team.extend(random.sample(bhit, bhit_req) if len(bhit) >= bhit_req else bhit)
+				team.extend(random.sample(apow, apow_req) if len(apow) >= apow_req else apow)
+				team.extend(random.sample(abre, abre_req) if len(abre) >= abre_req else abre)
+				team.extend(random.sample(adea, adea_req) if len(adea) >= adea_req else adea)
+			except ValueError as e:
+				continue
+			
+			# Validate team
+			if len(team) != 11:
+				continue
+			
+			# Check for duplicate players in the team
+			player_ids = [p[0] for p in team]
+			if len(set(player_ids)) != 11:
+				continue
+			
+			# Team is valid, break out of attempts loop
+			break
+		
+		# Add team if successfully generated
+		if len(team) == 11:
+			finalteams.append(team)
+		else:
+			failed_attempts += 1
+	
+	print(f"✅ Generated {len(finalteams)} teams successfully")
+	
+	if len(finalteams) == 0:
+		print("❌ No teams were generated")
+		return []
+	
+	# Calculate percentage for each team and sort by total percentage
+	teams_with_percentage = []
+	
+	for team in finalteams:
+		total_percentage = 0
+		for i in range(min(11, len(team))):
+			if team[i] and len(team[i]) > 5:
+				try:
+					percentage_value = float(team[i][5]) if team[i][5] else 0
+					total_percentage += percentage_value
+				except (IndexError, ValueError, TypeError):
+					continue
+		
+		team_with_percentage = team + [total_percentage]
+		teams_with_percentage.append(team_with_percentage)
+	
+	# Sort by total percentage (highest first)
+	teams_with_percentage.sort(key=lambda x: x[-1], reverse=True)
+	
+	if teams_with_percentage:
+		print(f"📊 Teams sorted by percentage. Top team: {teams_with_percentage[0][-1]:.1f}%, Bottom team: {teams_with_percentage[-1][-1]:.1f}%")
+	
+	return teams_with_percentage
 
 def save_teams_to_file(teams, teamA_name, teamB_name):
 	"""Save teams to a file in Dream11 API format"""
@@ -2812,14 +2707,8 @@ def calculatePercentage(validcombinations):
 				common_count = len(current_team_ids.intersection(existing_team_ids))
 				max_common = max(max_common, common_count)
 				
-				# Reject if exact duplicate (all 11 players same)
-				if common_count == 11:
-					should_add_team = False
-					if i < 10:  # Debug first 10 rejections
-						print(f"❌ CALCULATE: Team {i+1} rejected - EXACT DUPLICATE")
-					break
 				# Reject if more than 2 common players (VERY STRICT)
-				elif common_count > 2:
+				if common_count > 2:
 					should_add_team = False
 					if i < 10:  # Debug first 10 rejections
 						print(f"❌ CALCULATE: Team {i+1} rejected - {common_count} common players > 2")

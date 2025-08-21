@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <title>Dream11 Team Generator</title>
@@ -59,7 +60,7 @@
       z-index: 0;
     }
 
-    .team-card > * {
+    .team-card>* {
       position: relative;
       z-index: 1;
     }
@@ -74,7 +75,7 @@
     .cricket-field {
       position: relative;
       min-height: 450px;
-      background: radial-gradient(ellipse at center, rgba(255,255,255,0.1) 0%, transparent 70%);
+      background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
       border-radius: 50%;
       padding: 30px 15px;
     }
@@ -131,6 +132,49 @@
     .field-player:hover {
       transform: translateY(-1px);
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Top 13 Player Highlighting */
+    .top13-player {
+      border: 3px solid #28a745 !important;
+      box-shadow: 0 0 15px rgba(40, 167, 69, 0.6) !important;
+      position: relative;
+      animation: pulse-green 2s infinite;
+    }
+
+    .non-top13-player {
+      border: 3px solid #dc3545 !important;
+      box-shadow: 0 0 15px rgba(220, 53, 69, 0.6) !important;
+      position: relative;
+      animation: pulse-red 3s infinite;
+    }
+
+    @keyframes pulse-green {
+      0% {
+        box-shadow: 0 0 15px rgba(40, 167, 69, 0.6);
+      }
+
+      50% {
+        box-shadow: 0 0 25px rgba(40, 167, 69, 0.8);
+      }
+
+      100% {
+        box-shadow: 0 0 15px rgba(40, 167, 69, 0.6);
+      }
+    }
+
+    @keyframes pulse-red {
+      0% {
+        box-shadow: 0 0 15px rgba(220, 53, 69, 0.6);
+      }
+
+      50% {
+        box-shadow: 0 0 25px rgba(220, 53, 69, 0.8);
+      }
+
+      100% {
+        box-shadow: 0 0 15px rgba(220, 53, 69, 0.6);
+      }
     }
 
     .team-a-player {
@@ -228,30 +272,33 @@
         min-height: 400px;
         padding: 25px 10px;
       }
-      
+
       .role-section {
         position: relative;
         margin-bottom: 30px;
       }
-      
-      .wicket-keepers, .batters, .all-rounders, .bowlers {
+
+      .wicket-keepers,
+      .batters,
+      .all-rounders,
+      .bowlers {
         position: relative;
         top: auto;
         bottom: auto;
       }
-      
+
       .field-player {
         min-width: 70px;
         max-width: 80px;
         padding: 8px;
       }
-      
+
       .players-row {
         gap: 10px;
       }
-      
 
-      
+
+
       .header h1 {
         font-size: 2rem;
       }
@@ -263,15 +310,15 @@
         max-width: 70px;
         padding: 6px;
       }
-      
+
       .player-name {
         font-size: 0.6rem;
       }
-      
+
       .player-credits {
         font-size: 0.55rem;
       }
-      
+
       .players-row {
         gap: 6px;
       }
@@ -334,7 +381,8 @@
       min-height: 45px !important;
     }
 
-    .captain-badge, .vicecaptain-badge {
+    .captain-badge,
+    .vicecaptain-badge {
       font-size: 0.6rem !important;
       padding: 1px 3px !important;
     }
@@ -351,25 +399,25 @@
         flex: 0 0 50%;
         max-width: 50%;
       }
-      
+
       .team-card {
         min-height: 350px !important;
         padding: 8px !important;
         margin-bottom: 10px !important;
       }
-      
+
       .team-card h5 {
         font-size: 0.9rem !important;
       }
-      
+
       .player-name {
         font-size: 0.7rem !important;
       }
-      
+
       .player-credits {
         font-size: 0.65rem !important;
       }
-      
+
       .field-player {
         min-height: 40px !important;
       }
@@ -380,134 +428,695 @@
         flex: 0 0 100%;
         max-width: 100%;
       }
-      
+
       .team-card {
         min-height: 320px !important;
         padding: 6px !important;
         margin-bottom: 8px !important;
       }
-      
+
       .team-card h5 {
         font-size: 0.85rem !important;
       }
-      
+
       .player-name {
         font-size: 0.65rem !important;
       }
-      
+
       .player-credits {
         font-size: 0.6rem !important;
       }
-      
+
       .field-player {
         min-height: 35px !important;
       }
     }
   </style>
 </head>
+
 <body>
 
-<div class="container">
-  <div class="header">
-    <h1><i class="fas fa-trophy"></i> Dream11 Team Generator</h1>
-    {% if teamA and teamB %}
-    <h3 class="mb-3">{{ teamA }} <span class="text-muted">vs</span> {{ teamB }}</h3>
-    {% endif %}
-    <p>Top performing team combinations sorted by total percentage</p>
-  </div>
+  <div class="container">
+    <div class="header">
+      <h1><i class="fas fa-trophy"></i> Dream11 Team Generator</h1>
+      {% if teamA and teamB %}
+      <h3 class="mb-3">{{ teamA }} <span class="text-muted">vs</span> {{ teamB }}</h3>
+      {% endif %}
+      <p>Top performing team combinations sorted by total percentage</p>
 
-  <div class="row">
-    {% for team in validcombinations %}
-    <div class="col-5-per-row">
-      <div class="team-card">
-        <div class="text-center mb-3">
-          <h5 class="text-white">{{ team[13] }}</h5>
-          <small class="text-muted">{{ team[-1] }}%</small>
+
+
+      <!-- Dream11 Integration Results -->
+      {% if dream11_result %}
+      <div class="alert {% if dream11_result.success %}alert-success{% else %}alert-danger{% endif %} mb-4" style="background: rgba({% if dream11_result.success %}40, 167, 69{% else %}220, 53, 69{% endif %}, 0.1); 
+                border: 1px solid rgba({% if dream11_result.success %}40, 167, 69{% else %}220, 53, 69{% endif %}, 0.3); 
+                color: white;">
+        <h6>
+          <i class="fas fa-{% if dream11_result.success %}check-circle{% else %}exclamation-triangle{% endif %}"></i>
+          Dream11 Integration Results
+        </h6>
+        <div class="row">
+          <div class="col-md-3">
+            <strong>Total Teams:</strong> {{ dream11_result.total_teams }}
+          </div>
+          <div class="col-md-3">
+            <strong>Successfully Added:</strong> {{ dream11_result.success_count }}
+          </div>
+          <div class="col-md-3">
+            <strong>Failed:</strong> {{ dream11_result.failed_count }}
+          </div>
+          <div class="col-md-3">
+            <strong>Success Rate:</strong> {{ "%.1f"|format(dream11_result.success_rate) }}%
+          </div>
         </div>
 
-        <div class="cricket-field">
-          <!-- Wicket-Keepers Section -->
-          <div class="role-section wicket-keepers">
-            <div class="players-row">
-              {% for player in team[0:11] %}
-                {% if player[2] == 'WK' %}
-                  <div class="field-player {% if player[1] == teamA %}team-a-player{% else %}team-b-player{% endif %}">
-                    {% if team|length > 11 and player[3] == team[11][3] %}
-                      <div class="captain-badge">C</div>
-                    {% elif team|length > 12 and player[3] == team[12][3] %}
-                      <div class="vicecaptain-badge">VC</div>
-                    {% endif %}
-                    <div class="player-name">{{ player[3] }}</div>
-                    <div class="player-credits">{{ player[4] }} Cr</div>
-                  </div>
-                {% endif %}
-              {% endfor %}
+        {% if dream11_result.failed_teams %}
+        <div class="mt-3">
+          <small><strong>Failed Teams:</strong></small>
+          <ul class="mb-0 small">
+            {% for failed in dream11_result.failed_teams %}
+            <li>Team {{ failed.team }}: {{ failed.reason }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        {% if dream11_result.success %}
+        <div class="mt-2">
+          <small>
+            <i class="fas fa-info-circle"></i>
+            Teams have been successfully added to Dream11. Check your Dream11 account to verify.
+          </small>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <!-- Collapsible Ground Analysis Section -->
+      <div class="accordion mb-4" id="analysisAccordion">
+        <!-- Ground Analysis Collapse -->
+        <div class="accordion-item" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
+          <h2 class="accordion-header" id="groundAnalysisHeading">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+              data-bs-target="#groundAnalysisCollapse" aria-expanded="false" aria-controls="groundAnalysisCollapse"
+              style="background: rgba(255,255,255,0.1); color: white; border: none;">
+              <i class="fas fa-map-marker-alt me-2"></i>
+              <strong>Ground Analysis & Insights</strong>
+            </button>
+          </h2>
+          <div id="groundAnalysisCollapse" class="accordion-collapse collapse" aria-labelledby="groundAnalysisHeading"
+            data-bs-parent="#analysisAccordion">
+            <div class="accordion-body" style="color: white;">
+              {% if ground_insights %}
+              <div style="white-space: pre-line; font-size: 0.9rem; line-height: 1.4;">{{ ground_insights }}</div>
+              {% else %}
+              <div class="row">
+                <div class="col-md-6">
+                  <h6><i class="fas fa-chart-bar"></i> Venue Statistics</h6>
+                  <ul class="list-unstyled">
+                    <li><strong>Average Score:</strong> <span class="text-info">165-180</span></li>
+                    <li><strong>Pitch Type:</strong> <span class="text-warning">Balanced</span></li>
+                    <li><strong>Boundary Size:</strong> <span class="text-success">Medium (65-70m)</span></li>
+                    <li><strong>Weather:</strong> <span class="text-primary">Clear, 28°C</span></li>
+                  </ul>
+                </div>
+                <div class="col-md-6">
+                  <h6><i class="fas fa-lightbulb"></i> Strategic Recommendations</h6>
+                  <ul class="list-unstyled">
+                    <li>• Focus on <strong>top-order batsmen</strong></li>
+                    <li>• Include <strong>pace bowlers</strong> for powerplay</li>
+                    <li>• Consider <strong>all-rounders</strong> for flexibility</li>
+                    <li>• Captain should be a <strong>consistent performer</strong></li>
+                  </ul>
+                </div>
+              </div>
+              {% endif %}
             </div>
           </div>
+        </div>
 
-          <!-- Batters Section -->
-          <div class="role-section batters">
-            <div class="players-row">
-              {% for player in team[0:11] %}
-                {% if player[2] == 'BAT' %}
-                  <div class="field-player {% if player[1] == teamA %}team-a-player{% else %}team-b-player{% endif %}">
-                    {% if team|length > 11 and player[3] == team[11][3] %}
-                      <div class="captain-badge">C</div>
-                    {% elif team|length > 12 and player[3] == team[12][3] %}
-                      <div class="vicecaptain-badge">VC</div>
-                    {% endif %}
-                    <div class="player-name">{{ player[3] }}</div>
-                    <div class="player-credits">{{ player[4] }} Cr</div>
+        <!-- Team Generation Analysis Collapse -->
+        <div class="accordion-item" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
+          <h2 class="accordion-header" id="teamAnalysisHeading">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+              data-bs-target="#teamAnalysisCollapse" aria-expanded="false" aria-controls="teamAnalysisCollapse"
+              style="background: rgba(255,255,255,0.1); color: white; border: none;">
+              <i class="fas fa-chart-pie me-2"></i>
+              <strong>Team Generation Analysis</strong>
+            </button>
+          </h2>
+          <div id="teamAnalysisCollapse" class="accordion-collapse collapse" aria-labelledby="teamAnalysisHeading"
+            data-bs-parent="#analysisAccordion">
+            <div class="accordion-body" style="color: white;">
+              <div class="row">
+                <!-- Team Statistics -->
+                <div class="col-md-4">
+                  <h6><i class="fas fa-users"></i> Team Statistics</h6>
+                  <div class="card" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2);">
+                    <div class="card-body text-white">
+                      <div class="d-flex justify-content-between">
+                        <span>Total Teams:</span>
+                        <strong class="text-success" id="totalTeamsCount">{{ validcombinations|length if
+                          validcombinations else 0 }}</strong>
+                      </div>
+                      <div class="d-flex justify-content-between">
+                        <span>Unique Players:</span>
+                        <strong class="text-info" id="uniquePlayersCount">-</strong>
+                      </div>
+                      <div class="d-flex justify-content-between">
+                        <span>Avg Team %:</span>
+                        <strong class="text-warning" id="avgTeamPercentage">-</strong>
+                      </div>
+                      <div class="d-flex justify-content-between">
+                        <span>Top Team %:</span>
+                        <strong class="text-primary" id="topTeamPercentage">-</strong>
+                      </div>
+                    </div>
                   </div>
-                {% endif %}
-              {% endfor %}
-            </div>
-          </div>
+                </div>
 
-          <!-- All-Rounders Section -->
-          <div class="role-section all-rounders">
-            <div class="players-row">
-              {% for player in team[0:11] %}
-                {% if player[2] == 'ALL' or player[2] == 'AL' %}
-                  <div class="field-player {% if player[1] == teamA %}team-a-player{% else %}team-b-player{% endif %}">
-                    {% if team|length > 11 and player[3] == team[11][3] %}
-                      <div class="captain-badge">C</div>
-                    {% elif team|length > 12 and player[3] == team[12][3] %}
-                      <div class="vicecaptain-badge">VC</div>
-                    {% endif %}
-                    <div class="player-name">{{ player[3] }}</div>
-                    <div class="player-credits">{{ player[4] }} Cr</div>
+                <!-- Player Appearances -->
+                <div class="col-md-4">
+                  <h6><i class="fas fa-star"></i> Top Player Appearances</h6>
+                  <div class="card"
+                    style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); max-height: 200px; overflow-y: auto;">
+                    <div class="card-body text-white p-2">
+                      <div id="playerAppearances">
+                        <small class="text-muted">Calculating player appearances...</small>
+                      </div>
+                    </div>
                   </div>
-                {% endif %}
-              {% endfor %}
-            </div>
-          </div>
+                </div>
 
-          <!-- Bowlers Section -->
-          <div class="role-section bowlers">
-            <div class="players-row">
-              {% for player in team[0:11] %}
-                {% if player[2] == 'BOWL' %}
-                  <div class="field-player {% if player[1] == teamA %}team-a-player{% else %}team-b-player{% endif %}">
-                    {% if team|length > 11 and player[3] == team[11][3] %}
-                      <div class="captain-badge">C</div>
-                    {% elif team|length > 12 and player[3] == team[12][3] %}
-                      <div class="vicecaptain-badge">VC</div>
-                    {% endif %}
-                    <div class="player-name">{{ player[3] }}</div>
-                    <div class="player-credits">{{ player[4] }} Cr</div>
+                <!-- Team Combinations -->
+                <div class="col-md-4">
+                  <h6><i class="fas fa-layer-group"></i> Team Combinations</h6>
+                  <div class="card"
+                    style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); max-height: 200px; overflow-y: auto;">
+                    <div class="card-body text-white p-2">
+                      <div id="teamCombinations">
+                        <small class="text-muted">Analyzing team combinations...</small>
+                      </div>
+                    </div>
                   </div>
-                {% endif %}
-              {% endfor %}
+                </div>
+              </div>
+
+              <!-- Captain & Vice-Captain Analysis -->
+              <div class="row mt-3">
+                <div class="col-md-6">
+                  <h6><i class="fas fa-crown"></i> Captain Choices</h6>
+                  <div class="card" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2);">
+                    <div class="card-body text-white p-2">
+                      <div id="captainAnalysis">
+                        <small class="text-muted">Analyzing captain selections...</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <h6><i class="fas fa-medal"></i> Vice-Captain Choices</h6>
+                  <div class="card" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2);">
+                    <div class="card-body text-white p-2">
+                      <div id="viceCaptainAnalysis">
+                        <small class="text-muted">Analyzing vice-captain selections...</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    {% endfor %}
-  </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+      <!-- Top 13 Legend -->
+      {% if top13_names and top13_names|length > 0 %}
+      <div class="alert alert-info text-center mb-4"
+        style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+        <h6><i class="fas fa-info-circle"></i> Player Highlighting Legend</h6>
+        <div class="row justify-content-center">
+          <div class="col-auto">
+            <span class="badge" style="background: #28a745; padding: 8px 12px;">
+              <i class="fas fa-star"></i> Top 13 Players (Green Border)
+            </span>
+          </div>
+          <div class="col-auto">
+            <span class="badge" style="background: #dc3545; padding: 8px 12px;">
+              <i class="fas fa-exclamation-triangle"></i> Outside Top 13 (Red Border)
+            </span>
+          </div>
+        </div>
+        <small class="d-block mt-2">Each team must have 7-8 players from the top 13 highest percentage players</small>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="row">
+      {% for team in validcombinations %}
+      <div class="col-5-per-row">
+        <div class="team-card">
+          <div class="text-center mb-3">
+            <h5 class="text-white">{{ team[13] }}</h5>
+            <small class="text-muted">{{ team[15] if team|length > 15 else team[-1] }}%</small>
+            {% if top13_names and top13_names|length > 0 %}
+            <div class="mt-2">
+              {% set top13_count = team[14] if team|length > 14 else 0 %}
+              <span class="badge bg-info">
+                <i class="fas fa-star"></i> {{ top13_count }}/13 Top Players
+              </span>
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="cricket-field">
+            <!-- Wicket-Keepers Section -->
+            <div class="role-section wicket-keepers">
+              <div class="players-row">
+                {% for player in team[0:11] %}
+                {% if player[2] == 'WK' %}
+                <div
+                  class="field-player {% if player[1] == teamA %}team-a-player{% else %}team-b-player{% endif %} {% if top13_names and player[3] in top13_names %}top13-player{% else %}non-top13-player{% endif %}">
+                  {% if team|length > 11 and player[3] == team[11][3] %}
+                  <div class="captain-badge">C</div>
+                  {% elif team|length > 12 and player[3] == team[12][3] %}
+                  <div class="vicecaptain-badge">VC</div>
+                  {% endif %}
+                  <div class="player-name">{{ player[3] }}</div>
+                  <div class="player-credits">{{ player[4] }} Cr</div>
+                </div>
+                {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- Batters Section -->
+            <div class="role-section batters">
+              <div class="players-row">
+                {% for player in team[0:11] %}
+                {% if player[2] == 'BAT' %}
+                <div
+                  class="field-player {% if player[1] == teamA %}team-a-player{% else %}team-b-player{% endif %} {% if top13_names and player[3] in top13_names %}top13-player{% else %}non-top13-player{% endif %}">
+                  {% if team|length > 11 and player[3] == team[11][3] %}
+                  <div class="captain-badge">C</div>
+                  {% elif team|length > 12 and player[3] == team[12][3] %}
+                  <div class="vicecaptain-badge">VC</div>
+                  {% endif %}
+                  <div class="player-name">{{ player[3] }}</div>
+                  <div class="player-credits">{{ player[4] }} Cr</div>
+                </div>
+                {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- All-Rounders Section -->
+            <div class="role-section all-rounders">
+              <div class="players-row">
+                {% for player in team[0:11] %}
+                {% if player[2] == 'ALL' or player[2] == 'AL' %}
+                <div
+                  class="field-player {% if player[1] == teamA %}team-a-player{% else %}team-b-player{% endif %} {% if top13_names and player[3] in top13_names %}top13-player{% else %}non-top13-player{% endif %}">
+                  {% if team|length > 11 and player[3] == team[11][3] %}
+                  <div class="captain-badge">C</div>
+                  {% elif team|length > 12 and player[3] == team[12][3] %}
+                  <div class="vicecaptain-badge">VC</div>
+                  {% endif %}
+                  <div class="player-name">{{ player[3] }}</div>
+                  <div class="player-credits">{{ player[4] }} Cr</div>
+                </div>
+                {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- Bowlers Section -->
+            <div class="role-section bowlers">
+              <div class="players-row">
+                {% for player in team[0:11] %}
+                {% if player[2] == 'BOWL' %}
+                <div
+                  class="field-player {% if player[1] == teamA %}team-a-player{% else %}team-b-player{% endif %} {% if top13_names and player[3] in top13_names %}top13-player{% else %}non-top13-player{% endif %}">
+                  {% if team|length > 11 and player[3] == team[11][3] %}
+                  <div class="captain-badge">C</div>
+                  {% elif team|length > 12 and player[3] == team[12][3] %}
+                  <div class="vicecaptain-badge">VC</div>
+                  {% endif %}
+                  <div class="player-name">{{ player[3] }}</div>
+                  <div class="player-credits">{{ player[4] }} Cr</div>
+                </div>
+                {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Team analysis data - try multiple possible variable names
+      const teams = {{ validcombinations| tojson if validcombinations else '[]'
+    }};
+
+    console.log('Teams data loaded:', teams);
+    console.log('Teams count:', teams ? teams.length : 0);
+    console.log('Teams type:', typeof teams);
+    console.log('Is array:', Array.isArray(teams));
+
+    // Debug: Check first team structure
+    if (teams && teams.length > 0) {
+      console.log('First team structure:', teams[0]);
+      if (teams[0] && Array.isArray(teams[0])) {
+        console.log('First team players:', teams[0].slice(0, 11));
+        console.log('Sample player roles:', teams[0].slice(0, 11).map(p => p && p[2] ? p[2] : 'undefined'));
+      }
+    }
+
+    if (teams && teams.length > 0) {
+      // Update total teams count immediately
+      const totalTeamsElement = document.getElementById('totalTeamsCount');
+      if (totalTeamsElement) {
+        totalTeamsElement.textContent = teams.length;
+        console.log('Updated total teams display to:', teams.length);
+      }
+
+      analyzeTeams(teams);
+    } else {
+      // Show no data message
+      document.getElementById('uniquePlayersCount').textContent = '0';
+      document.getElementById('avgTeamPercentage').textContent = '0%';
+      document.getElementById('topTeamPercentage').textContent = '0%';
+      document.getElementById('playerAppearances').innerHTML = '<small class="text-muted">No team data available</small>';
+      document.getElementById('teamCombinations').innerHTML = '<small class="text-muted">No team data available</small>';
+      document.getElementById('captainAnalysis').innerHTML = '<small class="text-muted">No team data available</small>';
+      document.getElementById('viceCaptainAnalysis').innerHTML = '<small class="text-muted">No team data available</small>';
+    }
+});
+
+    function isValidDream11Combination(roleCount, totalPlayers) {
+      // Custom validation rules for flexible team analysis:
+      // 1. Exactly 11 players total
+      // 2. At least 1 player from each role category (1-1-1-1 minimum)
+      // 3. Maximum 8 players per role (to ensure diversity)
+      // 4. Allows creative combinations like 3+ WK for analysis
+
+      if (totalPlayers !== 11) {
+        return false;
+      }
+
+      // Check minimum requirements - at least 1 from each role
+      if (roleCount.WK < 1 || roleCount.WK > 8) {
+        return false; // WK must be at least 1, max 8 (allows 3+ WK)
+      }
+
+      if (roleCount.BAT < 1 || roleCount.BAT > 8) {
+        return false; // BAT must be at least 1, max 8
+      }
+
+      if (roleCount.AL < 1 || roleCount.AL > 8) {
+        return false; // AL must be at least 1, max 8
+      }
+
+      if (roleCount.BOWL < 1 || roleCount.BOWL > 8) {
+        return false; // BOWL must be at least 1, max 8
+      }
+
+      return true;
+    }
+
+    function analyzeTeams(teams) {
+      // Calculate basic statistics
+      const totalTeams = teams.length;
+      const uniquePlayers = new Set();
+      const playerAppearances = {};
+      const combinations = {};
+      const captains = {};
+      const viceCaptains = {};
+      let totalPercentage = 0;
+      let maxPercentage = 0;
+
+      teams.forEach(team => {
+        // Track total percentage (team[15] or last element)
+        const percentage = parseFloat(team[15] || team[team.length - 1] || 0);
+        totalPercentage += percentage;
+        maxPercentage = Math.max(maxPercentage, percentage);
+
+        // Track unique players and appearances (first 11 elements are players)
+        const players = team.slice(0, 11);
+        const roleCount = { WK: 0, BAT: 0, AL: 0, BOWL: 0 };
+
+        // Track all roles found for debugging
+        const rolesFound = new Set();
+
+        players.forEach((player, index) => {
+          if (player && player.length >= 4) {
+            const playerName = player[3]; // player name is at index 3
+            const playerRole = player[2]; // player role is at index 2
+
+            rolesFound.add(playerRole);
+
+            uniquePlayers.add(playerName);
+            playerAppearances[playerName] = (playerAppearances[playerName] || 0) + 1;
+
+            // Count roles for combination analysis - handle different role codes
+            if (playerRole === 'WK') {
+              roleCount.WK++;
+            } else if (playerRole === 'BAT') {
+              roleCount.BAT++;
+            } else if (playerRole === 'AL' || playerRole === 'AR') {
+              roleCount.AL++; // Map both AL and AR to AL
+            } else if (playerRole === 'BOWL') {
+              roleCount.BOWL++;
+            } else {
+              console.warn(`Unknown role found: ${playerRole} for player ${playerName} at index ${index}`);
+            }
+          } else {
+            console.warn(`Invalid player data at index ${index}:`, player);
+          }
+        });
+
+        // Debug: Log roles found in first few teams
+        if (teams.indexOf(team) < 3) {
+          console.log(`Team ${teams.indexOf(team) + 1} roles found:`, Array.from(rolesFound));
+        }
+
+        // Validate Dream11 team composition and track combinations
+        const totalPlayers = roleCount.WK + roleCount.BAT + roleCount.AL + roleCount.BOWL;
+        const combo = `${roleCount.WK}-${roleCount.BAT}-${roleCount.AL}-${roleCount.BOWL}`;
+
+        // Debug: Log role counts for first few teams
+        if (teams.indexOf(team) < 3) {
+          console.log(`Team ${teams.indexOf(team) + 1} role count:`, roleCount, `Total: ${totalPlayers}, Combo: ${combo}`);
+          console.log(`Team ${teams.indexOf(team) + 1} players:`, players.map(p => p ? `${p[3]}(${p[2]})` : 'null'));
+        }
+
+        // Count ALL combinations (valid and invalid) for debugging
+        combinations[combo] = (combinations[combo] || 0) + 1;
+
+        // Log validation result
+        const isValid = isValidDream11Combination(roleCount, totalPlayers);
+        if (!isValid) {
+          console.warn(`Invalid Dream11 combination found: ${combo} (Total: ${totalPlayers})`);
+        }
+
+        // Track captains and vice-captains (team[11] and team[12])
+        if (team.length > 11 && team[11] && team[11][3]) {
+          const captainName = team[11][3];
+          captains[captainName] = (captains[captainName] || 0) + 1;
+        }
+        if (team.length > 12 && team[12] && team[12][3]) {
+          const viceCaptainName = team[12][3];
+          viceCaptains[viceCaptainName] = (viceCaptains[viceCaptainName] || 0) + 1;
+        }
+      });
+
+      // Debug: Log final statistics
+      console.log('Analysis Results:');
+      console.log('- Total Teams:', totalTeams);
+      console.log('- Unique Players:', uniquePlayers.size);
+      console.log('- Combinations:', Object.keys(combinations).length, combinations);
+      console.log('- Player Appearances:', Object.keys(playerAppearances).length);
+      console.log('- Captains:', Object.keys(captains).length);
+      console.log('- Vice Captains:', Object.keys(viceCaptains).length);
+
+      // Debug: Show sample of what we found
+      if (Object.keys(combinations).length > 0) {
+        console.log('Sample combinations:', Object.entries(combinations).slice(0, 3));
+      } else {
+        console.error('❌ NO COMBINATIONS FOUND! Check team data structure');
+        console.log('Sample team data:', teams.slice(0, 2));
+      }
+
+      // Update basic statistics
+      document.getElementById('uniquePlayersCount').textContent = uniquePlayers.size;
+      document.getElementById('avgTeamPercentage').textContent = (totalPercentage / totalTeams).toFixed(1) + '%';
+      document.getElementById('topTeamPercentage').textContent = maxPercentage.toFixed(1) + '%';
+
+      // Update player appearances
+      updatePlayerAppearances(playerAppearances, totalTeams);
+
+      // Update team combinations
+      updateTeamCombinations(combinations, totalTeams);
+
+      // Fallback: If no combinations found, show a simple count
+      if (Object.keys(combinations).length === 0) {
+        console.warn('No combinations found, showing fallback');
+        document.getElementById('teamCombinations').innerHTML = `
+          <div class="text-warning">
+            <small><i class="fas fa-exclamation-triangle"></i> No valid combinations detected</small><br>
+            <small class="text-muted">Check console for debugging info</small>
+          </div>
+        `;
+      }
+
+      // Update captain/vice-captain analysis
+      updateCaptainAnalysis(captains, totalTeams);
+      updateViceCaptainAnalysis(viceCaptains, totalTeams);
+    }
+
+    function updatePlayerAppearances(appearances, totalTeams) {
+      const container = document.getElementById('playerAppearances');
+      const sortedPlayers = Object.entries(appearances)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 8); // Top 8 players
+
+      if (sortedPlayers.length === 0) {
+        container.innerHTML = '<small class="text-muted">No player data available</small>';
+        return;
+      }
+
+      const html = sortedPlayers.map(([player, count]) => {
+        const percentage = ((count / totalTeams) * 100).toFixed(1);
+        return `
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <small class="text-truncate" style="max-width: 120px;" title="${player}">${player}</small>
+                <div>
+                    <span class="badge bg-primary">${count}</span>
+                    <small class="text-muted">(${percentage}%)</small>
+                </div>
+            </div>
+        `;
+      }).join('');
+
+      container.innerHTML = html;
+    }
+
+    function updateTeamCombinations(combinations, totalTeams) {
+      const container = document.getElementById('teamCombinations');
+      const sortedCombos = Object.entries(combinations)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 6); // Top 6 combinations
+
+      if (sortedCombos.length === 0) {
+        container.innerHTML = '<small class="text-muted">No valid combination data available</small>';
+        return;
+      }
+
+      const html = sortedCombos.map(([combo, count]) => {
+        const percentage = ((count / totalTeams) * 100).toFixed(1);
+        const [wk, bat, al, bowl] = combo.split('-').map(Number);
+
+        // Validate the combination for display
+        const isValid = isValidDream11Combination({ WK: wk, BAT: bat, AL: al, BOWL: bowl }, wk + bat + al + bowl);
+        const badgeClass = isValid ? 'bg-success' : 'bg-danger';
+        const validIcon = isValid ? '<i class="fas fa-check"></i>' : '<i class="fas fa-times"></i>';
+
+        return `
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <div>
+                    <small class="fw-bold">${combo} ${validIcon}</small>
+                    <br>
+                    <small class="text-muted" style="font-size: 0.7rem;">WK-BAT-AL-BOWL</small>
+                </div>
+                <div class="text-end">
+                    <span class="badge ${badgeClass}">${count}</span>
+                    <br>
+                    <small class="text-muted">${percentage}%</small>
+                </div>
+            </div>
+        `;
+      }).join('');
+
+      // Add validation summary
+      const validCombos = Object.entries(combinations).filter(([combo]) => {
+        const [wk, bat, al, bowl] = combo.split('-').map(Number);
+        return isValidDream11Combination({ WK: wk, BAT: bat, AL: al, BOWL: bowl }, wk + bat + al + bowl);
+      }).length;
+
+      const totalCombos = Object.keys(combinations).length;
+      const validationSummary = `
+        <div class="mt-2 pt-2 border-top border-secondary">
+            <small class="text-info">
+                <i class="fas fa-info-circle"></i> 
+                ${validCombos}/${totalCombos} valid Dream11 combinations
+            </small>
+        </div>
+    `;
+
+      container.innerHTML = html + validationSummary;
+    }
+
+    function updateCaptainAnalysis(captains, totalTeams) {
+      const container = document.getElementById('captainAnalysis');
+      const sortedCaptains = Object.entries(captains)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 5); // Top 5 captains
+
+      if (sortedCaptains.length === 0) {
+        container.innerHTML = '<small class="text-muted">No captain data available</small>';
+        return;
+      }
+
+      const html = sortedCaptains.map(([captain, count]) => {
+        const percentage = ((count / totalTeams) * 100).toFixed(1);
+        return `
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <small class="text-truncate" style="max-width: 100px;" title="${captain}">${captain}</small>
+                <div>
+                    <span class="badge bg-danger">${count}</span>
+                    <small class="text-muted">(${percentage}%)</small>
+                </div>
+            </div>
+        `;
+      }).join('');
+
+      container.innerHTML = html;
+    }
+
+    function updateViceCaptainAnalysis(viceCaptains, totalTeams) {
+      const container = document.getElementById('viceCaptainAnalysis');
+      const sortedViceCaptains = Object.entries(viceCaptains)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 5); // Top 5 vice-captains
+
+      if (sortedViceCaptains.length === 0) {
+        container.innerHTML = '<small class="text-muted">No vice-captain data available</small>';
+        return;
+      }
+
+      const html = sortedViceCaptains.map(([viceCaptain, count]) => {
+        const percentage = ((count / totalTeams) * 100).toFixed(1);
+        return `
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <small class="text-truncate" style="max-width: 100px;" title="${viceCaptain}">${viceCaptain}</small>
+                <div>
+                    <span class="badge bg-info">${count}</span>
+                    <small class="text-muted">(${percentage}%)</small>
+                </div>
+            </div>
+        `;
+      }).join('');
+
+      container.innerHTML = html;
+    }
+  </script>
+
 </body>
+
 </html>

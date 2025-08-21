@@ -54,6 +54,21 @@
     <button class="btn btn-outline-light" onclick="document.getElementById('addPlayerForm').classList.toggle('d-none')">+ Add Player</button>
   </div>
 
+  <!-- Success/Error Messages -->
+  {% if success_message %}
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <strong>✅ Success!</strong> {{ success_message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endif %}
+  
+  {% if error_message %}
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <strong>❌ Error!</strong> {{ error_message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endif %}
+
   <!-- 📊 Toggle Analysis Card -->
   <div class="d-flex justify-content-end mb-2">
     <button class="btn btn-warning btn-sm" onclick="toggleAnalysis()">📊 Show/Hide Analysis</button>
@@ -125,15 +140,29 @@
     </li>
   </ul>
 
-  <!-- 🔁 Generate Teams Button -->
+  <!-- 🔁 Action Buttons -->
   <div class="mb-3 text-end">
+    <a href="/bulkRemovePlayers?matchid={{matchid}}" class="btn btn-danger me-2">
+      <i class="fas fa-trash-alt"></i> 🗑️ Bulk Remove Players
+    </a>
     <a href="/bulkUpdateMatchRoles?matchid={{matchid}}" class="btn btn-warning me-2">
       <i class="fas fa-users-cog"></i> Bulk Update Match Roles
     </a>
-    <form action="/generateTeams" method="post" class="d-inline-block">
+    <form action="/customTeams" method="post" class="d-inline">
       <input type="hidden" name="matchid" value="{{matchid}}">
-      <button type="submit" class="btn btn-primary">⚙️ Generate Teams</button>
+      <button type="submit" class="btn btn-info me-2">
+        <i class="fas fa-star"></i> ⭐ Custom Teams
+      </button>
     </form>
+    <form action="/scorecardTeams" method="post" class="d-inline">
+      <input type="hidden" name="matchid" value="{{matchid}}">
+      <button type="submit" class="btn btn-success me-2">
+        <i class="fas fa-chart-bar"></i> 📊 Scorecard Teams
+      </button>
+    </form>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#generateTeamsModal">
+      ⚙️ Generate Teams
+    </button>
   </div>
 
   <!-- Tab Content -->
@@ -224,5 +253,286 @@
     </div>
   </div>
 </div>
+
+<!-- Generate Teams Modal -->
+<div class="modal fade" id="generateTeamsModal" tabindex="-1" aria-labelledby="generateTeamsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" style="background: rgba(15, 32, 39, 0.95); border: 1px solid rgba(255,255,255,0.2);">
+      <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+        <h5 class="modal-title text-white" id="generateTeamsModalLabel">
+          <i class="fas fa-cogs"></i> Generate Teams
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <form action="/generateTeams" method="post" id="generateTeamsForm">
+        <div class="modal-body">
+          <input type="hidden" name="matchid" value="{{matchid}}">
+          
+
+          
+          <!-- Team Generation Options -->
+          <div class="mb-4">
+            <h6 class="text-white mb-3">
+              <i class="fas fa-sliders-h text-primary"></i> Generation Options
+            </h6>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="enforce_top13" value="1" id="enforceTop13" checked>
+                  <label class="form-check-label text-white" for="enforceTop13">
+                    Enforce Top 13 Rule (7-8 players)
+                  </label>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="ensure_diversity" value="1" id="ensureDiversity" checked>
+                  <label class="form-check-label text-white" for="ensureDiversity">
+                    Ensure Team Diversity (4+ different players)
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+
+          
+          <!-- Summary -->
+          <div class="alert alert-info" style="background: rgba(13, 202, 240, 0.1); border: 1px solid rgba(13, 202, 240, 0.3);">
+            <h6 class="text-info mb-2">
+              <i class="fas fa-chart-line"></i> Generation Summary
+            </h6>
+            <ul class="mb-0 text-white small" id="generationSummary">
+              <li>Teams to generate: <strong>1 per template</strong></li>
+              <li>Top 13 validation: <strong>Enabled</strong></li>
+              <li>Team diversity: <strong>Enabled</strong></li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.2);">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times"></i> Cancel
+          </button>
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-play"></i> Generate Teams
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// Team generation form logic
+document.addEventListener('DOMContentLoaded', function() {
+  const singleSetRadio = document.getElementById('singleSet');
+  const multipleSetsRadio = document.getElementById('multipleSets');
+  const singleSetMode = document.getElementById('singleSetMode');
+  const multipleSetsMode = document.getElementById('multipleSetsMode');
+  
+  // Mode switching
+  function switchMode() {
+    const summaryList = document.getElementById('generationSummary');
+    
+    if (singleSetRadio.checked) {
+      singleSetMode.style.display = 'block';
+      multipleSetsMode.style.display = 'none';
+      summaryList.innerHTML = `
+        <li>Mode: <strong>Single Set</strong></li>
+        <li>Teams to generate: <strong>1 per template</strong></li>
+        <li>Fixed players: <strong><span id="summaryFixedCount">0</span></strong></li>
+        <li>Variable slots: <strong><span id="summaryVariableSlots">11</span></strong></li>
+        <li>Top 13 validation: <strong>Enabled</strong></li>
+      `;
+      updateSingleSetCounts();
+    } else {
+      singleSetMode.style.display = 'none';
+      multipleSetsMode.style.display = 'block';
+      summaryList.innerHTML = `
+        <li>Mode: <strong>Multiple Sets</strong></li>
+        <li>Teams to generate: <strong><span id="summaryFixedCount">0 sets</span> × templates</strong></li>
+        <li>Fixed players per set: <strong>5</strong></li>
+        <li>Variable slots per team: <strong>6</strong></li>
+        <li>Top 13 validation: <strong>Enabled</strong></li>
+      `;
+      updateAllSetCounts();
+    }
+  }
+  
+  singleSetRadio.addEventListener('change', switchMode);
+  multipleSetsRadio.addEventListener('change', switchMode);
+  
+  // Single set logic
+  const checkboxes = document.querySelectorAll('.fixed-player-checkbox');
+  const countDisplay = document.getElementById('fixedPlayerCount');
+  const summaryCount = document.getElementById('summaryFixedCount');
+  const summarySlots = document.getElementById('summaryVariableSlots');
+  const maxFixed = 5;
+  
+  function updateSingleSetCounts() {
+    const checkedCount = document.querySelectorAll('.fixed-player-checkbox:checked').length;
+    countDisplay.textContent = checkedCount;
+    summaryCount.textContent = checkedCount;
+    summarySlots.textContent = 11 - checkedCount;
+    
+    // Disable unchecked boxes if max reached
+    checkboxes.forEach(checkbox => {
+      if (!checkbox.checked && checkedCount >= maxFixed) {
+        checkbox.disabled = true;
+      } else {
+        checkbox.disabled = false;
+      }
+    });
+    
+    // Update count color
+    if (checkedCount > maxFixed) {
+      countDisplay.className = 'text-danger';
+    } else if (checkedCount > 0) {
+      countDisplay.className = 'text-success';
+    } else {
+      countDisplay.className = 'text-info';
+    }
+  }
+  
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', updateSingleSetCounts);
+  });
+  
+  // Multiple sets logic
+  function updateSetCount(setNum) {
+    const setCheckboxes = document.querySelectorAll(`.set${setNum}-checkbox:checked`);
+    const countBadge = document.getElementById(`set${setNum}Count`);
+    const count = setCheckboxes.length;
+    
+    countBadge.textContent = `${count}/5`;
+    countBadge.className = count === 5 ? 'badge bg-success ms-2' : 'badge bg-secondary ms-2';
+    
+    // Disable unchecked boxes if max reached for this set
+    const allSetCheckboxes = document.querySelectorAll(`.set${setNum}-checkbox`);
+    allSetCheckboxes.forEach(checkbox => {
+      if (!checkbox.checked && count >= 5) {
+        checkbox.disabled = true;
+      } else {
+        checkbox.disabled = false;
+      }
+    });
+  }
+  
+  function updateAllSetCounts() {
+    for (let i = 1; i <= 10; i++) {
+      updateSetCount(i);
+    }
+    
+    // Update summary
+    const totalSets = Array.from({length: 10}, (_, i) => i + 1)
+      .filter(setNum => document.querySelectorAll(`.set${setNum}-checkbox:checked`).length === 5).length;
+    
+    summaryCount.textContent = `${totalSets} sets`;
+    summarySlots.textContent = `${totalSets} × templates`;
+  }
+  
+  // Add event listeners for all set checkboxes
+  for (let setNum = 1; setNum <= 10; setNum++) {
+    const setCheckboxes = document.querySelectorAll(`.set${setNum}-checkbox`);
+    setCheckboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', () => updateSetCount(setNum));
+    });
+  }
+  
+  // Form validation
+  document.getElementById('generateTeamsForm').addEventListener('submit', function(e) {
+    if (singleSetRadio.checked) {
+      const checkedCount = document.querySelectorAll('.fixed-player-checkbox:checked').length;
+      if (checkedCount > maxFixed) {
+        e.preventDefault();
+        alert(`Please select maximum ${maxFixed} fixed players. Currently selected: ${checkedCount}`);
+        return false;
+      }
+    } else {
+      // Validate that at least one complete set exists
+      let completeSets = 0;
+      for (let i = 1; i <= 10; i++) {
+        if (document.querySelectorAll(`.set${i}-checkbox:checked`).length === 5) {
+          completeSets++;
+        }
+      }
+      if (completeSets === 0) {
+        e.preventDefault();
+        alert('Please create at least one complete set of 5 players.');
+        return false;
+      }
+    }
+  });
+  
+  // Helper functions
+  window.selectTopPlayers = function(count) {
+    clearAllFixed();
+    const checkboxes = document.querySelectorAll('.fixed-player-checkbox');
+    let selected = 0;
+    checkboxes.forEach(checkbox => {
+      if (selected < count && selected < maxFixed) {
+        checkbox.checked = true;
+        selected++;
+      }
+    });
+    updateSingleSetCounts();
+  };
+  
+  window.selectTopPlayersForSet = function(setNum, count) {
+    clearSet(setNum);
+    const checkboxes = document.querySelectorAll(`.set${setNum}-checkbox`);
+    let selected = 0;
+    checkboxes.forEach(checkbox => {
+      if (selected < count) {
+        checkbox.checked = true;
+        selected++;
+      }
+    });
+    updateSetCount(setNum);
+  };
+  
+  window.selectByRole = function(role) {
+    clearAllFixed();
+    const labels = document.querySelectorAll('.form-check-label');
+    let selected = 0;
+    labels.forEach(label => {
+      if (selected < maxFixed && label.textContent.includes(role)) {
+        const checkbox = label.previousElementSibling;
+        if (checkbox && checkbox.type === 'checkbox' && checkbox.classList.contains('fixed-player-checkbox')) {
+          checkbox.checked = true;
+          selected++;
+        }
+      }
+    });
+    updateSingleSetCounts();
+  };
+  
+  window.clearAllFixed = function() {
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = false;
+      checkbox.disabled = false;
+    });
+    updateSingleSetCounts();
+  };
+  
+  window.clearSet = function(setNum) {
+    const setCheckboxes = document.querySelectorAll(`.set${setNum}-checkbox`);
+    setCheckboxes.forEach(checkbox => {
+      checkbox.checked = false;
+      checkbox.disabled = false;
+    });
+    updateSetCount(setNum);
+  };
+  
+
+  
+  // Initialize
+  switchMode();
+});
+</script>
+
 </body>
 </html>

@@ -54,6 +54,46 @@
             <label class="form-label">Team B</label>
             <input type="text" class="form-control" placeholder="Enter Team B name" name="teamb" required>
           </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Ground Statistics URL (Optional)</label>
+            <input type="url" class="form-control" placeholder="https://stats.espncricinfo.com/ci/engine/ground/..." name="ground_url">
+            <div class="form-text text-muted">
+              ESPN Cricinfo ground statistics URL for venue analysis
+            </div>
+            <div class="mt-2">
+              <small class="text-info">
+                <strong>Example URLs:</strong><br>
+                • Eden Gardens: https://stats.espncricinfo.com/ci/engine/ground/56874.html?class=23;template=results;type=aggregate;view=results<br>
+                • Lord's: https://stats.espncricinfo.com/ci/engine/ground/57.html?class=23;template=results;type=aggregate;view=results<br>
+                • MCG: https://stats.espncricinfo.com/ci/engine/ground/348.html?class=23;template=results;type=aggregate;view=results
+              </small>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="1" id="analyze_ground" name="analyze_ground">
+              <label class="form-check-label" for="analyze_ground">
+                🏟️ Analyze ground conditions
+              </label>
+              <div class="form-text text-muted">
+                Scrape and analyze ground statistics for strategic insights (requires Ground URL)
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="1" id="auto_scrape" name="auto_scrape">
+              <label class="form-check-label" for="auto_scrape">
+                🤖 Auto-scrape players from Dream11
+              </label>
+              <div class="form-text text-muted">
+                Automatically fetch player data from Dream11 website after creating the match
+              </div>
+            </div>
+          </div>
           <div class="text-center">
             <button type="submit" class="btn btn-success btn-lg">Create Match</button>
           </div>

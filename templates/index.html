@@ -65,10 +65,14 @@
           <div class="match-card">
             <div class="text-center">
               <h5 class="mb-3">{{ match.team1 }} <span class="text-muted">vs</span> {{ match.team2 }}</h5>
-              <div class="d-flex justify-content-center gap-2">
+              <div class="d-flex justify-content-center gap-2 flex-wrap">
                 <form action="/matchpage" method="post" class="d-inline">
                   <input type="hidden" name="matchid" value="{{ match.uniqueid }}">
                   <button type="submit" class="btn btn-primary btn-sm">⚡ Play</button>
+                </form>
+                <form action="/customTeams" method="post" class="d-inline">
+                  <input type="hidden" name="matchid" value="{{ match.uniqueid }}">
+                  <button type="submit" class="btn btn-info btn-sm">⭐ Custom</button>
                 </form>
                 <form action="/deletematch" method="post" class="d-inline">
                   <input type="hidden" name="matchid" value="{{ match.uniqueid }}">

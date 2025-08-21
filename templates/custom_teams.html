@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Custom Dream11 Teams</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: radial-gradient(circle at top, #0f2027, #203a43, #2c5364);
+      color: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      padding: 20px 0;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #ffffff;
+      text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      margin-bottom: 10px;
+    }
+
+    .team-card {
+      background: linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 25px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      color: #ffffff;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      height: auto;
+      min-height: 500px;
+    }
+
+    .team-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .cricket-field {
+      position: relative;
+      min-height: 350px;
+      background: radial-gradient(ellipse at center, rgba(255,255,255,0.1) 0%, transparent 70%);
+      border-radius: 50%;
+      padding: 20px 10px;
+    }
+
+    .role-section {
+      position: absolute;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .wicket-keepers { top: 15px; }
+    .batters { top: 130px; }
+    .all-rounders { top: 240px; }
+    .bowlers { bottom: 15px; }
+
+    .players-row {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      position: relative;
+    }
+
+    .field-player {
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      border-radius: 8px;
+      padding: 6px;
+      text-align: center;
+      min-width: 60px;
+      max-width: 70px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      position: relative;
+      color: #333;
+      margin: 2px;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+    }
+
+    .field-player:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .team-a-player {
+      background: #ffffff;
+      color: #000000;
+      border: 2px solid #000000;
+    }
+
+    .team-b-player {
+      background: #000000;
+      color: #ffffff;
+      border: 2px solid #ffffff;
+    }
+
+    .player-name {
+      font-weight: 600;
+      font-size: 0.65rem;
+      color: #1a1a1a;
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.1;
+      max-width: 58px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .team-a-player .player-name { color: #000000; }
+    .team-b-player .player-name { color: #ffffff; }
+
+    .player-credits {
+      font-size: 0.6rem;
+      color: #555;
+      font-weight: 600;
+      line-height: 1;
+      background: rgba(0, 0, 0, 0.05);
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+
+    .team-a-player .player-credits {
+      color: #333333;
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .team-b-player .player-credits {
+      color: #cccccc;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .captain-badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      font-weight: bold;
+      box-shadow: 0 2px 8px rgba(220, 53, 69, 0.4);
+      border: 1px solid white;
+    }
+
+    .vicecaptain-badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.5rem;
+      font-weight: bold;
+      box-shadow: 0 2px 8px rgba(23, 162, 184, 0.4);
+      border: 1px solid white;
+    }
+
+    .team-strategy {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .strategy-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #ffd700;
+    }
+
+    .strategy-description {
+      font-size: 0.8rem;
+      opacity: 0.9;
+      line-height: 1.3;
+    }
+
+    @media (max-width: 768px) {
+      .cricket-field {
+        min-height: 400px;
+        padding: 25px 10px;
+      }
+      
+      .role-section {
+        position: relative;
+        margin-bottom: 30px;
+      }
+      
+      .wicket-keepers, .batters, .all-rounders, .bowlers {
+        position: relative;
+        top: auto;
+        bottom: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1><i class="fas fa-star"></i> Custom Dream11 Teams</h1>
+    {% if teamA and teamB %}
+    <h3 class="mb-3">{{ teamA }} <span class="text-muted">vs</span> {{ teamB }}</h3>
+    {% endif %}
+    <p>Strategically crafted teams based on different approaches</p>
+    
+    <!-- Ground Analysis Section -->
+    {% if ground_insights %}
+    <div class="alert alert-info mb-4" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+      <h6><i class="fas fa-chart-line"></i> Ground Analysis & Strategy</h6>
+      <div style="white-space: pre-line; font-size: 0.9rem; line-height: 1.4;">{{ ground_insights }}</div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="row">
+    {% for team in custom_teams %}
+    <div class="col-xl-4 col-lg-6 col-md-12">
+      <div class="team-card">
+        <div class="text-center mb-3">
+          <h5 class="text-white">{{ team.name }}</h5>
+          <small class="text-muted">{{ team.total_percentage }}%</small>
+        </div>
+
+        <div class="team-strategy">
+          <div class="strategy-title">{{ team.strategy_title }}</div>
+          <div class="strategy-description">{{ team.strategy_description }}</div>
+        </div>
+
+        <div class="cricket-field">
+          <!-- Wicket-Keepers Section -->
+          <div class="role-section wicket-keepers">
+            <div class="players-row">
+              {% for player in team.players %}
+                {% if player.role == 'WK' %}
+                  <div class="field-player {% if player.team == teamA %}team-a-player{% else %}team-b-player{% endif %}">
+                    {% if player.is_captain %}
+                      <div class="captain-badge">C</div>
+                    {% elif player.is_vice_captain %}
+                      <div class="vicecaptain-badge">VC</div>
+                    {% endif %}
+                    <div class="player-name">{{ player.name }}</div>
+                    <div class="player-credits">{{ player.credits }} Cr</div>
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Batters Section -->
+          <div class="role-section batters">
+            <div class="players-row">
+              {% for player in team.players %}
+                {% if player.role == 'BAT' %}
+                  <div class="field-player {% if player.team == teamA %}team-a-player{% else %}team-b-player{% endif %}">
+                    {% if player.is_captain %}
+                      <div class="captain-badge">C</div>
+                    {% elif player.is_vice_captain %}
+                      <div class="vicecaptain-badge">VC</div>
+                    {% endif %}
+                    <div class="player-name">{{ player.name }}</div>
+                    <div class="player-credits">{{ player.credits }} Cr</div>
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- All-Rounders Section -->
+          <div class="role-section all-rounders">
+            <div class="players-row">
+              {% for player in team.players %}
+                {% if player.role == 'ALL' or player.role == 'AL' %}
+                  <div class="field-player {% if player.team == teamA %}team-a-player{% else %}team-b-player{% endif %}">
+                    {% if player.is_captain %}
+                      <div class="captain-badge">C</div>
+                    {% elif player.is_vice_captain %}
+                      <div class="vicecaptain-badge">VC</div>
+                    {% endif %}
+                    <div class="player-name">{{ player.name }}</div>
+                    <div class="player-credits">{{ player.credits }} Cr</div>
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Bowlers Section -->
+          <div class="role-section bowlers">
+            <div class="players-row">
+              {% for player in team.players %}
+                {% if player.role == 'BOWL' %}
+                  <div class="field-player {% if player.team == teamA %}team-a-player{% else %}team-b-player{% endif %}">
+                    {% if player.is_captain %}
+                      <div class="captain-badge">C</div>
+                    {% elif player.is_vice_captain %}
+                      <div class="vicecaptain-badge">VC</div>
+                    {% endif %}
+                    <div class="player-name">{{ player.name }}</div>
+                    <div class="player-credits">{{ player.credits }} Cr</div>
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

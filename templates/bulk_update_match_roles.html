@@ -11,6 +11,7 @@
       background: radial-gradient(circle at top, #0f2027, #203a43, #2c5364);
       min-height: 100vh;
       color: white;
+      font-size: 0.95rem;
     }
 
     .glass-card {
@@ -18,8 +19,12 @@
       backdrop-filter: blur(10px);
       border-radius: 20px;
       border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 30px;
+      padding: 20px;
       box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    }
+
+    .main-glass-card {
+      padding: 25px;
     }
 
     .btn-glass {
@@ -58,15 +63,129 @@
 
     .team-a { border-left: 3px solid #28a745; }
     .team-b { border-left: 3px solid #dc3545; }
+
+    .glass-card h5 {
+      border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+      font-size: 1.2rem;
+    }
+
+    .table-sm th {
+      font-size: 0.85rem;
+      padding: 0.5rem 0.4rem;
+      font-weight: 600;
+    }
+
+    .table-sm td {
+      padding: 0.5rem 0.4rem;
+      vertical-align: middle;
+      font-size: 0.9rem;
+    }
+
+    .form-select-sm {
+      font-size: 0.8rem;
+      padding: 0.4rem 0.6rem;
+      min-width: 120px;
+    }
+
+
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.3rem 0.6rem;
+    }
+
+
+
+    @media (max-width: 768px) {
+      .col-md-6 {
+        margin-bottom: 1rem;
+      }
+      
+      .glass-card {
+        padding: 15px;
+      }
+      
+      .table-responsive {
+        font-size: 0.85rem;
+        max-height: 60vh;
+      }
+      
+      .player-name {
+        max-width: 120px;
+      }
+      
+      .form-select-sm {
+        font-size: 0.75rem;
+        min-width: 100px;
+      }
+      
+      .btn-sm {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+      }
+    }
+
+    /* Better layout spacing */
+    .container-fluid {
+      padding: 1rem;
+    }
+
+    .mt-4 {
+      margin-top: 1.5rem !important;
+    }
+
+    .mb-3 {
+      margin-bottom: 1rem !important;
+    }
+
+    .mb-4 {
+      margin-bottom: 1.5rem !important;
+    }
+
+    /* Make tables scrollable but not restrictive */
+    .table-responsive {
+      max-height: 70vh;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+
+
+
+    /* Sticky header */
+    .sticky-top {
+      position: sticky;
+      top: 0;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 10;
+    }
+
+    /* Better sized buttons */
+    .btn-sm {
+      font-size: 0.85rem;
+      padding: 0.4rem 0.8rem;
+    }
+
+    /* Better header sizing */
+    h2 {
+      font-size: 1.8rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .text-center p {
+      margin-bottom: 0.75rem;
+    }
   </style>
 </head>
 <body>
 
 <div class="container-fluid mt-4">
-  <div class="glass-card">
-    <div class="text-center mb-4">
+  <div class="glass-card main-glass-card">
+    <div class="text-center mb-3">
       <h2><i class="fas fa-users-cog"></i> Bulk Update Match Roles</h2>
-      <p class="text-muted">Update multiple players' match roles at once</p>
+      <p class="text-muted mb-1">Update multiple players' match roles at once</p>
       {% if teams %}
       <small class="text-info">Match: {{ teams[0][1] }} vs {{ teams[0][2] }}</small>
       {% endif %}
@@ -134,7 +253,13 @@
                     <option value="POW" {% if player.matchrole == 'POW' %}selected{% endif %}>POW</option>
                     <option value="BRE" {% if player.matchrole == 'BRE' %}selected{% endif %}>BRE</option>
                     <option value="DEA" {% if player.matchrole == 'DEA' %}selected{% endif %}>DEA</option>
+                    <option value="POW-BRE" {% if player.matchrole == 'POW-BRE' %}selected{% endif %}>POW-BRE</option>
+                    <option value="BRE-DEA" {% if player.matchrole == 'BRE-DEA' %}selected{% endif %}>BRE-DEA</option>
+                    <option value="DEA-HIT" {% if player.matchrole == 'DEA-HIT' %}selected{% endif %}>DEA-HIT</option>
                     <option value="POW-DEA" {% if player.matchrole == 'POW-DEA' %}selected{% endif %}>POW-DEA</option>
+                    <option value="POW-TOP" {% if player.matchrole == 'POW-TOP' %}selected{% endif %}>POW-TOP</option>
+                    <option value="BRE-MID" {% if player.matchrole == 'BRE-MID' %}selected{% endif %}>BRE-MID</option>
+                    <option value="DEA-HIT" {% if player.matchrole == 'DEA-HIT' %}selected{% endif %}>DEA-HIT</option>
                   </optgroup>
                 </select>
               </td>
