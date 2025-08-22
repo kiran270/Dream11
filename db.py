@@ -509,7 +509,7 @@ def getDreamTeams():
 	cur = con.cursor()
 	# Query dreamteams table for all templates
 	try:
-		cur.execute("select * from templates where matchbetween='4-7'")
+		cur.execute("select * from templates")
 		rows = cur.fetchall()
 		print(f"Found {len(rows)} templates in database")
 		return rows
@@ -538,10 +538,11 @@ def getteams(matchid):
 	rows = cur.fetchall()
 	return rows
 def getplayers(matchid):
+	player_id=""
 	con =create_connection()
 	con.row_factory = sqlite3.Row
 	cur = con.cursor()
-	cur.execute("SELECT * FROM player where matchid = ?",[matchid]) 
+	cur.execute("SELECT * FROM player where matchid = ? and player_id != ?",[matchid,player_id]) 
 	rows = cur.fetchall()
 	return rows
 def removeplayer(playername,matchid):

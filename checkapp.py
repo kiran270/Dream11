@@ -2378,7 +2378,7 @@ def getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teamA,t
 		
 		teams=[]
 		attempts = 0
-		for k in range(0,500):  # Generate 20 teams per template
+		for k in range(0,5000):  # Generate 20 teams per template
 			attempts += 1
 			team=[]
 			print(f"Attempt {attempts} for template {template_name}")
@@ -2459,7 +2459,7 @@ def getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teamA,t
 						if l > count:
 							count=l
 					print(count)
-					if count <= 6:  # Changed from 7 to 3 for more team diversity
+					if count <= 8:  # Changed from 7 to 3 for more team diversity
 						# Select captain and vice-captain based on category indices - NO FALLBACK
 						captain = None
 						vice_captain = None
@@ -2538,20 +2538,21 @@ def getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teamA,t
 						print(f"Team length after adding template name: {len(team)}")
 						
 						teams.append(team)
+						break
 						total_teams_generated += 1
 						print(f"Generated team {total_teams_generated}/{target_teams}")
 						
 						# Stop if we've reached the target
-						if total_teams_generated >= target_teams:
-							break
+						# if total_teams_generated >= target_teams:
+						# 	break
 		teams=calculatePercentage(teams)
 		finalteams.extend(teams)
 		print(f"Template '{template_name}' generated {len(teams)} teams")
 		
 		# Stop processing templates if we've reached the target
-		if total_teams_generated >= target_teams:
-			print(f"Reached target of {target_teams} teams, stopping template processing")
-			break
+		# if total_teams_generated >= target_teams:
+		# 	print(f"Reached target of {target_teams} teams, stopping template processing")
+		# 	break
 	# finalteams=getvalidcombinations(finalteams,teamA,teamB)
 	# tgtcteams=[]
 	# for i in finalteams:
@@ -2792,48 +2793,7 @@ def calculatePercentage(validcombinations):
 				continue
 		
 		x.append(TotalPercentage)  # Add total percentage as the last element
-		
-		# STRICT DIVERSITY CHECK BEFORE ADDING TO FINAL TEAMS
-		should_add_team = True
-		max_common = 0
-		
-		if len(finalteams) > 0:
-			current_team_ids = set()
-			for player in x[:11]:
-				if player and len(player) > 0:
-					current_team_ids.add(player[0])
-			
-			for existing_team in finalteams:
-				existing_team_ids = set()
-				for player in existing_team[:11]:
-					if player and len(player) > 0:
-						existing_team_ids.add(player[0])
-				
-				common_count = len(current_team_ids.intersection(existing_team_ids))
-				max_common = max(max_common, common_count)
-				
-				# Reject if exact duplicate (all 11 players same)
-				if common_count == 11:
-					should_add_team = False
-					if i < 10:  # Debug first 10 rejections
-						print(f"❌ CALCULATE: Team {i+1} rejected - EXACT DUPLICATE")
-					break
-				# Reject if more than 2 common players (VERY STRICT)
-				elif common_count > 2:
-					should_add_team = False
-					if i < 10:  # Debug first 10 rejections
-						print(f"❌ CALCULATE: Team {i+1} rejected - {common_count} common players > 2")
-					break
-		
-		if should_add_team:
-			if i < 10:  # Debug first 10 additions
-				print(f"✅ CALCULATE: Team {i+1} added - max {max_common} common players")
-			finalteams.append(x)
-		else:
-			if i < 10:
-				print(f"🚫 CALCULATE: Team {i+1} skipped due to similarity")
-	
-	# Sort by total percentage (last element) - highest percentage first
+		finalteams.append(x)
 	if finalteams:
 		sorted_list = sorted(finalteams, key=lambda team: team[-1], reverse=True)
 		return sorted_list
