@@ -1,0 +1,813 @@
+{% extends "base.html" %}
+
+{% block title %}🚀 Auto Dream11 Upload{% endblock %}
+
+{% block extra_css %}
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        .file-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            border-color: rgba(0, 255, 255, 0.5);
+        }
+
+        .file-card.selected {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+            box-shadow: 0 0 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .file-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 25px;
+            height: 25px;
+            background: #28a745;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .latest-badge {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .delete-btn {
+            opacity: 0;
+            transition: all 0.3s ease;
+            border-radius: 6px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(220, 53, 69, 0.8);
+            color: white;
+            border: none;
+        }
+
+        .file-card:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .delete-btn:hover {
+            transform: scale(1.1);
+            background: #dc3545;
+        }
+
+        .status-message {
+            margin: 15px 0;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 500;
+            animation: slideInDown 0.3s ease-out;
+        }
+
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status-success {
+            background: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+            border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+
+        .status-error {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+            border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+
+        .status-info {
+            background: rgba(23, 162, 184, 0.1);
+            color: #17a2b8;
+            border: 1px solid rgba(23, 162, 184, 0.3);
+        }
+
+        .user-checkbox {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            transition: all 0.3s ease;
+        }
+
+        .user-checkbox:hover {
+            border-color: rgba(0, 255, 255, 0.5);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.1);
+        }
+
+        .user-checkbox.configured {
+            border-color: rgba(40, 167, 69, 0.5);
+            background: rgba(40, 167, 69, 0.05);
+        }
+
+        .stats-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 12px;
+            border-left: 3px solid #17a2b8;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-glass:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .btn-success-glass {
+            background: rgba(40, 167, 69, 0.2);
+            border: 1px solid rgba(40, 167, 69, 0.5);
+            color: #28a745;
+        }
+
+        .btn-success-glass:hover {
+            background: rgba(40, 167, 69, 0.3);
+            color: #28a745;
+        }
+
+        .btn-primary-glass {
+            background: rgba(13, 110, 253, 0.2);
+            border: 1px solid rgba(13, 110, 253, 0.5);
+            color: #0d6efd;
+        }
+
+        .btn-primary-glass:hover {
+            background: rgba(13, 110, 253, 0.3);
+            color: #0d6efd;
+        }
+
+        .btn-danger-glass {
+            background: rgba(220, 53, 69, 0.2);
+            border: 1px solid rgba(220, 53, 69, 0.5);
+            color: #dc3545;
+        }
+
+        .btn-danger-glass:hover {
+            background: rgba(220, 53, 69, 0.3);
+            color: #dc3545;
+        }
+
+        .form-control-glass {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 8px;
+        }
+
+        .form-control-glass:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(0, 255, 255, 0.5);
+            box-shadow: 0 0 0 0.2rem rgba(0, 255, 255, 0.25);
+            color: white;
+        }
+
+        .form-control-glass::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid py-3">
+        <!-- Page Header -->
+        <div class="header fade-in">
+        </div>
+        
+        <!-- Status Messages -->
+        <div id="statusMessage"></div>
+        
+        <div class="row g-4">
+            <!-- Files Section -->
+            <div class="col-lg-8">
+                <div class="glass-panel fade-in">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0 text-white">
+                            <i class="fas fa-folder-open me-2"></i>Available Teams Files
+                        </h5>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-glass btn-sm" onclick="refreshFileList()" title="Refresh Files">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                            <button class="btn btn-danger-glass btn-sm" onclick="deleteAllFiles()" id="deleteAllBtn" style="display: none;">
+                                <i class="fas fa-trash-alt me-1"></i>Delete All
+                            </button>
+                        </div>
+                    </div>
+                    <div id="filesList">
+                        <div class="text-center py-4">
+                            <div class="loading-spinner mb-3"></div>
+                            <p class="text-white-50">
+                                <i class="fas fa-search me-2"></i>Searching for teams files...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Settings Section -->
+            <div class="col-lg-4">
+                <div class="glass-panel fade-in">
+                    <h5 class="mb-3 text-white">
+                        <i class="fas fa-cogs me-2"></i>Upload Settings
+                    </h5>
+                    
+                    <!-- Match ID Input -->
+                    <div class="mb-3">
+                        <label for="matchId" class="form-label text-white">
+                            <i class="fas fa-hashtag me-2"></i>Match ID (Optional)
+                        </label>
+                        <input type="text" class="form-control form-control-glass" id="matchId" 
+                               placeholder="Auto-detected from file">
+                        <small class="text-white-50">
+                            <i class="fas fa-info-circle me-1"></i>Leave empty to use match ID from selected file
+                        </small>
+                    </div>
+                    
+                    <!-- Selected File Display -->
+                    <div class="mb-3">
+                        <label class="form-label text-white">
+                            <i class="fas fa-file-alt me-2"></i>Selected File
+                        </label>
+                        <input type="text" class="form-control form-control-glass" id="selectedFile" 
+                               readonly placeholder="Click a file above or use latest">
+                    </div>
+                    
+                    <!-- User Selection -->
+                    <div class="mb-3">
+                        <label class="form-label text-white">
+                            <i class="fas fa-users me-2"></i>Select Users
+                        </label>
+                        <div id="usersList">
+                            <div class="text-center py-3">
+                                <div class="loading-spinner mb-2"></div>
+                                <small class="text-white-50 d-block">Loading users...</small>
+                            </div>
+                        </div>
+                        <small class="text-white-50">
+                            <i class="fas fa-lightbulb me-1"></i>Choose which Dream11 accounts to update
+                        </small>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 mb-3">
+                        <button class="btn btn-primary-glass" onclick="uploadTeams()">
+                            <i class="fas fa-rocket me-2"></i>Upload Selected File
+                        </button>
+                        <button class="btn btn-success-glass" onclick="uploadLatest()">
+                            <i class="fas fa-bolt me-2"></i>Upload Latest File
+                        </button>
+                    </div>
+                    
+                    <hr style="border-color: rgba(255,255,255,0.2);">
+                    
+                    <!-- Quick Stats -->
+                    <div class="stats-card">
+                        <h6 class="text-white mb-2">
+                            <i class="fas fa-chart-bar me-2"></i>Quick Stats
+                        </h6>
+                        <div id="quickStats">
+                            <small class="text-white-50">
+                                <i class="fas fa-mouse-pointer me-1"></i>Select a file to see detailed statistics
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let selectedFile = null;
+        let availableUsers = [];
+        
+        function showMessage(message, type = 'info') {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.innerHTML = `<div class="status-message status-${type}">${message}</div>`;
+            
+            // Auto-hide after 5 seconds for success messages
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.innerHTML = '';
+                }, 5000);
+            }
+        }
+        
+        function loadUsers() {
+            fetch('/list_users')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        availableUsers = data.users;
+                        displayUsers(data.users);
+                    } else {
+                        document.getElementById('usersList').innerHTML = 
+                            `<small class="text-danger">❌ Error loading users: ${data.message}</small>`;
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('usersList').innerHTML = 
+                        `<small class="text-danger">❌ Network error: ${error}</small>`;
+                });
+        }
+        
+        function displayUsers(users) {
+            const usersDiv = document.getElementById('usersList');
+            
+            if (users.length === 0) {
+                usersDiv.innerHTML = `
+                    <div class="text-center py-3">
+                        <i class="fas fa-user-slash text-white-50 mb-2" style="font-size: 2rem;"></i>
+                        <p class="text-white-50 mb-0">No users configured</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            users.forEach(user => {
+                const isConfigured = user.configured;
+                const teamRange = `${user.team_range[0]}-${user.team_range[1]}`;
+                const statusIcon = isConfigured ? 'fas fa-check-circle text-success' : 'fas fa-times-circle text-danger';
+                const statusText = isConfigured ? 'Ready to upload' : 'Auth token missing';
+                const cardClass = isConfigured ? 'user-checkbox configured' : 'user-checkbox';
+                
+                html += `
+                    <div class="${cardClass}">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="${user.name}" 
+                                   id="user_${user.name}" ${isConfigured ? 'checked' : 'disabled'}>
+                            <label class="form-check-label w-100 text-white" for="user_${user.name}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="fw-semibold">
+                                            <i class="${statusIcon} me-2"></i>${user.name}
+                                        </div>
+                                        <small class="text-white-50">Teams ${teamRange} • ${statusText}</small>
+                                    </div>
+                                    ${isConfigured ? '<i class="fas fa-rocket text-info"></i>' : '<i class="fas fa-exclamation-triangle text-warning"></i>'}
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                <div class="d-flex gap-2 mt-3">
+                    <button type="button" class="btn btn-glass btn-sm flex-fill" onclick="selectAllUsers()">
+                        <i class="fas fa-check-double me-1"></i>Select All
+                    </button>
+                    <button type="button" class="btn btn-glass btn-sm flex-fill" onclick="deselectAllUsers()">
+                        <i class="fas fa-times me-1"></i>Clear All
+                    </button>
+                </div>
+            `;
+            
+            usersDiv.innerHTML = html;
+        }
+        
+        function selectAllUsers() {
+            document.querySelectorAll('#usersList input[type="checkbox"]:not(:disabled)').forEach(checkbox => {
+                checkbox.checked = true;
+            });
+        }
+        
+        function deselectAllUsers() {
+            document.querySelectorAll('#usersList input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+        }
+        
+        function getSelectedUsers() {
+            const checkboxes = document.querySelectorAll('#usersList input[type="checkbox"]:checked');
+            return Array.from(checkboxes).map(cb => cb.value);
+        }
+        
+        function deleteFile(filename) {
+            // Confirm deletion
+            if (!confirm(`Are you sure you want to delete "${filename}"?\n\nThis action cannot be undone.`)) {
+                return;
+            }
+            
+            showMessage(`🗑️ Deleting ${filename}...`, 'info');
+            
+            const formData = new FormData();
+            formData.append('filename', filename);
+            
+            fetch('/delete_teams_file', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(`✅ ${data.message}`, 'success');
+                    
+                    // Clear selection if deleted file was selected
+                    if (selectedFile === filename) {
+                        selectedFile = null;
+                        document.getElementById('selectedFile').value = '';
+                        document.getElementById('quickStats').innerHTML = 
+                            '<small class="text-muted">Select a file to see stats</small>';
+                    }
+                    
+                    // Refresh file list
+                    refreshFileList();
+                } else {
+                    showMessage(`❌ ${data.message}`, 'error');
+                }
+            })
+            .catch(error => {
+                showMessage(`❌ Network error: ${error}`, 'error');
+            });
+        }
+        
+        function deleteAllFiles() {
+            // Get current file count
+            fetch('/list_teams_files')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.files.length > 0) {
+                        const fileCount = data.files.length;
+                        const fileList = data.files.map(f => f.filename).join('\n• ');
+                        
+                        if (!confirm(`Are you sure you want to delete ALL ${fileCount} teams files?\n\nFiles to be deleted:\n• ${fileList}\n\nThis action cannot be undone.`)) {
+                            return;
+                        }
+                        
+                        showMessage(`🗑️ Deleting all ${fileCount} files...`, 'info');
+                        
+                        fetch('/delete_all_teams_files', {
+                            method: 'POST'
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                showMessage(`✅ ${data.message}`, 'success');
+                                
+                                // Clear selection
+                                selectedFile = null;
+                                document.getElementById('selectedFile').value = '';
+                                document.getElementById('quickStats').innerHTML = 
+                                    '<small class="text-muted">Select a file to see stats</small>';
+                                
+                                // Refresh file list
+                                refreshFileList();
+                            } else {
+                                showMessage(`❌ ${data.message}`, 'error');
+                            }
+                        })
+                        .catch(error => {
+                            showMessage(`❌ Network error: ${error}`, 'error');
+                        });
+                    } else {
+                        showMessage('❌ No files to delete', 'error');
+                    }
+                })
+                .catch(error => {
+                    showMessage(`❌ Error checking files: ${error}`, 'error');
+                });
+        }
+        
+        function refreshFileList() {
+            showMessage('🔄 Loading files...', 'info');
+            
+            fetch('/list_teams_files')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayFiles(data.files);
+                        showMessage(`✅ Found ${data.files.length} teams files`, 'success');
+                    } else {
+                        showMessage(`❌ Error loading files: ${data.message}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    showMessage(`❌ Network error: ${error}`, 'error');
+                });
+        }
+        
+        function displayFiles(files) {
+            const filesDiv = document.getElementById('filesList');
+            const deleteAllBtn = document.getElementById('deleteAllBtn');
+            
+            if (files.length === 0) {
+                filesDiv.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-folder-open text-white-50 mb-3" style="font-size: 3rem;"></i>
+                        <h5 class="text-white mb-2">No Teams Files Found</h5>
+                        <p class="text-white-50 mb-0">Generate some teams first to see them here!</p>
+                    </div>
+                `;
+                deleteAllBtn.style.display = 'none';
+                return;
+            }
+            
+            // Show delete all button if there are multiple files
+            deleteAllBtn.style.display = files.length > 1 ? 'inline-block' : 'none';
+            
+            let html = '';
+            files.forEach((file, index) => {
+                const isLatest = index === 0;
+                const fileAge = getFileAge(file.generated_on);
+                const matchIcon = getMatchIcon(file.match);
+                
+                html += `
+                    <div class="file-card" onclick="selectFile('${file.filename}', ${JSON.stringify(file).replace(/"/g, '&quot;')})">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center mb-2">
+                                    <h6 class="mb-0 me-2 text-white">${file.filename}</h6>
+                                    ${isLatest ? '<span class="badge latest-badge">Latest</span>' : ''}
+                                </div>
+                                <div class="row g-2 mb-2">
+                                    <div class="col-sm-6">
+                                        <small class="text-white-50 d-block">
+                                            <i class="${matchIcon} me-1"></i><strong>Match:</strong> ${file.match}
+                                        </small>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <small class="text-white-50 d-block">
+                                            <i class="fas fa-users me-1"></i><strong>Teams:</strong> ${file.total_teams}
+                                        </small>
+                                    </div>
+                                </div>
+                                <small class="text-white-50">
+                                    <i class="fas fa-clock me-1"></i>Generated ${fileAge}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <div class="mb-2">
+                                    <small class="text-white-50 d-block">
+                                        <i class="fas fa-file-alt me-1"></i>${(file.size / 1024).toFixed(1)} KB
+                                    </small>
+                                </div>
+                                <button class="delete-btn" 
+                                        onclick="event.stopPropagation(); deleteFile('${file.filename}')"
+                                        title="Delete this file">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            filesDiv.innerHTML = html;
+        }
+        
+        function getFileAge(generatedOn) {
+            try {
+                const generated = new Date(generatedOn);
+                const now = new Date();
+                const diffMs = now - generated;
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMins / 60);
+                const diffDays = Math.floor(diffHours / 24);
+                
+                if (diffMins < 1) return 'just now';
+                if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
+                if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+                return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+            } catch {
+                return generatedOn;
+            }
+        }
+        
+        function getMatchIcon(match) {
+            if (match.includes('vs') || match.includes('VS')) return 'fas fa-trophy';
+            if (match.includes('TEST') || match.includes('test')) return 'fas fa-flask';
+            return 'fas fa-cricket-ball-base';
+        }
+        
+        function selectFile(filename, fileData) {
+            // Remove previous selection
+            document.querySelectorAll('.file-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selection to clicked card with animation
+            event.currentTarget.classList.add('selected');
+            
+            selectedFile = filename;
+            document.getElementById('selectedFile').value = filename;
+            
+            // Update quick stats with enhanced display
+            const statsDiv = document.getElementById('quickStats');
+            const fileAge = getFileAge(fileData.generated_on);
+            const matchIcon = getMatchIcon(fileData.match);
+            
+            statsDiv.innerHTML = `
+                <div class="row g-2">
+                    <div class="col-12">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="${matchIcon} text-info me-2"></i>
+                            <strong class="text-white">${fileData.match}</strong>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-white-50 d-block">
+                            <i class="fas fa-users me-1"></i>Teams
+                        </small>
+                        <strong class="text-info">${fileData.total_teams}</strong>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-white-50 d-block">
+                            <i class="fas fa-file-alt me-1"></i>Size
+                        </small>
+                        <strong class="text-success">${(fileData.size / 1024).toFixed(1)} KB</strong>
+                    </div>
+                    <div class="col-12 mt-2">
+                        <small class="text-white-50">
+                            <i class="fas fa-clock me-1"></i>Generated ${fileAge}
+                        </small>
+                    </div>
+                </div>
+            `;
+            
+            // Add pulse animation to stats
+            statsDiv.classList.add('pulse');
+            setTimeout(() => statsDiv.classList.remove('pulse'), 1000);
+        }
+        
+        function uploadTeams() {
+            if (!selectedFile) {
+                showMessage('❌ Please select a file first', 'error');
+                return;
+            }
+            
+            const selectedUsers = getSelectedUsers();
+            if (selectedUsers.length === 0) {
+                showMessage('❌ Please select at least one user', 'error');
+                return;
+            }
+            
+            const matchId = document.getElementById('matchId').value;
+            
+            showMessage(`🚀 Uploading teams for ${selectedUsers.join(', ')}...`, 'info');
+            
+            const formData = new FormData();
+            formData.append('teams_file', selectedFile);
+            if (matchId) {
+                formData.append('match_id', matchId);
+            }
+            selectedUsers.forEach(user => {
+                formData.append('selected_users', user);
+            });
+            
+            fetch('/auto_upload_teams', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(`✅ ${data.message}`, 'success');
+                } else {
+                    showMessage(`❌ ${data.message}`, 'error');
+                }
+            })
+            .catch(error => {
+                showMessage(`❌ Network error: ${error}`, 'error');
+            });
+        }
+        
+        function uploadLatest() {
+            const selectedUsers = getSelectedUsers();
+            if (selectedUsers.length === 0) {
+                showMessage('❌ Please select at least one user', 'error');
+                return;
+            }
+            
+            const matchId = document.getElementById('matchId').value;
+            
+            showMessage(`⚡ Uploading latest teams file for ${selectedUsers.join(', ')}...`, 'info');
+            
+            const formData = new FormData();
+            if (matchId) {
+                formData.append('match_id', matchId);
+            }
+            selectedUsers.forEach(user => {
+                formData.append('selected_users', user);
+            });
+            
+            fetch('/auto_upload_teams', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(`✅ ${data.message}`, 'success');
+                } else {
+                    showMessage(`❌ ${data.message}`, 'error');
+                }
+            })
+            .catch(error => {
+                showMessage(`❌ Network error: ${error}`, 'error');
+            });
+        }
+        
+        // Load files and users on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshFileList();
+            loadUsers();
+        });
+    </script>
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}

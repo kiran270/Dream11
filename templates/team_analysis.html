@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+
+{% block title %}Team Analysis - {{ match.team1 }} vs {{ match.team2 }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.analysis-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.metric-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.chart-container {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 15px;
+    margin: 10px 0;
+}
+
+.player-card {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 10px;
+    margin: 5px 0;
+    border-left: 4px solid #4CAF50;
+}
+
+.captain-suggestion {
+    border-left-color: #FFD700;
+}
+
+.balance-indicator {
+    height: 20px;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #ff6b6b 0%, #feca57 50%, #48dbfb 100%);
+    position: relative;
+    margin: 10px 0;
+}
+
+.balance-marker {
+    position: absolute;
+    top: -5px;
+    width: 2px;
+    height: 30px;
+    background: #fff;
+    box-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
+
+.export-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    text-decoration: none;
+    display: inline-block;
+    margin: 10px 5px;
+    transition: all 0.3s ease;
+}
+
+.export-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    color: white;
+    text-decoration: none;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="analysis-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2><i class="fas fa-chart-line"></i> Team Analysis</h2>
+                        <h4 class="text-muted">{{ match.team1 }} vs {{ match.team2 }}</h4>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('export_analysis', match_id=match.matchid) }}" class="export-btn">
+                            <i class="fas fa-download"></i> Export Analysis
+                        </a>
+                        <a href="{{ url_for('compare_teams') }}" class="export-btn">
+                            <i class="fas fa-balance-scale"></i> Compare Teams
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Key Metrics -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <h3>{{ total_players }}</h3>
+                            <p>Total Players</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <h3>{{ "%.1f"|format(avg_selection) }}%</h3>
+                            <p>Avg Selection</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <h3>{{ templates|length }}</h3>
+                            <p>Templates</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <h3>{{ composition_analysis.role_distribution|length if composition_analysis else 0 }}</h3>
+                            <p>Roles Available</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Team Composition Analysis -->
+        <div class="col-lg-6">
+            <div class="analysis-card">
+                <h4><i class="fas fa-users"></i> Team Composition</h4>
+                
+                {% if composition_analysis and composition_analysis.role_distribution %}
+                <div class="chart-container">
+                    <h6>Role Distribution</h6>
+                    {% for role in composition_analysis.role_distribution %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>{{ role.role }}</span>
+                        <div class="flex-grow-1 mx-3">
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar" style="width: {{ (role.count / total_players * 100)|round(1) }}%">
+                                    {{ role.count }}
+                                </div>
+                            </div>
+                        </div>
+                        <small>{{ "%.1f"|format(role.avg_selection) }}%</small>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="chart-container">
+                    <h6>Team Distribution</h6>
+                    {% for team in composition_analysis.team_distribution %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>{{ team.teamname }}</span>
+                        <div class="flex-grow-1 mx-3">
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-info" style="width: {{ (team.player_count / total_players * 100)|round(1) }}%">
+                                    {{ team.player_count }}
+                                </div>
+                            </div>
+                        </div>
+                        <small>{{ "%.1f"|format(team.avg_selection) }}%</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">No composition data available</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Player Performance Metrics -->
+        <div class="col-lg-6">
+            <div class="analysis-card">
+                <h4><i class="fas fa-star"></i> Top Performers</h4>
+                
+                {% if performance_metrics and performance_metrics.top_performers %}
+                <div class="chart-container" style="max-height: 400px; overflow-y: auto;">
+                    {% for player in performance_metrics.top_performers[:10] %}
+                    <div class="player-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ player.playername }}</strong>
+                                <small class="text-muted d-block">{{ player.teamname }} - {{ player.role }}</small>
+                            </div>
+                            <div class="text-right">
+                                <span class="badge badge-success">{{ "%.1f"|format(player.percentage) }}%</span>
+                                <small class="d-block">{{ player.credits }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">No performance data available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Captain/Vice-Captain Suggestions -->
+        <div class="col-lg-6">
+            <div class="analysis-card">
+                <h4><i class="fas fa-crown"></i> Captain Suggestions</h4>
+                
+                {% if performance_metrics and performance_metrics.captain_suggestions %}
+                <div class="chart-container">
+                    {% for player in performance_metrics.captain_suggestions[:5] %}
+                    <div class="player-card captain-suggestion">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ player.playername }}</strong>
+                                <small class="text-muted d-block">{{ player.teamname }} - {{ player.role }}</small>
+                            </div>
+                            <div class="text-right">
+                                <span class="badge badge-warning">{{ "%.1f"|format(player.captain_score) }}</span>
+                                <small class="d-block">{{ "%.1f"|format(player.percentage) }}% | {{ player.credits }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">No captain suggestions available</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Team Balance Analysis -->
+        <div class="col-lg-6">
+            <div class="analysis-card">
+                <h4><i class="fas fa-balance-scale"></i> Team Balance</h4>
+                
+                {% if balance_analysis %}
+                <div class="chart-container">
+                    {% for template in balance_analysis[:5] %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small><strong>{{ template.strategy }}</strong></small>
+                            <small>Ratio: {{ template.balance_ratio }}</small>
+                        </div>
+                        <div class="balance-indicator">
+                            <div class="balance-marker" style="left: {{ (template.balance_ratio / 3 * 100)|round(1) }}%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <small>Batting: {{ template.batting_players }}</small>
+                            <small>Bowling: {{ template.bowling_players }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">No balance analysis available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Templates Overview -->
+    {% if templates %}
+    <div class="row">
+        <div class="col-12">
+            <div class="analysis-card">
+                <h4><i class="fas fa-clipboard-list"></i> Available Templates</h4>
+                
+                <div class="table-responsive">
+                    <table class="table table-dark table-striped">
+                        <thead>
+                            <tr>
+                                <th>Strategy</th>
+                                <th>Stadium Analysis</th>
+                                <th>Winning Condition</th>
+                                <th>Team A</th>
+                                <th>Team B</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for template in templates %}
+                            <tr>
+                                <td>{{ template.matchbetween }}</td>
+                                <td>{{ template.stadium }}</td>
+                                <td>{{ template.wininning }}</td>
+                                <td>{{ template.one + template.two + template.three + template.ten + template.eleven + template.twelve }}</td>
+                                <td>{{ template.four + template.five + template.six + template.seven + template.eight + template.nine }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="viewTemplate({{ template.dreamteamid }})">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function viewTemplate(templateId) {
+    // Implement template viewing functionality
+    alert('Template viewing functionality - ID: ' + templateId);
+}
+
+// Add any additional JavaScript for charts or interactions
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize any charts or interactive elements
+    console.log('Team Analysis page loaded');
+});
+</script>
+{% endblock %}

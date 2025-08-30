@@ -1,23 +1,53 @@
 from flask import Flask, render_template, redirect, jsonify
 from flask import * 
-from db import removeSquad,getDreamTeams,getSquad,addDreamTeam,create_connection,addMatch,getMactches,getteams,getplayers,addSquad,addPlayer,removeplayer,deleteMatch,removeplayerByMatchID,updatePlayerRole,updatePlayerMatchRole,bulkRemovePlayers,bulkRemovePlayersByRole,bulkRemovePlayersByTeam,bulkRemovePlayersByPercentage
+from db import removeSquad,getDreamTeams,getSquad,addDreamTeam,create_connection,addMatch,getMactches,getteams,getplayers,addSquad,addPlayer,removeplayer,deleteMatch,removeplayerByMatchID,updatePlayerRole,updatePlayerMatchRole,bulkRemovePlayers,bulkRemovePlayersByRole,bulkRemovePlayersByTeam,bulkRemovePlayersByPercentage,getPlayerMatchRole,updateMatchId,updatePlayersMatchId,extractMatchIdFromUrl,getDreamTeamsBySourceMatch
 import requests
 import itertools
 import operator
 from operator import itemgetter,attrgetter, methodcaller
-from filterteams import getLeagueTypeCombinations,filterCombinations,filterBasedOnMatchWinnerAndPitchType
 import random
 import re
 import time
+import os
 from datetime import datetime
-from ground_analyzer import GroundAnalyzer, load_latest_ground_data
-from scorecard_template_generator import ScorecardTemplateGenerator
 try:
     from bs4 import BeautifulSoup
 except ImportError:
     BeautifulSoup = None
     print("BeautifulSoup not available. Install with: pip install beautifulsoup4")
 from bs4 import BeautifulSoup
+
+def convert_teams_for_template(teams_list):
+	"""Convert teams containing Row objects to JSON-serializable format"""
+	if not teams_list:
+		return []
+	
+	import json
+	
+	serializable_teams = []
+	for team in teams_list:
+		serializable_team = []
+		for item in team:
+			try:
+				# Try to serialize the item directly
+				json.dumps(item)
+				# If successful, it's already serializable
+				serializable_team.append(item)
+			except (TypeError, ValueError):
+				# If it fails, try to convert Row objects to lists (preserving index access)
+				try:
+					if hasattr(item, 'keys'):  # SQLite Row object
+						# Convert Row to list to preserve index-based access in template
+						row_list = [item[i] for i in range(len(item))]
+						serializable_team.append(row_list)
+					else:
+						# Try converting to dict as fallback
+						serializable_team.append(dict(item))
+				except (TypeError, ValueError):
+					# If that also fails, convert to string as fallback
+					serializable_team.append(str(item))
+		serializable_teams.append(serializable_team)
+	return serializable_teams
 
 # Selenium imports for web scraping
 try:
@@ -143,70 +173,70 @@ def scrape_players_for_match(match_id, team1, team2):
         # Try HTTPS first, then HTTP as fallback
         try:
             print("🔗 Navigating to team-generation.netlify.app...")
-            driver.get("https://team-generation.netlify.app/")
+            driver.get("http://team-generation.netlify.app/")
             time.sleep(3)
             print(f"✅ Successfully loaded page: {driver.title}")
         except Exception as e:
             print(f"❌ HTTPS failed: {e}")
             print("💡 Trying HTTP instead...")
             
-            try:
-                driver.get("http://team-generation.netlify.app/")
-                time.sleep(3)
-                print(f"✅ Successfully loaded with HTTP: {driver.title}")
-            except Exception as e2:
-                print(f"❌ HTTP also failed: {e2}")
-                return False
+            # try:
+            #     driver.get("http://team-generation.netlify.app/")
+            #     time.sleep(3)
+            #     print(f"✅ Successfully loaded with HTTP: {driver.title}")
+            # except Exception as e2:
+            #     print(f"❌ HTTP also failed: {e2}")
+            #     return False
         
-        # Click on match card
-        try:
-            card = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.CLASS_NAME, "card-middle"))
-            )
-            card.click()
-            print("✅ Clicked on the match card successfully.")
-        except Exception as e:
-            print("❌ Failed to click the match card:", str(e))
-            return False
+        # # Click on match card
+        # try:
+        #     card = WebDriverWait(driver, 10).until(
+        #         EC.element_to_be_clickable((By.CLASS_NAME, "card-middle"))
+        #     )
+        #     card.click()
+        #     print("✅ Clicked on the match card successfully.")
+        # except Exception as e:
+        #     print("❌ Failed to click the match card:", str(e))
+        #     return False
         
-        time.sleep(2)
+        # time.sleep(2)
         
-        # Login
-        try:
-            phone_input = WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.ID, "exampleInputEmail1"))
-            )
-            phone_input.send_keys("8142848270")  # You may want to make this configurable
+        # # Login
+        # try:
+        #     phone_input = WebDriverWait(driver, 10).until(
+        #         EC.presence_of_element_located((By.ID, "exampleInputEmail1"))
+        #     )
+        #     phone_input.send_keys("8142848270")  # You may want to make this configurable
             
-            password_input = driver.find_element(By.ID, "exampleInputPassword1")
-            password_input.send_keys("@Aug2022")  # You may want to make this configurable
+        #     password_input = driver.find_element(By.ID, "exampleInputPassword1")
+        #     password_input.send_keys("@Aug2022")  # You may want to make this configurable
             
-            login_button = driver.find_element(By.XPATH, "//button[contains(text(),'Login')]")
-            login_button.click()
-            print("✅ Login submitted.")
-        except Exception as e:
-            print("❌ Login failed:", str(e))
-            return False
+        #     login_button = driver.find_element(By.XPATH, "//button[contains(text(),'Login')]")
+        #     login_button.click()
+        #     print("✅ Login submitted.")
+        # except Exception as e:
+        #     print("❌ Login failed:", str(e))
+        #     return False
         
-        time.sleep(10)  # Wait for login
+        # time.sleep(10)  # Wait for login
         
-        # Check if login was successful
-        if "login" in driver.current_url.lower():
-            print("⚠️ Still on login page, trying to navigate to main page...")
-            try:
-                driver.get("https://team-generation.netlify.app/")
-                time.sleep(5)
-                print("🔄 Navigated back to main page")
-            except Exception as e:
-                print(f"❌ Failed to navigate to main page: {e}")
-                return False
+        # # Check if login was successful
+        # if "login" in driver.current_url.lower():
+        #     print("⚠️ Still on login page, trying to navigate to main page...")
+        #     try:
+        #         driver.get("https://team-generation.netlify.app/")
+        #         time.sleep(5)
+        #         print("🔄 Navigated back to main page")
+        #     except Exception as e:
+        #         print(f"❌ Failed to navigate to main page: {e}")
+        #         return False
         
-        # Find and click the correct match
+        # # Find and click the correct match
         cards = driver.find_elements(By.CLASS_NAME, "card-middle")
         clicked = False
         
-        print(f"🔍 Looking for match: {team1} vs {team2}")
-        print(f"📋 Found {len(cards)} match cards on the page")
+        # print(f"🔍 Looking for match: {team1} vs {team2}")
+        # print(f"📋 Found {len(cards)} match cards on the page")
         
         for i, card in enumerate(cards, 1):
             try:
@@ -223,6 +253,26 @@ def scrape_players_for_match(match_id, team1, team2):
                         driver.execute_script("arguments[0].click();", card)
                         print(f"✅ Clicked on match (JavaScript): {left_team} vs {right_team}")
                         clicked = True
+                        
+                        # Wait for URL to change and extract match ID
+                        time.sleep(3)
+                        current_url = driver.current_url
+                        print(f"🔗 Current URL after click: {current_url}")
+                        
+                        # Extract match ID from URL
+                        extracted_match_id = extractMatchIdFromUrl(current_url)
+                        if extracted_match_id:
+                            print(f"🆔 Extracted match ID from URL: {extracted_match_id}")
+                            
+                            # Update match ID in database if different
+                            if extracted_match_id != match_id:
+                                print(f"🔄 Updating match ID from {match_id} to {extracted_match_id}")
+                                updateMatchId(match_id, extracted_match_id)
+                                updatePlayersMatchId(match_id, extracted_match_id)
+                                match_id = extracted_match_id  # Use the extracted match ID for further operations
+                        else:
+                            print(f"⚠️ Could not extract match ID from URL: {current_url}")
+                        
                         break
                     except Exception as e1:
                         print(f"⚠️ JavaScript click failed: {e1}")
@@ -231,6 +281,26 @@ def scrape_players_for_match(match_id, team1, team2):
                             card.click()
                             print(f"✅ Clicked on match (regular): {left_team} vs {right_team}")
                             clicked = True
+                            
+                            # Wait for URL to change and extract match ID
+                            time.sleep(3)
+                            current_url = driver.current_url
+                            print(f"🔗 Current URL after click: {current_url}")
+                            
+                            # Extract match ID from URL
+                            extracted_match_id = extractMatchIdFromUrl(current_url)
+                            if extracted_match_id:
+                                print(f"🆔 Extracted match ID from URL: {extracted_match_id}")
+                                
+                                # Update match ID in database if different
+                                if extracted_match_id != match_id:
+                                    print(f"🔄 Updating match ID from {match_id} to {extracted_match_id}")
+                                    updateMatchId(match_id, extracted_match_id)
+                                    updatePlayersMatchId(match_id, extracted_match_id)
+                                    match_id = extracted_match_id  # Use the extracted match ID for further operations
+                            else:
+                                print(f"⚠️ Could not extract match ID from URL: {current_url}")
+                            
                             break
                         except Exception as e2:
                             print(f"❌ All click methods failed: {e2}")
@@ -244,6 +314,26 @@ def scrape_players_for_match(match_id, team1, team2):
                         driver.execute_script("arguments[0].click();", card)
                         print(f"✅ Clicked on match (partial): {left_team} vs {right_team}")
                         clicked = True
+                        
+                        # Wait for URL to change and extract match ID
+                        time.sleep(3)
+                        current_url = driver.current_url
+                        print(f"🔗 Current URL after click: {current_url}")
+                        
+                        # Extract match ID from URL
+                        extracted_match_id = extractMatchIdFromUrl(current_url)
+                        if extracted_match_id:
+                            print(f"🆔 Extracted match ID from URL: {extracted_match_id}")
+                            
+                            # Update match ID in database if different
+                            if extracted_match_id != match_id:
+                                print(f"🔄 Updating match ID from {match_id} to {extracted_match_id}")
+                                updateMatchId(match_id, extracted_match_id)
+                                updatePlayersMatchId(match_id, extracted_match_id)
+                                match_id = extracted_match_id  # Use the extracted match ID for further operations
+                        else:
+                            print(f"⚠️ Could not extract match ID from URL: {current_url}")
+                        
                         break
                     except Exception as e:
                         print(f"❌ Partial match click failed: {e}")
@@ -309,6 +399,24 @@ def scrape_players_for_match(match_id, team1, team2):
                                 driver.execute_script("arguments[0].click();", card)
                                 print(f"✅ Re-clicked on match: {left_team} vs {right_team}")
                                 time.sleep(5)
+                                
+                                # Extract match ID from URL after re-click
+                                current_url = driver.current_url
+                                print(f"🔗 Current URL after re-click: {current_url}")
+                                
+                                extracted_match_id = extractMatchIdFromUrl(current_url)
+                                if extracted_match_id:
+                                    print(f"🆔 Extracted match ID from URL: {extracted_match_id}")
+                                    
+                                    # Update match ID in database if different
+                                    if extracted_match_id != match_id:
+                                        print(f"🔄 Updating match ID from {match_id} to {extracted_match_id}")
+                                        updateMatchId(match_id, extracted_match_id)
+                                        updatePlayersMatchId(match_id, extracted_match_id)
+                                        match_id = extracted_match_id  # Use the extracted match ID for further operations
+                                else:
+                                    print(f"⚠️ Could not extract match ID from URL: {current_url}")
+                                
                                 break
                         except:
                             continue
@@ -535,6 +643,500 @@ def scrape_match():
 		print(f"❌ Manual scraping failed: {e}")
 		return jsonify({"success": False, "message": f"Error: {str(e)}"})
 
+@app.route("/auto_upload_teams", methods=["POST"])
+def auto_upload_teams():
+	"""Automatically upload the latest generated teams to Dream11 accounts"""
+	try:
+		from auto_dream11_uploader import AutoDream11Uploader
+		
+		# Get parameters
+		teams_file = request.form.get("teams_file")  # Optional specific file
+		match_id = request.form.get("match_id")      # Optional match ID override
+		selected_users = request.form.getlist("selected_users")  # List of selected users
+		
+		print(f"🚀 Auto upload triggered")
+		print(f"   📄 Teams file: {teams_file or 'Latest'}")
+		print(f"   🎯 Match ID: {match_id or 'From config'}")
+		print(f"   👥 Selected users: {selected_users or 'All users'}")
+		
+		# Create uploader and upload teams
+		uploader = AutoDream11Uploader()
+		success = uploader.upload_all_teams(teams_file, match_id, selected_users)
+		
+		if success:
+			return jsonify({
+				"success": True, 
+				"message": "Teams uploaded successfully! Check console for details."
+			})
+		else:
+			return jsonify({
+				"success": False, 
+				"message": "Upload failed. Check console for details."
+			})
+			
+	except Exception as e:
+		print(f"❌ Auto upload failed: {e}")
+		return jsonify({
+			"success": False, 
+			"message": f"Error: {str(e)}"
+		})
+
+@app.route("/team_analysis")
+def team_analysis_home():
+	"""Redirect to team comparison form for match selection"""
+	return redirect(url_for('compare_teams'))
+
+@app.route("/analyze_teams", methods=["POST"])
+def analyze_teams():
+	"""Analyze specific teams file or match"""
+	try:
+		import json
+		import statistics
+		from collections import Counter, defaultdict
+		
+		# Get parameters
+		teams_file = request.form.get("teams_file")
+		match_id = request.form.get("match_id")
+		
+		analysis_data = {}
+		
+		if teams_file:
+			# Analyze teams from file
+			with open(teams_file, 'r') as f:
+				data = json.load(f)
+			
+			teams = data.get('teams', [])
+			metadata = data.get('metadata', {})
+			
+			# Basic statistics
+			analysis_data['total_teams'] = len(teams)
+			analysis_data['match_info'] = metadata.get('match', 'Unknown')
+			analysis_data['generated_on'] = metadata.get('generated_on', 'Unknown')
+			
+			# Player analysis
+			all_players = []
+			captain_counts = Counter()
+			vice_captain_counts = Counter()
+			player_frequency = Counter()
+			
+			for team in teams:
+				players = team.get('players', [])
+				captain = team.get('captain')
+				vice_captain = team.get('vice_captain')
+				
+				all_players.extend(players)
+				if captain:
+					captain_counts[captain] += 1
+				if vice_captain:
+					vice_captain_counts[vice_captain] += 1
+				
+				for player in players:
+					player_frequency[player] += 1
+			
+			# Get player details from database if match_id available
+			player_details = {}
+			if match_id:
+				try:
+					players_db = getplayers(match_id)
+					for player in players_db:
+						if hasattr(player, 'player_id') and player.player_id:
+							player_details[int(player.player_id)] = {
+								'name': player.playername,
+								'team': player.teamname,
+								'role': player.role,
+								'percentage': float(player.percentage) if player.percentage else 0,
+								'credits': player.credits,
+								'matchrole': player.matchrole
+							}
+				except Exception as e:
+					print(f"Error getting player details: {e}")
+			
+			# Team composition analysis
+			unique_players = set(all_players)
+			analysis_data['unique_players'] = len(unique_players)
+			analysis_data['avg_players_per_team'] = len(all_players) / len(teams) if teams else 0
+			
+			# Most popular players
+			popular_players = []
+			for player_id, count in player_frequency.most_common(10):
+				player_info = player_details.get(player_id, {'name': f'Player {player_id}'})
+				popular_players.append({
+					'id': player_id,
+					'name': player_info.get('name', f'Player {player_id}'),
+					'team': player_info.get('team', 'Unknown'),
+					'role': player_info.get('role', 'Unknown'),
+					'frequency': count,
+					'percentage': (count / len(teams)) * 100
+				})
+			analysis_data['popular_players'] = popular_players
+			
+			# Captain analysis
+			top_captains = []
+			for player_id, count in captain_counts.most_common(5):
+				player_info = player_details.get(player_id, {'name': f'Player {player_id}'})
+				top_captains.append({
+					'id': player_id,
+					'name': player_info.get('name', f'Player {player_id}'),
+					'team': player_info.get('team', 'Unknown'),
+					'role': player_info.get('role', 'Unknown'),
+					'count': count,
+					'percentage': (count / len(teams)) * 100
+				})
+			analysis_data['top_captains'] = top_captains
+			
+			# Vice-captain analysis
+			top_vice_captains = []
+			for player_id, count in vice_captain_counts.most_common(5):
+				player_info = player_details.get(player_id, {'name': f'Player {player_id}'})
+				top_vice_captains.append({
+					'id': player_id,
+					'name': player_info.get('name', f'Player {player_id}'),
+					'team': player_info.get('team', 'Unknown'),
+					'role': player_info.get('role', 'Unknown'),
+					'count': count,
+					'percentage': (count / len(teams)) * 100
+				})
+			analysis_data['top_vice_captains'] = top_vice_captains
+			
+			# Role distribution analysis
+			role_distribution = defaultdict(int)
+			for player_id in unique_players:
+				player_info = player_details.get(player_id, {})
+				role = player_info.get('role', 'Unknown')
+				role_distribution[role] += 1
+			
+			analysis_data['role_distribution'] = dict(role_distribution)
+			
+			# Team diversity analysis
+			team_similarities = []
+			for i, team1 in enumerate(teams):
+				for j, team2 in enumerate(teams[i+1:], i+1):
+					common_players = set(team1.get('players', [])) & set(team2.get('players', []))
+					similarity = len(common_players) / 11 * 100  # Assuming 11 players per team
+					team_similarities.append(similarity)
+			
+			if team_similarities:
+				analysis_data['avg_team_similarity'] = statistics.mean(team_similarities)
+				analysis_data['min_team_similarity'] = min(team_similarities)
+				analysis_data['max_team_similarity'] = max(team_similarities)
+			else:
+				analysis_data['avg_team_similarity'] = 0
+				analysis_data['min_team_similarity'] = 0
+				analysis_data['max_team_similarity'] = 0
+		
+		return render_template("team_analysis_results.html", analysis=analysis_data, teams_file=teams_file)
+		
+	except Exception as e:
+		print(f"Error analyzing teams: {e}")
+		return render_template("team_analysis_results.html", analysis={}, error=str(e))
+
+@app.route("/export_analysis", methods=["POST"])
+def export_analysis_general():
+	"""Export team analysis as CSV or JSON"""
+	try:
+		import json
+		import csv
+		from io import StringIO
+		from flask import make_response
+		
+		teams_file = request.form.get("teams_file")
+		export_format = request.form.get("format", "csv")
+		
+		if not teams_file:
+			return jsonify({"error": "No teams file specified"}), 400
+		
+		# Re-run analysis to get data
+		with open(teams_file, 'r') as f:
+			data = json.load(f)
+		
+		teams = data.get('teams', [])
+		
+		if export_format == "csv":
+			# Create CSV export
+			output = StringIO()
+			writer = csv.writer(output)
+			
+			# Write headers
+			writer.writerow(['Team ID', 'Team Name', 'Captain', 'Vice Captain', 'Players'])
+			
+			# Write team data
+			for team in teams:
+				writer.writerow([
+					team.get('id', ''),
+					team.get('name', ''),
+					team.get('captain', ''),
+					team.get('vice_captain', ''),
+					','.join(map(str, team.get('players', [])))
+				])
+			
+			# Create response
+			response = make_response(output.getvalue())
+			response.headers['Content-Type'] = 'text/csv'
+			response.headers['Content-Disposition'] = f'attachment; filename=team_analysis_{teams_file.replace(".json", ".csv")}'
+			return response
+		
+		else:  # JSON format
+			response = make_response(json.dumps(data, indent=2))
+			response.headers['Content-Type'] = 'application/json'
+			response.headers['Content-Disposition'] = f'attachment; filename={teams_file}'
+			return response
+		
+	except Exception as e:
+		return jsonify({"error": str(e)}), 500
+
+@app.route("/team_analysis/<int:match_id>")
+def team_analysis(match_id):
+	"""Team Analysis page with comprehensive statistics and insights"""
+	try:
+		from db import (get_team_composition_analysis, get_player_performance_metrics, 
+		               get_team_balance_analysis, get_historical_performance, getteams, getplayers)
+		
+		# Get match details
+		match_data = getteams(match_id)
+		if not match_data:
+			return render_template("error.html", message="Match not found")
+		
+		match = match_data[0]
+		players = getplayers(match_id)
+		
+		# Get analysis data
+		composition_analysis = get_team_composition_analysis(match_id)
+		performance_metrics = get_player_performance_metrics(match_id)
+		balance_analysis = get_team_balance_analysis(match_id)
+		historical_data = get_historical_performance(match_id)
+		
+		# Calculate additional insights
+		total_players = len(players)
+		avg_selection = sum([p['percentage'] for p in players]) / max(total_players, 1)
+		
+		# Get templates for this match
+		templates = getDreamTeamsBySourceMatch(match_id)
+		
+		return render_template("team_analysis.html",
+		                     match=match,
+		                     players=players,
+		                     composition_analysis=composition_analysis,
+		                     performance_metrics=performance_metrics,
+		                     balance_analysis=balance_analysis,
+		                     historical_data=historical_data,
+		                     templates=templates,
+		                     total_players=total_players,
+		                     avg_selection=avg_selection)
+		
+	except Exception as e:
+		print(f"Error in team analysis: {e}")
+		return render_template("error.html", message=f"Analysis error: {str(e)}")
+
+@app.route("/export_analysis/<int:match_id>")
+def export_analysis(match_id):
+	"""Export team analysis as JSON/CSV"""
+	try:
+		from db import (get_team_composition_analysis, get_player_performance_metrics, 
+		               get_team_balance_analysis, getteams, getplayers)
+		import json
+		from datetime import datetime
+		
+		# Get all analysis data
+		match_data = getteams(match_id)[0]
+		players = getplayers(match_id)
+		composition_analysis = get_team_composition_analysis(match_id)
+		performance_metrics = get_player_performance_metrics(match_id)
+		balance_analysis = get_team_balance_analysis(match_id)
+		
+		# Convert Row objects to dictionaries
+		def convert_rows(data):
+			if isinstance(data, list):
+				return [dict(row) if hasattr(row, 'keys') else row for row in data]
+			elif hasattr(data, 'keys'):
+				return dict(data)
+			return data
+		
+		# Prepare export data
+		export_data = {
+			"metadata": {
+				"match_id": match_id,
+				"teams": f"{match_data['team1']} vs {match_data['team2']}",
+				"exported_on": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+				"total_players": len(players)
+			},
+			"composition_analysis": {
+				"role_distribution": convert_rows(composition_analysis['role_distribution']) if composition_analysis else [],
+				"team_distribution": convert_rows(composition_analysis['team_distribution']) if composition_analysis else []
+			},
+			"performance_metrics": {
+				"top_performers": convert_rows(performance_metrics['top_performers']) if performance_metrics else [],
+				"captain_suggestions": convert_rows(performance_metrics['captain_suggestions']) if performance_metrics else []
+			},
+			"balance_analysis": balance_analysis,
+			"players": convert_rows(players)
+		}
+		
+		# Return as JSON download
+		response = jsonify(export_data)
+		response.headers['Content-Disposition'] = f'attachment; filename=team_analysis_{match_id}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
+		return response
+		
+	except Exception as e:
+		print(f"Error exporting analysis: {e}")
+		return jsonify({"error": str(e)}), 500
+
+@app.route("/compare_teams", methods=["GET", "POST"])
+def compare_teams():
+	"""Compare multiple teams side by side"""
+	if request.method == "POST":
+		team_ids = request.form.getlist("team_ids")
+		match_id = request.form.get("match_id")
+		
+		try:
+			# Get comparison data for selected teams
+			comparison_data = []
+			for team_id in team_ids:
+				# This would need to be implemented based on your team storage structure
+				# For now, we'll use template data
+				pass
+			
+			return render_template("team_comparison.html", 
+			                     comparison_data=comparison_data,
+			                     match_id=match_id)
+		except Exception as e:
+			return render_template("error.html", message=f"Comparison error: {str(e)}")
+	
+	# GET request - show comparison form
+	matches = getMactches()
+	return render_template("team_comparison_form.html", matches=matches)
+
+@app.route("/list_teams_files", methods=["GET"])
+def list_teams_files():
+	"""List available teams JSON files"""
+	try:
+		import glob
+		files = glob.glob("dream11_teams_*.json")
+		files.sort(key=os.path.getmtime, reverse=True)  # Sort by modification time, newest first
+		
+		file_info = []
+		for file in files:
+			try:
+				with open(file, 'r') as f:
+					data = json.load(f)
+				metadata = data.get('metadata', {})
+				file_info.append({
+					'filename': file,
+					'generated_on': metadata.get('generated_on', 'Unknown'),
+					'match': metadata.get('match', 'Unknown'),
+					'total_teams': len(data.get('teams', [])),
+					'size': os.path.getsize(file)
+				})
+			except:
+				file_info.append({
+					'filename': file,
+					'generated_on': 'Unknown',
+					'match': 'Unknown',
+					'total_teams': 0,
+					'size': os.path.getsize(file)
+				})
+		
+		return jsonify({"success": True, "files": file_info})
+		
+	except Exception as e:
+		return jsonify({"success": False, "message": f"Error: {str(e)}"})
+
+@app.route("/list_users", methods=["GET"])
+def list_users():
+	"""List configured users from dream11_config.json"""
+	try:
+		config_file = 'dream11_config.json'
+		if not os.path.exists(config_file):
+			return jsonify({"success": False, "message": "Configuration file not found"})
+		
+		with open(config_file, 'r') as f:
+			config = json.load(f)
+		
+		users = config.get('users', [])
+		user_info = []
+		
+		for user in users:
+			user_info.append({
+				'name': user.get('name', 'Unknown'),
+				'team_range': user.get('team_range', [1, 6]),
+				'configured': "YOUR_USER" not in user.get('auth_token', '')
+			})
+		
+		return jsonify({"success": True, "users": user_info})
+		
+	except Exception as e:
+		return jsonify({"success": False, "message": f"Error: {str(e)}"})
+
+@app.route("/delete_teams_file", methods=["POST"])
+def delete_teams_file():
+	"""Delete a specific teams JSON file"""
+	try:
+		filename = request.form.get("filename")
+		if not filename:
+			return jsonify({"success": False, "message": "No filename provided"})
+		
+		# Security check: only allow deletion of dream11_teams_*.json files
+		if not filename.startswith("dream11_teams_") or not filename.endswith(".json"):
+			return jsonify({"success": False, "message": "Invalid filename format"})
+		
+		# Check if file exists
+		if not os.path.exists(filename):
+			return jsonify({"success": False, "message": "File not found"})
+		
+		# Delete the file
+		os.remove(filename)
+		print(f"🗑️ Deleted teams file: {filename}")
+		
+		return jsonify({
+			"success": True, 
+			"message": f"File '{filename}' deleted successfully"
+		})
+		
+	except Exception as e:
+		print(f"❌ Error deleting file: {e}")
+		return jsonify({"success": False, "message": f"Error: {str(e)}"})
+
+@app.route("/delete_all_teams_files", methods=["POST"])
+def delete_all_teams_files():
+	"""Delete all teams JSON files"""
+	try:
+		import glob
+		files = glob.glob("dream11_teams_*.json")
+		
+		if not files:
+			return jsonify({"success": False, "message": "No teams files found to delete"})
+		
+		deleted_count = 0
+		failed_files = []
+		
+		for filename in files:
+			try:
+				os.remove(filename)
+				print(f"🗑️ Deleted teams file: {filename}")
+				deleted_count += 1
+			except Exception as e:
+				print(f"❌ Failed to delete {filename}: {e}")
+				failed_files.append(filename)
+		
+		if failed_files:
+			return jsonify({
+				"success": False, 
+				"message": f"Deleted {deleted_count} files, but failed to delete: {', '.join(failed_files)}"
+			})
+		else:
+			return jsonify({
+				"success": True, 
+				"message": f"Successfully deleted all {deleted_count} teams files"
+			})
+		
+	except Exception as e:
+		print(f"❌ Error deleting files: {e}")
+		return jsonify({"success": False, "message": f"Error: {str(e)}"})
+
+@app.route("/auto_upload")
+def auto_upload_page():
+	"""Serve the auto upload interface"""
+	return render_template("auto_upload.html")
+
 @app.route("/matchpage",methods = ["POST","GET"])
 def matchpage():
 	matchid=request.form.get("matchid")
@@ -555,7 +1157,13 @@ def addplayer():
 	credits=request.form.get('credits')
 	percentage=request.form.get('percentage')
 	matchrole=request.form.get('matchrole')
-	addPlayer(matchid,teamname,role,playername,credits,percentage,matchrole)
+	player_id=request.form.get('player_id')  # Get player_id from form
+	
+	# If no player_id provided, set to None
+	if not player_id:
+		player_id = None
+	
+	addPlayer(matchid,teamname,role,playername,credits,percentage,matchrole,player_id)
 	teams=getteams(matchid)
 	players=getplayers(matchid)
 	players=sorted(players, key=operator.itemgetter(5))
@@ -854,27 +1462,14 @@ def customTeams():
 	if db_analysis and db_analysis.get('analysis_data'):
 		try:
 			analysis_data = json.loads(db_analysis['analysis_data'])
-			ground_analyzer = GroundAnalyzer()
-			ground_analyzer.analysis = analysis_data
-			ground_insights = ground_analyzer.get_ground_insights()
-			print("🏟️ Using stored ground analysis from database")
+			# GroundAnalyzer not available - using basic ground insights
+			ground_insights = f"Ground analysis data available for {analysis_data.get('ground_name', 'this ground')}"
+			print("🏟️ Using stored ground analysis from database (basic mode)")
 		except Exception as e:
 			print(f"⚠️ Error loading database ground analysis: {e}")
 	
-	# Fallback to file-based analysis
-	if not ground_analyzer:
-		ground_analyzer = load_latest_ground_data()
-		if ground_analyzer:
-			ground_insights = ground_analyzer.get_ground_insights()
-			print("🏟️ Using file-based ground analysis")
-	
-	# Apply ground analysis if available
-	if ground_analyzer:
-		print("🏟️ Applying ground-based player adjustments...")
-		players = ground_analyzer.apply_ground_bias_to_players(players)
-		print("✅ Ground analysis applied to player selection")
-	else:
-		print("⚠️ No ground data available, using standard player percentages")
+	# Ground analysis features disabled - using standard player percentages
+	print("⚠️ Ground analysis features disabled, using standard player percentages")
 	
 	# Sort players by percentage (highest first) - now includes ground adjustments
 	players = sorted(players, key=operator.itemgetter(5), reverse=True)
@@ -1252,7 +1847,6 @@ def scorecardTeams():
 	from db import get_ground_analysis
 	import json
 	
-	ground_analyzer = None
 	ground_insights = ""
 	
 	# Try to get ground analysis from database
@@ -1260,20 +1854,14 @@ def scorecardTeams():
 	if db_analysis and db_analysis.get('analysis_data'):
 		try:
 			analysis_data = json.loads(db_analysis['analysis_data'])
-			ground_analyzer = GroundAnalyzer()
-			ground_analyzer.analysis = analysis_data
-			ground_insights = ground_analyzer.get_ground_insights()
-			print("🏟️ Using stored ground analysis for scorecard teams")
+			# GroundAnalyzer not available - using basic ground insights
+			ground_insights = f"Ground analysis data available for {analysis_data.get('ground_name', 'this ground')}"
+			print("🏟️ Using stored ground analysis for scorecard teams (basic mode)")
 		except Exception as e:
 			print(f"⚠️ Error loading database ground analysis: {e}")
 	
-	# Apply ground analysis if available
-	if ground_analyzer:
-		print("🏟️ Applying ground-based player adjustments to scorecard teams...")
-		players = ground_analyzer.apply_ground_bias_to_players(players)
-		print("✅ Ground analysis applied to scorecard team generation")
-	else:
-		print("⚠️ No ground data available for scorecard teams")
+	# Ground analysis features disabled for scorecard teams
+	print("⚠️ Ground analysis features disabled for scorecard teams, using standard player percentages")
 	
 	# Sort players by percentage (highest first) - now includes ground adjustments
 	players = sorted(players, key=operator.itemgetter(5), reverse=True)
@@ -1577,7 +2165,7 @@ def scorecardTeams():
 		return jsonify(teams_data)
 	
 	return render_template("finalteams.html",
-	                      validcombinations=scorecard_teams,
+	                      validcombinations=convert_teams_for_template(scorecard_teams),
 	                      teamA=teams[0][1],
 	                      teamB=teams[0][2],
 	                      top13_names=top13_names,
@@ -1609,12 +2197,7 @@ def generateTeams():
 		except Exception as e:
 			print(f"⚠️ Error loading database ground analysis: {e}")
 	
-	# Fallback to file-based analysis
-	if not ground_analyzer:
-		ground_analyzer = load_latest_ground_data()
-		if ground_analyzer:
-			ground_insights = ground_analyzer.get_ground_insights()
-			print("🏟️ Using file-based ground analysis for template generation")
+	# File-based analysis not available - using database analysis only
 	
 	# Apply ground analysis if available
 	if ground_analyzer:
@@ -1662,8 +2245,13 @@ def generateTeams():
 	bdea = [p for p in teamB_players if 'DEA' in str(p[6])]
 	
 	# If no match role data, use all players in general categories
-	# Generate teams using templates
-	templatecombinations = getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teams[0][1],teams[0][2])
+	# Generate teams using templates - Loop 5 times for more variety
+	templatecombinations = []
+	for iteration in range(5):
+		print(f"🔄 Generating teams - Iteration {iteration + 1}/5")
+		teams_batch = getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teams[0][1],teams[0][2])
+		templatecombinations.extend(teams_batch)
+		print(f"✅ Iteration {iteration + 1} completed: {len(teams_batch)} teams generated, Total: {len(templatecombinations)}")
 	
 	# Final validation: ensure exactly 1 team per template
 	expected_teams = len(getDreamTeams()) if getDreamTeams() else 0
@@ -1812,8 +2400,144 @@ def generateTeams():
 	else:
 		print("❌ DEBUG: No enhanced_teams to save to JSON")
 	
+	# Sort templatecombinations by percentage (descending order - highest percentage first)
+	print(f"🔄 Sorting {len(templatecombinations)} teams by percentage...")
+	try:
+		# Each team should have percentage as the last element (index -1)
+		# Sort in descending order (highest percentage first)
+		templatecombinations = sorted(templatecombinations, key=lambda team: float(team[-1]) if team and len(team) > 0 and str(team[-1]).replace('.', '').replace('-', '').isdigit() else 0, reverse=True)
+		print(f"✅ Teams sorted successfully by percentage")
+		if templatecombinations:
+			print(f"📊 Top team percentage: {templatecombinations[0][-1] if templatecombinations[0] else 'N/A'}")
+			print(f"📊 Bottom team percentage: {templatecombinations[-1][-1] if templatecombinations[-1] else 'N/A'}")
+	except Exception as e:
+		print(f"⚠️ Error sorting teams by percentage: {e}")
+		print("📝 Using original order")
+	
+	# Export sorted teams to JSON file (dream11_teams_...)
+	print(f"💾 Exporting {len(templatecombinations)} sorted teams to JSON...")
+	try:
+		# Debug: Check team structure
+		if templatecombinations:
+			print(f"🔍 DEBUG: First team structure:")
+			first_team = templatecombinations[0]
+			print(f"   Team length: {len(first_team) if first_team else 0}")
+			if first_team and len(first_team) > 0:
+				print(f"   First player: {first_team[0] if len(first_team) > 0 else 'None'}")
+				print(f"   Player structure: {type(first_team[0]) if len(first_team) > 0 else 'None'}")
+				if len(first_team) > 0 and hasattr(first_team[0], '__len__'):
+					print(f"   Player length: {len(first_team[0])}")
+					if len(first_team[0]) > 7:
+						print(f"   Player ID (index 7): {first_team[0][7]}")
+				print(f"   Last element (percentage): {first_team[-1] if first_team else 'None'}")
+		
+		# Convert templatecombinations to the format expected by save_teams_to_file
+		if templatecombinations:
+			# Create enhanced_teams from sorted templatecombinations for JSON export
+			sorted_enhanced_teams = []
+			for i, team in enumerate(templatecombinations):
+				print(f"🔍 Processing team {i+1}: length={len(team) if team else 0}")
+				
+				if team and len(team) >= 11:  # Ensure team has enough players
+					# Extract the first 11 players for the team
+					team_players = team[:11]
+					print(f"   Team players extracted: {len(team_players)}")
+					
+					# Debug player IDs extraction
+					player_ids = []
+					for j, player in enumerate(team_players):
+						if player and hasattr(player, '__len__') and len(player) > 7:
+							player_id = player[7] if player[7] is not None else 0
+							player_ids.append(player_id)
+							if j < 3:  # Show first 3 for debugging
+								print(f"     Player {j+1}: {player[3] if len(player) > 3 else 'Unknown'} ID: {player_id}")
+						else:
+							print(f"     Player {j+1}: Invalid structure - {type(player)}")
+							player_ids.append(0)
+					
+					# Get captain and vice-captain
+					captain_id = 0
+					vc_id = 0
+					
+					if len(team) > 11 and team[11] and hasattr(team[11], '__len__') and len(team[11]) > 7:
+						captain_id = team[11][7] if team[11][7] is not None else 0
+					elif team_players and len(team_players[0]) > 7:
+						captain_id = team_players[0][7] if team_players[0][7] is not None else 0
+					
+					if len(team) > 12 and team[12] and hasattr(team[12], '__len__') and len(team[12]) > 7:
+						vc_id = team[12][7] if team[12][7] is not None else 0
+					elif len(team_players) > 1 and len(team_players[1]) > 7:
+						vc_id = team_players[1][7] if team_players[1][7] is not None else 0
+					
+					# Get team name
+					team_name = f"Team {i + 1}"
+					if len(team) > 13:  # Template name might be at index 13
+						team_name = str(team[13]) if team[13] else team_name
+					elif len(team) > 12:  # Or at index -2
+						team_name = str(team[-2]) if team[-2] else team_name
+					
+					enhanced_team = {
+						'id': i + 1,
+						'name': team_name,
+						'players': player_ids,
+						'captain': captain_id,
+						'vice_captain': vc_id,
+						'percentage': team[-1] if team else 0
+					}
+					
+					print(f"   Enhanced team: {len(enhanced_team['players'])} players, captain: {enhanced_team['captain']}, vc: {enhanced_team['vice_captain']}")
+					sorted_enhanced_teams.append(enhanced_team)
+				else:
+					print(f"   Skipping team {i+1}: insufficient length ({len(team) if team else 0})")
+			
+			print(f"🔍 Total enhanced teams created: {len(sorted_enhanced_teams)}")
+			
+			if sorted_enhanced_teams:
+				# Export directly to JSON with our enhanced format
+				from datetime import datetime
+				import json
+				
+				filename = f"dream11_teams_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+				
+				# Get match ID from the current match
+				current_match_id = "YOUR_MATCH_ID"
+				try:
+					if hasattr(request, 'form') and request.form.get('matchid'):
+						current_match_id = request.form.get('matchid')
+				except:
+					pass
+				
+				# Prepare final JSON structure
+				json_data = {
+					"metadata": {
+						"generated_on": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+						"match": f"{teams[0][1]} vs {teams[0][2]}",
+						"total_teams": len(sorted_enhanced_teams),
+						"match_id": current_match_id,
+						"auth_token": "YOUR_AUTH_TOKEN"
+					},
+					"teams": sorted_enhanced_teams
+				}
+				
+				# Write to file
+				with open(filename, 'w') as f:
+					json.dump(json_data, f, indent=2)
+				
+				print(f"📁 Teams saved to: {filename}")
+				print(f"💡 Edit the JSON file to add your match_id and auth_token in the metadata section")
+				print(f"📊 Total valid teams saved: {len(sorted_enhanced_teams)}")
+				print(f"✅ Sorted teams exported to dream11_teams_*.json successfully")
+			else:
+				print("⚠️ No valid teams to export after sorting")
+		else:
+			print("⚠️ No teams available for JSON export")
+	except Exception as e:
+		print(f"❌ Error exporting sorted teams to JSON: {e}")
+		import traceback
+		traceback.print_exc()
+	
 	return render_template("finalteams.html",
-	                      validcombinations=templatecombinations,
+	                      validcombinations=convert_teams_for_template(templatecombinations),
 	                      teamA=teams[0][1],
 	                      teamB=teams[0][2],
 	                      top13_players=top13_players,
@@ -2581,13 +3305,22 @@ def save_teams_to_file(teams, teamA_name, teamB_name):
 	try:
 		import json
 		
+		# Get match ID from the current match (if available)
+		current_match_id = "YOUR_MATCH_ID"
+		try:
+			# Try to get match ID from the teams generation context
+			if hasattr(request, 'form') and request.form.get('matchid'):
+				current_match_id = request.form.get('matchid')
+		except:
+			pass
+		
 		# Prepare teams data for JSON
 		teams_data = {
 			"metadata": {
 				"generated_on": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
 				"match": f"{teamA_name} vs {teamB_name}",
 				"total_teams": 0,
-				"match_id": "YOUR_MATCH_ID",
+				"match_id": current_match_id,
 				"auth_token": "YOUR_AUTH_TOKEN"
 			},
 			"teams": []

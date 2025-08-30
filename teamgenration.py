@@ -72,9 +72,9 @@ def extract_player_id_from_image_url(image_url):
 
 # Configure Chrome driver with options
 # ⚠️ IMPORTANT: Update these team names to match the exact names shown on Dream11 website
-target_team_1 = "OVI-W"  # Update this to match first team name on Dream11
-target_team_2 = "TRT-W"  # Update this to match second team name on Dream11
-match_id = 63  # Replace with your match ID (from the log above)
+target_team_1 = "TRT-W"  # Update this to match first team name on Dream11
+target_team_2 = "BPH-W"  # Update this to match second team name on Dream11
+match_id = 70  # Replace with your match ID (from the log above)
 run=1
 default_matchrole = "MID-HIT"  # or customize per player
 
@@ -119,7 +119,7 @@ driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), opti
 try:
     print("🔗 Navigating to team-generation.netlify.app...")
     driver.get("https://team-generation.netlify.app/")
-    time.sleep(3)
+    time.sleep(30)
     print(f"✅ Successfully loaded page: {driver.title}")
 except Exception as e:
     print(f"❌ HTTPS failed: {e}")

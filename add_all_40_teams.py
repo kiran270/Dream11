@@ -1,1767 +1,327 @@
 #!/usr/bin/env python3
 """
-Add all 40 Dream11 teams using the edit team API
+Add all 40 Dream11 teams using the edit team API with multiple users
 """
 
 from dream11_api_client import edit_dream11_team
 import time
+import json
+import os
+import glob
 
-# Configuration
-MATCH_ID = "108984"
-AUTH_TOKEN = "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCIsImtpZCI6IlRqb0FsLVdyZWN3Z3MtZVVvcm5xWWE5Y2x4dyJ9.eyJhdWQiOlsiYXBpLmRyZWFtMTEuY29tIiwiZ3VhcmRpYW4iXSwiZXhwIjoxNzcxMzE5OTg3LCJpYXQiOjE3NTU3Njc5ODcsImlzcyI6ImRyZWFtMTEuY29tIiwic3ViIjoiNDY4MTYxIiwiYXpwIjoiMiIsInJmdCI6IjEifQ.KvlKZ8fzvkikfKmzW02iaqDRUkcmdyaCFy33SnFBJBfqQBrU0uZjmK6hSYQ1yhJMceIuKpbP51yU_KFC-DB2Ftkrhpt3DeTq-06G-JRoTFAGphCFyQe7UseMs5V_RHRCAuyPP1etLlYPJEFp5jxbutwAI_-ayrSUq8B31buVl9d5L1dcK1cmorY5-10D6kTjmSVS_eKc79WExcdo1MMScJP60V82TypdVUbrtjfnx-9U6HbH6f1OcGam8zIk4lHEZgRLg_HDiJgHKlNXZedBSdkYgoxpvFV8dH8o8Xq6CKeRzotrzJGbn2lZ8EZVfw_noSN-hh8Z9ISlA7GG7sm3Ow"
-# Teams data
-teams_data = [
-    {
-      "id": 1,
-      "name": "4-7",
-      "captain": 10855,
-      "vice_captain": 12712,
-      "players": [
-        46614,
-        10853,
-        10686,
-        10920,
-        10855,
-        11381,
-        46558,
-        11395,
-        12712,
-        48465,
-        11396
-      ]
-    },
-    {
-      "id": 2,
-      "name": "4-7",
-      "captain": 11395,
-      "vice_captain": 46558,
-      "players": [
-        10686,
-        46614,
-        10920,
-        11395,
-        11381,
-        46558,
-        10855,
-        12712,
-        48465,
-        11396,
-        11306
-      ]
-    },
-    {
-      "id": 3,
-      "name": "4-7",
-      "captain": 46558,
-      "vice_captain": 10855,
-      "players": [
-        10686,
-        46614,
-        10920,
-        46558,
-        11381,
-        10855,
-        11395,
-        12712,
-        48465,
-        11396,
-        11306
-      ]
-    },
-    {
-      "id": 4,
-      "name": "4-7",
-      "captain": 48465,
-      "vice_captain": 46558,
-      "players": [
-        10853,
-        46614,
-        10920,
-        46558,
-        11381,
-        10855,
-        11395,
-        48465,
-        12712,
-        11396,
-        11306
-      ]
-    },
-    {
-      "id": 5,
-      "name": "4-7",
-      "captain": 12712,
-      "vice_captain": 48465,
-      "players": [
-        46614,
-        10853,
-        10920,
-        11395,
-        11381,
-        11396,
-        46558,
-        12712,
-        48465,
-        10855,
-        11306
-      ]
-    },
-    {
-      "id": 6,
-      "name": "4-7",
-      "captain": 12712,
-      "vice_captain": 11395,
-      "players": [
-        46614,
-        10853,
-        10686,
-        10920,
-        11395,
-        17489,
-        10855,
-        46558,
-        12712,
-        48465,
-        11396
-      ]
-    },
-    {
-      "id": 7,
-      "name": "4-7",
-      "captain": 12712,
-      "vice_captain": 17489,
-      "players": [
-        10686,
-        10853,
-        46614,
-        10920,
-        11395,
-        17489,
-        10855,
-        46558,
-        12712,
-        48465,
-        11396
-      ]
-    },
-    {
-      "id": 8,
-      "name": "4-7",
-      "captain": 46558,
-      "vice_captain": 48465,
-      "players": [
-        10686,
-        46614,
-        10920,
-        46558,
-        17489,
-        11395,
-        11396,
-        48465,
-        12712,
-        10855,
-        11306
-      ]
-    },
-    {
-      "id": 9,
-      "name": "4-7",
-      "captain": 10855,
-      "vice_captain": 11395,
-      "players": [
-        46614,
-        10686,
-        10920,
-        10855,
-        17489,
-        11395,
-        46558,
-        12712,
-        48465,
-        11396,
-        11306
-      ]
-    },
-    {
-      "id": 10,
-      "name": "4-7",
-      "captain": 11381,
-      "vice_captain": 12712,
-      "players": [
-        46614,
-        10686,
-        10920,
-        10855,
-        11381,
-        46558,
-        11395,
-        12712,
-        48465,
-        11396,
-        97321
-      ]
-    },
-    {
-      "id": 11,
-      "name": "4-7",
-      "captain": 11381,
-      "vice_captain": 48465,
-      "players": [
-        46614,
-        10686,
-        12696,
-        10920,
-        10855,
-        11381,
-        11395,
-        46558,
-        48465,
-        12712,
-        11396
-      ]
-    },
-    {
-      "id": 12,
-      "name": "4-7",
-      "captain": 12712,
-      "vice_captain": 48465,
-      "players": [
-        46614,
-        10686,
-        12696,
-        10920,
-        10855,
-        11381,
-        11395,
-        46558,
-        12712,
-        48465,
-        11396
-      ]
-    },
-    {
-      "id": 13,
-      "name": "4-7",
-      "captain": 11395,
-      "vice_captain": 11396,
-      "players": [
-        46614,
-        10686,
-        12696,
-        10920,
-        11395,
-        11381,
-        11396,
-        46558,
-        12712,
-        48465,
-        10855
-      ]
-    },
-    {
-      "id": 14,
-      "name": "4-7",
-      "captain": 46558,
-      "vice_captain": 11396,
-      "players": [
-        46614,
-        10686,
-        10920,
-        12696,
-        46558,
-        11381,
-        11396,
-        11395,
-        48465,
-        12712,
-        10855
-      ]
-    },
-    {
-      "id": 15,
-      "name": "4-7",
-      "captain": 11381,
-      "vice_captain": 12712,
-      "players": [
-        10686,
-        46614,
-        12696,
-        10920,
-        11395,
-        11381,
-        11396,
-        46558,
-        12712,
-        48465,
-        10855
-      ]
-    },
-    {
-      "id": 16,
-      "name": "4-7",
-      "captain": 46558,
-      "vice_captain": 11395,
-      "players": [
-        46614,
-        10686,
-        12696,
-        46558,
-        11381,
-        11395,
-        11396,
-        12712,
-        48465,
-        10855,
-        10920
-      ]
-    },
-    {
-      "id": 17,
-      "name": "4-7",
-      "captain": 10855,
-      "vice_captain": 12712,
-      "players": [
-        10686,
-        46614,
-        12696,
-        10855,
-        11381,
-        46558,
-        11395,
-        12712,
-        48465,
-        11396,
-        10920
-      ]
-    },
-    {
-      "id": 18,
-      "name": "4-7",
-      "captain": 12712,
-      "vice_captain": 48465,
-      "players": [
-        10686,
-        46614,
-        10920,
-        12696,
-        11395,
-        11381,
-        10855,
-        46558,
-        12712,
-        48465,
-        11396
-      ]
-    },
-    {
-      "id": 19,
-      "name": "4-7",
-      "captain": 12712,
-      "vice_captain": 48465,
-      "players": [
-        46614,
-        10686,
-        10920,
-        12696,
-        11395,
-        11381,
-        46558,
-        10855,
-        12712,
-        48465,
-        11396
-      ]
-    },
-    {
-      "id": 20,
-      "name": "4-7",
-      "captain": 10855,
-      "vice_captain": 48465,
-      "players": [
-        46614,
-        10853,
-        10920,
-        10855,
-        11381,
-        11395,
-        46558,
-        48465,
-        12712,
-        11396,
-        97321
-      ]
-    },
-    {
-      "id": 21,
-      "name": "4-7",
-      "captain": 12712,
-      "vice_captain": 46558,
-      "players": [
-        10686,
-        46614,
-        10920,
-        46558,
-        11381,
-        10855,
-        11395,
-        12712,
-        48465,
-        11396,
-        68521
-      ]
-    },
-    {
-      "id": 22,
-      "name": "4-7",
-      "captain": 10855,
-      "vice_captain": 11395,
-      "players": [
-        10686,
-        10853,
-        12696,
-        10855,
-        11381,
-        11395,
-        46558,
-        12712,
-        48465,
-        11396,
-        10920
-      ]
-    },
-    {
-      "id": 23,
-      "name": "4-7",
-      "captain": 10855,
-      "vice_captain": 11395,
-      "players": [
-        10853,
-        10686,
-        12696,
-        10920,
-        10855,
-        11381,
-        11395,
-        46558,
-        12712,
-        48465,
-        11396
-      ]
-    },
-    {
-      "id": 24,
-      "name": "4-7",
-      "captain": 48465,
-      "vice_captain": 11395,
-      "players": [
-        10853,
-        10686,
-        12696,
-        10920,
-        11395,
-        11381,
-        46558,
-        10855,
-        48465,
-        12712,
-        11396
-      ]
-    },
-    {
-      "id": 25,
-      "name": "4-7",
-      "captain": 48465,
-      "vice_captain": 46558,
-      "players": [
-        10686,
-        10853,
-        12696,
-        10920,
-        46558,
-        11381,
-        11395,
-        10855,
-        48465,
-        12712,
-        11396
-      ]
-    },
-    {
-      "id": 26,
-      "name": "4-7",
-      "captain": 10855,
-      "vice_captain": 11395,
-      "players": [
-        10853,
-        46614,
-        10920,
-        12696,
-        10855,
-        11381,
-        11395,
-        46558,
-        48465,
-        12712,
-        11396
-      ]
-    },
-    {
-      "id": 27,
-      "name": "4-7",
-      "captain": 10855,
-      "vice_captain": 11395,
-      "players": [
-        10853,
-        10920,
-        46614,
-        12696,
-        10855,
-        11381,
-        11395,
-        46558,
-        12712,
-        48465,
-        11396
-      ]
-    },
-    {
-      "id": 28,
-      "name": "4-7",
-      "captain": 48465,
-      "vice_captain": 12712,
-      "players": [
-        10853,
-        46614,
-        10920,
-        12696,
-        46558,
-        11381,
-        11395,
-        11396,
-        48465,
-        12712,
-        10855
-      ]
-    },
-    {
-      "id": 29,
-      "name": "4-7",
-      "captain": 46558,
-      "vice_captain": 11395,
-      "players": [
-        46614,
-        10853,
-        10920,
-        12696,
-        46558,
-        11381,
-        11395,
-        11396,
-        48465,
-        12712,
-        10855
-      ]
-    },
-    {
-      "id": 30,
-      "name": "4-7",
-      "captain": 12712,
-      "vice_captain": 11381,
-      "players": [
-        10686,
-        10920,
-        12696,
-        46558,
-        11381,
-        11396,
-        11395,
-        12712,
-        48465,
-        10855,
-        11306
-      ]
-    },
-    {
-      "id": 31,
-      "name": "4-7",
-      "captain": 48465,
-      "vice_captain": 46558,
-      "players": [
-        10686,
-        10920,
-        12696,
-        46558,
-        11381,
-        11395,
-        11396,
-        48465,
-        12712,
-        10855,
-        11306
-      ]
-    },
-    {
-      "id": 32,
-      "name": "4-7",
-      "captain": 46558,
-      "vice_captain": 11396,
-      "players": [
-        10686,
-        10920,
-        12696,
-        46558,
-        11381,
-        11396,
-        11395,
-        48465,
-        12712,
-        10855,
-        11306
-      ]
-    },
-    {
-      "id": 33,
-      "name": "4-7",
-      "captain": 11395,
-      "vice_captain": 46558,
-      "players": [
-        46614,
-        10920,
-        12696,
-        11395,
-        11381,
-        46558,
-        10855,
-        12712,
-        48465,
-        11396,
-        11306
-      ]
-    },
-    {
-      "id": 34,
-      "name": "4-7",
-      "captain": 48465,
-      "vice_captain": 12712,
-      "players": [
-        46614,
-        10920,
-        12696,
-        46558,
-        11381,
-        10855,
-        11395,
-        48465,
-        12712,
-        11396,
-        11306
-      ]
-    },
-    {
-      "id": 35,
-      "name": "4-7",
-      "captain": 11381,
-      "vice_captain": 12712,
-      "players": [
-        46614,
-        10920,
-        12696,
-        46558,
-        11381,
-        11396,
-        11395,
-        12712,
-        48465,
-        10855,
-        11306
-      ]
-    },
-    {
-      "id": 36,
-      "name": "4-7",
-      "captain": 11395,
-      "vice_captain": 12712,
-      "players": [
-        46614,
-        10686,
-        10853,
-        12696,
-        11395,
-        11381,
-        46558,
-        11396,
-        12712,
-        48465,
-        10855
-      ]
-    },
-    {
-      "id": 37,
-      "name": "4-7",
-      "captain": 12712,
-      "vice_captain": 11381,
-      "players": [
-        10686,
-        46614,
-        10853,
-        12696,
-        11395,
-        11381,
-        11396,
-        46558,
-        12712,
-        48465,
-        10855
-      ]
-    },
-    {
-      "id": 38,
-      "name": "4-7",
-      "captain": 11395,
-      "vice_captain": 12712,
-      "players": [
-        46614,
-        10853,
-        10920,
-        11395,
-        11381,
-        46558,
-        10855,
-        12712,
-        48465,
-        11396,
-        68521
-      ]
-    },
-    {
-      "id": 39,
-      "name": "4-7",
-      "captain": 10855,
-      "vice_captain": 46558,
-      "players": [
-        46614,
-        10686,
-        12696,
-        10855,
-        11381,
-        46558,
-        11395,
-        12712,
-        48465,
-        11396,
-        11306
-      ]
-    },
-    {
-      "id": 40,
-      "name": "4-7",
-      "captain": 12712,
-      "vice_captain": 11381,
-      "players": [
-        10686,
-        46614,
-        12696,
-        10855,
-        11381,
-        46558,
-        11395,
-        12712,
-        48465,
-        11396,
-        11306
-      ]
-    },
-    {
-      "id": 41,
-      "name": "4-7",
-      "captain": 12712,
-      "vice_captain": 48465,
-      "players": [
-        46614,
-        10686,
-        10920,
-        12696,
-        10855,
-        17489,
-        11395,
-        46558,
-        12712,
-        48465,
-        11396
-      ]
-    },
-    {
-      "id": 42,
-      "name": "4-7",
-      "captain": 48465,
-      "vice_captain": 11395,
-      "players": [
-        10686,
-        46614,
-        10920,
-        12696,
-        11395,
-        17489,
-        11396,
-        46558,
-        48465,
-        12712,
-        10855
-      ]
-    },
-    {
-      "id": 43,
-      "name": "4-7",
-      "captain": 17489,
-      "vice_captain": 48465,
-      "players": [
-        10686,
-        46614,
-        12696,
-        10920,
-        46558,
-        17489,
-        11396,
-        11395,
-        48465,
-        12712,
-        10855
-      ]
-    },
-    {
-      "id": 44,
-      "name": "4-7",
-      "captain": 10855,
-      "vice_captain": 11395,
-      "players": [
-        10686,
-        46614,
-        10920,
-        10855,
-        17489,
-        11395,
-        46558,
-        48465,
-        12712,
-        11396,
-        68521
-      ]
-    },
-    {
-      "id": 45,
-      "name": "4-7",
-      "captain": 11395,
-      "vice_captain": 48465,
-      "players": [
-        10853,
-        10920,
-        12696,
-        11395,
-        11381,
-        46558,
-        10855,
-        48465,
-        12712,
-        11396,
-        11306
-      ]
-    },
-    {
-      "id": 46,
-      "name": "4-7",
-      "captain": 48465,
-      "vice_captain": 11395,
-      "players": [
-        10853,
-        10920,
-        12696,
-        11395,
-        11381,
-        46558,
-        10855,
-        48465,
-        12712,
-        11396,
-        11306
-      ]
-    },
-    {
-      "id": 47,
-      "name": "4-7",
-      "captain": 12712,
-      "vice_captain": 10855,
-      "players": [
-        10686,
-        10853,
-        12696,
-        10855,
-        11381,
-        46558,
-        11395,
-        12712,
-        48465,
-        11396,
-        11306
-      ]
-    },
-    {
-      "id": 48,
-      "name": "4-7",
-      "captain": 48465,
-      "vice_captain": 11381,
-      "players": [
-        10686,
-        10853,
-        12696,
-        11395,
-        11381,
-        46558,
-        10855,
-        48465,
-        12712,
-        11396,
-        11306
-      ]
-    },
-    {
-      "id": 49,
-      "name": "4-7",
-      "captain": 12712,
-      "vice_captain": 11395,
-      "players": [
-        10853,
-        46614,
-        12696,
-        11395,
-        11381,
-        46558,
-        11396,
-        12712,
-        48465,
-        10855,
-        11306
-      ]
-    },
-    {
-      "id": 50,
-      "name": "4-7",
-      "captain": 46558,
-      "vice_captain": 12712,
-      "players": [
-        10686,
-        10853,
-        10920,
-        12696,
-        46558,
-        17489,
-        10855,
-        11395,
-        12712,
-        48465,
-        11396
-      ]
-    },
-    {
-      "id": 51,
-      "name": "4-7",
-      "captain": 10855,
-      "vice_captain": 11395,
-      "players": [
-        10686,
-        10853,
-        12696,
-        10855,
-        17489,
-        11395,
-        46558,
-        12712,
-        48465,
-        11396,
-        10920
-      ]
-    },
-    {
-      "id": 52,
-      "name": "4-7",
-      "captain": 48465,
-      "vice_captain": 17489,
-      "players": [
-        10686,
-        10853,
-        10920,
-        12696,
-        46558,
-        17489,
-        11395,
-        10855,
-        48465,
-        12712,
-        11396
-      ]
-    },
-    {
-      "id": 53,
-      "name": "4-7",
-      "captain": 10855,
-      "vice_captain": 11395,
-      "players": [
-        10686,
-        10853,
-        12696,
-        10920,
-        10855,
-        17489,
-        11395,
-        46558,
-        48465,
-        12712,
-        11396
-      ]
-    },
-    {
-      "id": 54,
-      "name": "4-7",
-      "captain": 17489,
-      "vice_captain": 12712,
-      "players": [
-        10686,
-        10853,
-        10920,
-        12696,
-        46558,
-        17489,
-        11396,
-        11395,
-        12712,
-        48465,
-        10855
-      ]
-    },
-    {
-      "id": 55,
-      "name": "4-7",
-      "captain": 10855,
-      "vice_captain": 12712,
-      "players": [
-        10853,
-        46614,
-        12696,
-        10920,
-        10855,
-        17489,
-        46558,
-        11395,
-        12712,
-        48465,
-        11396
-      ]
-    },
-    {
-      "id": 56,
-      "name": "4-7",
-      "captain": 17489,
-      "vice_captain": 48465,
-      "players": [
-        10853,
-        46614,
-        10920,
-        12696,
-        46558,
-        17489,
-        11395,
-        11396,
-        48465,
-        12712,
-        10855
-      ]
-    },
-    {
-      "id": 57,
-      "name": "4-7",
-      "captain": 17489,
-      "vice_captain": 12712,
-      "players": [
-        46614,
-        10853,
-        12696,
-        46558,
-        17489,
-        11395,
-        10855,
-        12712,
-        48465,
-        11396,
-        10920
-      ]
-    },
-    {
-      "id": 58,
-      "name": "4-7",
-      "captain": 17489,
-      "vice_captain": 48465,
-      "players": [
-        46614,
-        10853,
-        10920,
-        12696,
-        11395,
-        17489,
-        46558,
-        11396,
-        48465,
-        12712,
-        10855
-      ]
-    },
-    {
-      "id": 59,
-      "name": "4-7",
-      "captain": 17489,
-      "vice_captain": 48465,
-      "players": [
-        46614,
-        10853,
-        10920,
-        12696,
-        46558,
-        17489,
-        11395,
-        10855,
-        48465,
-        12712,
-        11396
-      ]
-    },
-    {
-      "id": 60,
-      "name": "4-7",
-      "captain": 17489,
-      "vice_captain": 48465,
-      "players": [
-        46614,
-        10920,
-        12696,
-        11395,
-        17489,
-        10855,
-        46558,
-        48465,
-        12712,
-        11396,
-        11306
-      ]
-    },
-    {
-      "id": 61,
-      "name": "4-7",
-      "captain": 46558,
-      "vice_captain": 12712,
-      "players": [
-        46614,
-        10920,
-        12696,
-        46558,
-        17489,
-        11396,
-        11395,
-        12712,
-        48465,
-        10855,
-        11306
-      ]
-    },
-    {
-      "id": 62,
-      "name": "4-7",
-      "captain": 46558,
-      "vice_captain": 12712,
-      "players": [
-        10853,
-        46614,
-        10686,
-        12696,
-        46558,
-        17489,
-        10855,
-        11395,
-        12712,
-        48465,
-        11396
-      ]
-    },
-    {
-      "id": 63,
-      "name": "4-7",
-      "captain": 11395,
-      "vice_captain": 12712,
-      "players": [
-        10853,
-        10920,
-        12696,
-        11395,
-        17489,
-        10855,
-        46558,
-        12712,
-        48465,
-        11396,
-        11306
-      ]
-    },
-    {
-      "id": 64,
-      "name": "4-7",
-      "captain": 12712,
-      "vice_captain": 11395,
-      "players": [
-        10853,
-        10920,
-        12696,
-        11395,
-        17489,
-        10855,
-        46558,
-        12712,
-        48465,
-        11396,
-        11306
-      ]
-    },
-    {
-      "id": 65,
-      "name": "4-7",
-      "captain": 11395,
-      "vice_captain": 48465,
-      "players": [
-        10853,
-        10686,
-        12696,
-        11395,
-        17489,
-        10855,
-        46558,
-        48465,
-        12712,
-        11396,
-        11306
-      ]
-    },
-    {
-      "id": 66,
-      "name": "4-7",
-      "captain": 12712,
-      "vice_captain": 17489,
-      "players": [
-        10686,
-        10853,
-        12696,
-        10855,
-        17489,
-        11395,
-        46558,
-        12712,
-        48465,
-        11396,
-        11306
-      ]
-    },
-    {
-      "id": 67,
-      "name": "4-7",
-      "captain": 12712,
-      "vice_captain": 46558,
-      "players": [
-        10853,
-        10686,
-        12696,
-        46558,
-        17489,
-        11395,
-        10855,
-        12712,
-        48465,
-        11396,
-        11306
-      ]
-    },
-    {
-      "id": 68,
-      "name": "4-7",
-      "captain": 12712,
-      "vice_captain": 11395,
-      "players": [
-        10686,
-        10853,
-        12696,
-        11395,
-        17489,
-        46558,
-        10855,
-        12712,
-        48465,
-        11396,
-        11306
-      ]
-    },
-    {
-      "id": 69,
-      "name": "4-7",
-      "captain": 46558,
-      "vice_captain": 48465,
-      "players": [
-        10853,
-        10686,
-        12696,
-        46558,
-        17489,
-        11395,
-        11396,
-        48465,
-        12712,
-        10855,
-        11306
-      ]
-    },
-    {
-      "id": 70,
-      "name": "4-7",
-      "captain": 17489,
-      "vice_captain": 48465,
-      "players": [
-        46614,
-        10853,
-        12696,
-        10855,
-        17489,
-        46558,
-        11395,
-        48465,
-        12712,
-        11396,
-        11306
-      ]
-    },
-    {
-      "id": 71,
-      "name": "4-7",
-      "captain": 12712,
-      "vice_captain": 48465,
-      "players": [
-        10686,
-        10853,
-        12696,
-        46558,
-        11381,
-        11395,
-        10855,
-        12712,
-        48465,
-        11396,
-        12830
-      ]
-    },
-    {
-      "id": 72,
-      "name": "4-7",
-      "captain": 48465,
-      "vice_captain": 12712,
-      "players": [
-        10853,
-        10686,
-        12696,
-        10855,
-        11381,
-        11395,
-        46558,
-        48465,
-        12712,
-        11396,
-        12830
-      ]
-    },
-    {
-      "id": 73,
-      "name": "4-7",
-      "captain": 46558,
-      "vice_captain": 11396,
-      "players": [
-        10853,
-        46614,
-        12696,
-        46558,
-        11381,
-        11396,
-        11395,
-        48465,
-        12712,
-        10855,
-        97321
-      ]
-    },
-    {
-      "id": 74,
-      "name": "4-7",
-      "captain": 48465,
-      "vice_captain": 11395,
-      "players": [
-        46614,
-        10853,
-        12696,
-        11395,
-        11381,
-        11396,
-        46558,
-        48465,
-        12712,
-        10855,
-        97321
-      ]
-    },
-    {
-      "id": 75,
-      "name": "4-7",
-      "captain": 48465,
-      "vice_captain": 17489,
-      "players": [
-        10853,
-        10920,
-        12696,
-        46558,
-        17489,
-        11395,
-        11396,
-        48465,
-        12712,
-        10855,
-        12830
-      ]
-    },
-    {
-      "id": 76,
-      "name": "4-7",
-      "captain": 12712,
-      "vice_captain": 10855,
-      "players": [
-        46614,
-        10920,
-        12696,
-        10855,
-        17489,
-        11395,
-        46558,
-        12712,
-        48465,
-        11396,
-        68521
-      ]
-    },
-    {
-      "id": 77,
-      "name": "4-7",
-      "captain": 12712,
-      "vice_captain": 48465,
-      "players": [
-        10853,
-        10686,
-        12696,
-        46558,
-        17489,
-        11395,
-        11396,
-        12712,
-        48465,
-        10855,
-        97321
-      ]
-    },
-    {
-      "id": 78,
-      "name": "4-7",
-      "captain": 12712,
-      "vice_captain": 48465,
-      "players": [
-        10853,
-        46614,
-        12696,
-        46558,
-        17489,
-        11395,
-        10855,
-        12712,
-        48465,
-        11396,
-        12830
-      ]
-    },
-    {
-      "id": 79,
-      "name": "4-7",
-      "captain": 17489,
-      "vice_captain": 12712,
-      "players": [
-        46614,
-        10853,
-        12696,
-        10855,
-        17489,
-        11395,
-        46558,
-        12712,
-        48465,
-        11396,
-        12830
-      ]
-    }
-  ]
-def add_all_teams(num_teams=None):
-    """Add teams to Dream11 using edit team API
+def load_generated_teams():
+    """Load teams and match_id from the latest generated JSON file"""
+    # Find the latest generated teams file
+    team_files = glob.glob("dream11_teams_*.json")
+    if not team_files:
+        raise FileNotFoundError("No generated teams file found. Please run team generation first.")
+    
+    # Get the most recent file
+    latest_file = max(team_files, key=os.path.getctime)
+    print(f"📂 Loading teams from: {latest_file}")
+    
+    with open(latest_file, 'r') as f:
+        data = json.load(f)
+    
+    return data
+
+# Load teams and configuration from generated file
+generated_data = load_generated_teams()
+teams_data = generated_data['teams']
+match_id = generated_data['metadata']['match_id']
+
+# JSON Configuration with users
+CONFIG = {
+    "match_id": match_id,
+    "users": [
+        {
+            "name": "kiran",
+            "auth_token": "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCIsImtpZCI6IlRqb0FsLVdyZWN3Z3MtZVVvcm5xWWE5Y2x4dyJ9.eyJhdWQiOlsiYXBpLmRyZWFtMTEuY29tIiwiZ3VhcmRpYW4iXSwiZXhwIjoxNzcxMzE5OTg3LCJpYXQiOjE3NTU3Njc5ODcsImlzcyI6ImRyZWFtMTEuY29tIiwic3ViIjoiNDY4MTYxIiwiYXpwIjoiMiIsInJmdCI6IjEifQ.KvlKZ8fzvkikfKmzW02iaqDRUkcmdyaCFy33SnFBJBfqQBrU0uZjmK6hSYQ1yhJMceIuKpbP51yU_KFC-DB2Ftkrhpt3DeTq-06G-JRoTFAGphCFyQe7UseMs5V_RHRCAuyPP1etLlYPJEFp5jxbutwAI_-ayrSUq8B31buVl9d5L1dcK1cmorY5-10D6kTjmSVS_eKc79WExcdo1MMScJP60V82TypdVUbrtjfnx-9U6HbH6f1OcGam8zIk4lHEZgRLg_HDiJgHKlNXZedBSdkYgoxpvFV8dH8o8Xq6CKeRzotrzJGbn2lZ8EZVfw_noSN-hh8Z9ISlA7GG7sm3Ow",
+            "team_range": [1, 6]
+        },
+        {
+            "name": "eswar",
+            "auth_token": "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCIsImtpZCI6IlRqb0FsLVdyZWN3Z3MtZVVvcm5xWWE5Y2x4dyJ9.eyJhdWQiOlsiYXBpLmRyZWFtMTEuY29tIiwiZ3VhcmRpYW4iXSwiZXhwIjoxNzcyMDMxMzY3LCJpYXQiOjE3NTY0NzkzNjcsImlzcyI6ImRyZWFtMTEuY29tIiwic3ViIjoiMTAwMzA5OTQiLCJhenAiOiIyIiwicmZ0IjoiMSJ9.FUMTOyL57Xlf4GiGW4_8FCYp16zAHxrTZufd4UWAOBiH1nZsOWGCJdgGYW9JVKan8urSN6OfpijIax63fFkasdHVpIbNP_x3qdOzcJlBa_rKyUCnkrE46I_KPgth7HRhVWvEs_8dOCkuGaAz0IX7QgRsyuNDvIKHcQXtns5FE3NAkvsrjopRyHSZfAiXnqXEUVIx_Rl-03TqatP3TvQwC1klSkxT6xrDI2bcELNKZ9xesr-afJXxoo-1zf0VFsSTZ8jmU-nM37smS00XvLkFcYWpmWTWis8690Q29mffUWa2oqRFUK5zjfpMwrloukJ8E6wxEUxOebAtTa7Q5hSisw",
+            "team_range": [7, 12]
+        }
+    ]
+}
+
+def add_all_teams(specific_user=None):
+    """Add teams to Dream11 using edit team API with multiple users
+    Each user gets 6 teams from the JSON configuration
     
     Args:
-        num_teams (int, optional): Number of teams to add. If None, adds all teams.
+        specific_user (str, optional): Add teams for specific user only.
     """
     success_count = 0
     failed_teams = []
     
-    # Determine how many teams to process
-    if num_teams is None:
-        teams_to_process = teams_data
-        total_teams = len(teams_data)
-    else:
-        teams_to_process = teams_data[:num_teams]
-        total_teams = min(num_teams, len(teams_data))
-    
-    print(f"🏏 Adding Dream11 Teams")
+    print(f"🏏 Adding Dream11 Teams with Multiple Users")
     print("=" * 60)
-    print(f"📊 Teams to add: {total_teams} out of {len(teams_data)} available")
-    print(f"🎯 Match ID: {MATCH_ID}")
-    print(f"🔑 Auth Token: {AUTH_TOKEN[:50]}...")
+    print(f"📊 Total teams available: {len(teams_data)}")
+    print(f"🎯 Match ID: {CONFIG['match_id']}")
+    print(f"👥 Users configured: {len(CONFIG['users'])}")
     print()
     
-    # Start with team ID 1 and increment only on success
-    current_team_id = 1
-    
-    for i, team_data in enumerate(teams_to_process, 1):
-        print(f"\n📤 Adding team {i}/{total_teams}: {team_data['name']} (ID: {current_team_id})")
-        print(f"   👑 Captain: {team_data['captain']}")
-        print(f"   🥈 Vice-Captain: {team_data['vice_captain']}")
-        print(f"   👥 Players: {len(team_data['players'])} players")
+    # Process teams for each user (6 teams per user)
+    for user in CONFIG['users']:
+        if specific_user and user['name'] != specific_user:
+            continue
+            
+        user_name = user['name']
+        auth_token = user['auth_token']
         
-        result = edit_dream11_team(
-            MATCH_ID,
-            current_team_id,  # Use current_team_id instead of team_data['id']
-            team_data['captain'],
-            team_data['vice_captain'],
-            team_data['players'],
-            AUTH_TOKEN
-        )
+        print(f"\n👤 Processing 6 teams for {user_name}")
+        print(f"   🔑 Auth token: {auth_token[:50]}...")
         
-        if result:
-            if isinstance(result, dict) and result.get('status') == 'success':
-                print(f"   ✅ Team {i} added successfully with ID {current_team_id}!")
-                if result.get('status_code') == 200:
-                    print("   📦 Received 200 OK (Success)")
-                elif result.get('status_code') == 204:
-                    print("   📦 Received 204 No Content (Success)")
-                success_count += 1
-                current_team_id += 1  # Only increment ID on success
+        # Skip if auth token is placeholder
+        if "YOUR_USER" in auth_token:
+            print(f"   ⚠️ Skipping {user_name} - Auth token not configured")
+            continue
+        
+        user_success = 0
+        user_failed = []
+        
+        # Process 6 teams for this user
+        for dream11_team_id in range(1, 7):  # Dream11 team IDs 1-6
+            if dream11_team_id - 1 >= len(teams_data):
+                print(f"   ⚠️ Not enough teams in data for team ID {dream11_team_id}")
+                break
+                
+            team_data = teams_data[dream11_team_id - 1]  # Use team data by index
+            
+            print(f"\n📤 Adding team {dream11_team_id} for {user_name}")
+            print(f"   📝 Team name: {team_data['name']}")
+            print(f"   👑 Captain: {team_data['captain']}")
+            print(f"   🥈 Vice-Captain: {team_data['vice_captain']}")
+            print(f"   👥 Players: {len(team_data['players'])} players")
+            
+            result = edit_dream11_team(
+                CONFIG['match_id'],
+                dream11_team_id,
+                team_data['captain'],
+                team_data['vice_captain'],
+                team_data['players'],
+                auth_token
+            )
+            
+            if result:
+                if isinstance(result, dict) and result.get('status') == 'success':
+                    print(f"   ✅ Team {dream11_team_id} added successfully for {user_name}!")
+                    if result.get('status_code') == 200:
+                        print("   📦 Received 200 OK (Success)")
+                    elif result.get('status_code') == 204:
+                        print("   📦 Received 204 No Content (Success)")
+                    user_success += 1
+                    success_count += 1
+                else:
+                    print(f"   ⚠️ Team {dream11_team_id} - Unexpected response: {result}")
+                    user_failed.append({
+                        "team": dream11_team_id, 
+                        "name": team_data['name'], 
+                        "user": user_name,
+                        "dream11_id": dream11_team_id
+                    })
+                    failed_teams.append(user_failed[-1])
             else:
-                print(f"   ⚠️ Team {i} - Unexpected response: {result}")
-                failed_teams.append({"team": i, "name": team_data['name'], "id": current_team_id})
-                # Don't increment current_team_id on failure
-        else:
-            print(f"   ❌ Failed to add team {i}")
-            failed_teams.append({"team": i, "name": team_data['name'], "id": current_team_id})
-            # Don't increment current_team_id on failure
-        
-        # Small delay between requests to avoid rate limiting
-        if i < total_teams:  # Don't delay after the last team
-            print("   ⏳ Waiting 1 second...")
+                print(f"   ❌ Failed to add team {dream11_team_id} for {user_name}")
+                user_failed.append({
+                    "team": dream11_team_id, 
+                    "name": team_data['name'], 
+                    "user": user_name,
+                    "dream11_id": dream11_team_id
+                })
+                failed_teams.append(user_failed[-1])
+            
+            # Small delay between requests
             time.sleep(1)
+        
+        # User summary
+        print(f"\n📊 {user_name} Summary: {user_success}/6 teams successful")
+        if user_failed:
+            print(f"   ❌ Failed teams for {user_name}:")
+            for failed in user_failed:
+                print(f"      - Team {failed['team']}: {failed['name']}")
     
     # Final summary
+    total_expected = len([u for u in CONFIG['users'] if "YOUR_USER" not in u['auth_token']]) * 6
     print("\n" + "="*60)
     print("🏁 FINAL SUMMARY")
     print("="*60)
-    print(f"✅ Successfully added: {success_count}/{total_teams} teams")
+    print(f"✅ Successfully added: {success_count}/{total_expected} teams")
     print(f"❌ Failed: {len(failed_teams)} teams")
-    print(f"📊 Success rate: {(success_count/total_teams)*100:.1f}%")
+    if total_expected > 0:
+        print(f"📊 Success rate: {(success_count/total_expected)*100:.1f}%")
     
     if failed_teams:
         print(f"\n❌ Failed teams:")
         for failed in failed_teams:
-            print(f"   - Team {failed['team']}: {failed['name']} (ID: {failed['id']})")
+            print(f"   - Team {failed['team']} ({failed['user']}): {failed['name']}")
         
-        print(f"\n🔄 To retry failed teams, run:")
-        print(f"   python add_all_40_teams.py --retry")
-        
-        # Save failed team IDs to a file for easy retry
-        failed_ids = [str(failed['id']) for failed in failed_teams]
-        with open('failed_teams.txt', 'w') as f:
-            f.write(','.join(failed_ids))
-        print(f"💾 Failed team IDs saved to 'failed_teams.txt'")
+        # Save failed teams to JSON file
+        with open('failed_teams.json', 'w') as f:
+            json.dump(failed_teams, f, indent=2)
+        print(f"💾 Failed teams saved to 'failed_teams.json'")
     else:
         print(f"\n🎉 All teams added successfully!")
         # Clean up failed teams file if it exists
-        if os.path.exists('failed_teams.txt'):
-            os.remove('failed_teams.txt')
+        if os.path.exists('failed_teams.json'):
+            os.remove('failed_teams.json')
             print("🧹 Cleaned up previous failed teams file")
     
     return success_count, failed_teams
 
-def retry_failed_teams(failed_team_ids=None):
-    """Retry adding specific teams"""
+def retry_failed_teams():
+    """Retry adding failed teams from JSON file"""
     print("🔄 Retrying failed teams...")
     
-    if failed_team_ids is None:
-        # Try to load from file
-        if os.path.exists('failed_teams.txt'):
-            with open('failed_teams.txt', 'r') as f:
-                failed_team_ids = [int(id.strip()) for id in f.read().split(',') if id.strip().isdigit()]
-            print(f"📂 Loaded {len(failed_team_ids)} failed team IDs from file")
-        else:
-            print("❌ No failed teams file found and no IDs provided")
-            return
-    
-    retry_teams = [team for team in teams_data if team['id'] in failed_team_ids]
-    
-    if not retry_teams:
-        print("❌ No matching teams found to retry")
+    if not os.path.exists('failed_teams.json'):
+        print("❌ No failed teams file found")
         return
     
-    print(f"🎯 Found {len(retry_teams)} teams to retry")
+    with open('failed_teams.json', 'r') as f:
+        failed_teams = json.load(f)
+    
+    if not failed_teams:
+        print("❌ No failed teams to retry")
+        return
+    
+    print(f"📂 Loaded {len(failed_teams)} failed teams from file")
     
     success_count = 0
-    current_retry_id = 1  # Start retry IDs from 1
+    still_failed = []
     
-    for team_data in retry_teams:
-        print(f"\n🔄 Retrying team: {team_data['name']} (New ID: {current_retry_id})")
+    for failed_team in failed_teams:
+        team_idx = failed_team['team'] - 1
+        if team_idx >= len(teams_data):
+            continue
+            
+        team_data = teams_data[team_idx]
+        user_name = failed_team['user']
+        dream11_id = failed_team['dream11_id']
+        
+        # Find user config
+        user_config = None
+        for user in CONFIG['users']:
+            if user['name'] == user_name:
+                user_config = user
+                break
+        
+        if not user_config:
+            print(f"❌ User config not found for {user_name}")
+            still_failed.append(failed_team)
+            continue
+        
+        print(f"\n🔄 Retrying team {failed_team['team']} for {user_name} (Dream11 ID: {dream11_id})")
         
         result = edit_dream11_team(
-            MATCH_ID,
-            current_retry_id,  # Use sequential ID for retry
+            CONFIG['match_id'],
+            dream11_id,
             team_data['captain'],
             team_data['vice_captain'],
             team_data['players'],
-            AUTH_TOKEN
+            user_config['auth_token']
         )
         
         if result and isinstance(result, dict) and result.get('status') == 'success':
-            print(f"   ✅ Retry successful with ID {current_retry_id}!")
+            print(f"   ✅ Retry successful!")
             success_count += 1
-            current_retry_id += 1  # Only increment on success
         else:
-            print(f"   ❌ Retry failed for ID {current_retry_id}")
-            # Don't increment current_retry_id on failure
+            print(f"   ❌ Retry failed")
+            still_failed.append(failed_team)
         
         time.sleep(1)
     
-    print(f"\n🏁 Retry Summary: {success_count}/{len(retry_teams)} teams successful")
+    print(f"\n🏁 Retry Summary: {success_count}/{len(failed_teams)} teams successful")
+    
+    if still_failed:
+        with open('failed_teams.json', 'w') as f:
+            json.dump(still_failed, f, indent=2)
+        print(f"💾 {len(still_failed)} teams still failed, saved to 'failed_teams.json'")
+    else:
+        if os.path.exists('failed_teams.json'):
+            os.remove('failed_teams.json')
+        print("🎉 All retry attempts successful!")
 
-def get_user_input():
-    """Get user input for number of teams to update"""
-    print("🏏 Dream11 Team Updater")
-    print("=" * 40)
+def show_config_summary():
+    """Show configuration summary"""
+    print("🏏 Dream11 Team Updater with Multiple Users")
+    print("=" * 50)
     print(f"📊 Available teams: {len(teams_data)}")
+    print(f"👥 Configured users: {len(CONFIG['users'])}")
+    print(f"🎯 Match ID: {CONFIG['match_id']}")
+    print(f"🏆 Match: {generated_data['metadata'].get('match', 'Unknown')}")
     
-    # Show first few teams as preview
-    print("\n📋 Team Preview (first 5 teams):")
-    for i, team in enumerate(teams_data[:5], 1):
-        print(f"   {i}. {team['name']} (ID: {team['id']}) - Captain: {team['captain']}")
+    # Show user configuration
+    print("\n👥 User Configuration:")
+    for user in CONFIG['users']:
+        team_range = f"{user['team_range'][0]}-{user['team_range'][1]}"
+        token_status = "✅ Configured" if "YOUR_USER" not in user['auth_token'] else "❌ Not configured"
+        print(f"   {user['name']}: Teams {team_range} - {token_status}")
     
-    if len(teams_data) > 5:
-        print(f"   ... and {len(teams_data) - 5} more teams")
-    
-    print("\n💡 Options:")
-    print("   • Enter a number (1-{}) to update that many teams".format(len(teams_data)))
-    print("   • Enter 'all' to update all teams")
-    print("   • Enter 'preview' to see all team details")
-    print("   • Press Ctrl+C to exit")
-    print()
-    
-    while True:
+    print(f"\n📋 Will process {len(teams_data)} teams total (6 teams per user)")
+    print("="*50)
+
+def save_config_template():
+    """Save configuration template to JSON file"""
+    config_file = 'dream11_config.json'
+    if not os.path.exists(config_file):
+        with open(config_file, 'w') as f:
+            json.dump(CONFIG, f, indent=2)
+        print(f"📄 Configuration template saved to '{config_file}'")
+        print("   Please update the auth tokens for each user before running.")
+    else:
+        print(f"📄 Configuration file '{config_file}' already exists")
+
+def load_config():
+    """Load configuration from JSON file if it exists"""
+    config_file = 'dream11_config.json'
+    if os.path.exists(config_file):
         try:
-            user_input = input(f"How many teams do you want to update? ").strip().lower()
-            
-            if user_input == 'all':
-                return None  # None means all teams
-            elif user_input == 'preview':
-                print("\n📋 All Available Teams:")
-                print("-" * 60)
-                for i, team in enumerate(teams_data, 1):
-                    print(f"   {i:2d}. {team['name']} (ID: {team['id']})")
-                    print(f"       👑 Captain: {team['captain']} | 🥈 VC: {team['vice_captain']}")
-                    print(f"       👥 Players: {team['players']}")
-                    print()
-                print("-" * 60)
-                continue  # Ask again after showing preview
-            elif user_input.isdigit():
-                num_teams = int(user_input)
-                if 1 <= num_teams <= len(teams_data):
-                    # Confirm selection
-                    print(f"\n✅ You selected to update {num_teams} team(s)")
-                    print("📋 Teams that will be updated:")
-                    for i, team in enumerate(teams_data[:num_teams], 1):
-                        print(f"   {i}. {team['name']} (ID: {team['id']})")
-                    
-                    confirm = input(f"\nProceed with updating {num_teams} team(s)? (y/n): ").strip().lower()
-                    if confirm in ['y', 'yes']:
-                        return num_teams
-                    else:
-                        print("❌ Operation cancelled. Please select again.")
-                        continue
-                else:
-                    print(f"❌ Please enter a number between 1 and {len(teams_data)}")
-            else:
-                print("❌ Please enter a valid number, 'all', or 'preview'")
-        except KeyboardInterrupt:
-            print("\n👋 Goodbye!")
-            exit(0)
-        except Exception as e:
-            print(f"❌ Error: {e}")
+            with open(config_file, 'r') as f:
+                loaded_config = json.load(f)
+            print(f"📂 Loaded user configuration from '{config_file}'")
+            # Update only the users part, keep match_id from generated data
+            if 'users' in loaded_config:
+                CONFIG['users'] = loaded_config['users']
+            # Always keep match_id from generated data, not from config file
+            print(f"🎯 Using match_id from generated teams: {CONFIG['match_id']}")
+            if 'match_id' in loaded_config and loaded_config['match_id'] != CONFIG['match_id']:
+                print(f"⚠️ Config file has different match_id ({loaded_config['match_id']}), using generated match_id ({CONFIG['match_id']})")
+            return CONFIG
+        except json.JSONDecodeError:
+            print(f"❌ Error reading '{config_file}', using default configuration")
+    return CONFIG
 
 if __name__ == "__main__":
     import sys
     import os
     
+    # Load configuration from file if available (this will update users)
+    CONFIG = load_config()
+    
     if len(sys.argv) > 1:
         if sys.argv[1] == "--retry":
-            # Retry mode - can use saved file or manual input
-            if os.path.exists('failed_teams.txt'):
-                print("📂 Found failed teams file")
-                use_file = input("Use saved failed teams? (y/n): ").strip().lower()
-                if use_file in ['y', 'yes']:
-                    retry_failed_teams()  # Will load from file
-                else:
-                    retry_ids = input("Enter team IDs to retry (comma-separated): ").split(",")
-                    retry_ids = [int(id.strip()) for id in retry_ids if id.strip().isdigit()]
-                    retry_failed_teams(retry_ids)
-            else:
-                retry_ids = input("Enter team IDs to retry (comma-separated): ").split(",")
-                retry_ids = [int(id.strip()) for id in retry_ids if id.strip().isdigit()]
-                retry_failed_teams(retry_ids)
+            # Retry mode
+            retry_failed_teams()
         elif sys.argv[1] == "--help" or sys.argv[1] == "-h":
-            print("🏏 Dream11 Team Updater - Usage:")
-            print("  python add_all_40_teams.py                    # Interactive mode")
+            print("🏏 Dream11 Team Updater with Multiple Users - Usage:")
+            print("  python add_all_40_teams.py                    # Add 6 teams for all users")
             print("  python add_all_40_teams.py --retry            # Retry failed teams")
-            print("  python add_all_40_teams.py --num 10           # Update specific number of teams")
-            print("  python add_all_40_teams.py --all              # Update all teams")
+            print("  python add_all_40_teams.py --user kiran       # Add 6 teams for specific user")
+            print("  python add_all_40_teams.py --config           # Generate config template")
             print("  python add_all_40_teams.py --help             # Show this help")
-        elif sys.argv[1] == "--num" and len(sys.argv) > 2:
-            # Command line mode with specific number
-            try:
-                num_teams = int(sys.argv[2])
-                if 1 <= num_teams <= len(teams_data):
-                    success_count, failed_teams = add_all_teams(num_teams)
-                else:
-                    print(f"❌ Number must be between 1 and {len(teams_data)}")
-            except ValueError:
-                print("❌ Please provide a valid number after --num")
-        elif sys.argv[1] == "--all":
-            # Command line mode for all teams
-            success_count, failed_teams = add_all_teams()
+        elif sys.argv[1] == "--user" and len(sys.argv) > 2:
+            # Command line mode for specific user
+            user_name = sys.argv[2]
+            success_count, failed_teams = add_all_teams(specific_user=user_name)
+        elif sys.argv[1] == "--config":
+            # Generate configuration template
+            save_config_template()
         else:
             print("❌ Unknown option. Use --help for usage information.")
     else:
-        # Interactive mode - ask user for input
-        num_teams = get_user_input()
-        success_count, failed_teams = add_all_teams(num_teams)
+        # Default mode - show config and add all teams
+        show_config_summary()
+        success_count, failed_teams = add_all_teams()

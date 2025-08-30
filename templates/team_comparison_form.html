@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Team Analysis - Select Match{% endblock %}
+
+{% block extra_css %}
+<style>
+.analysis-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.match-card {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 15px;
+    margin: 10px 0;
+    border-left: 4px solid #4CAF50;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.match-card:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.analysis-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.analysis-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    color: white;
+    text-decoration: none;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="analysis-card">
+                <div class="text-center mb-4">
+                    <h2><i class="fas fa-chart-line"></i> Team Analysis</h2>
+                    <p class="text-muted">Select a match to analyze team composition, player performance, and strategic insights</p>
+                </div>
+
+                {% if matches %}
+                <div class="row">
+                    {% for match in matches %}
+                    <div class="col-md-6">
+                        <div class="match-card" onclick="window.location.href='/team_analysis/{{ match.matchid }}'">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-1">{{ match.team1 }} vs {{ match.team2 }}</h5>
+                                    <small class="text-muted">Match ID: {{ match.matchid }}</small>
+                                    {% if match.ground_url %}
+                                    <br><small class="text-info"><i class="fas fa-map-marker-alt"></i> Ground Analysis Available</small>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <a href="/team_analysis/{{ match.matchid }}" class="analysis-btn">
+                                        <i class="fas fa-analytics"></i> Analyze
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h4>No matches available</h4>
+                    <p class="text-muted">Add some matches first to perform team analysis</p>
+                    <a href="/addmatch" class="analysis-btn">
+                        <i class="fas fa-plus"></i> Add Match
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Quick Analysis Features -->
+            <div class="analysis-card">
+                <h4><i class="fas fa-rocket"></i> Analysis Features</h4>
+                <div class="row">
+                    <div class="col-md-4 text-center mb-3">
+                        <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                        <h6>Team Composition</h6>
+                        <small class="text-muted">Role distribution and team balance analysis</small>
+                    </div>
+                    <div class="col-md-4 text-center mb-3">
+                        <i class="fas fa-star fa-2x text-warning mb-2"></i>
+                        <h6>Player Performance</h6>
+                        <small class="text-muted">Top performers and captain suggestions</small>
+                    </div>
+                    <div class="col-md-4 text-center mb-3">
+                        <i class="fas fa-download fa-2x text-success mb-2"></i>
+                        <h6>Export Reports</h6>
+                        <small class="text-muted">Download analysis as JSON for external use</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

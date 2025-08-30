@@ -1,133 +1,179 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dream11 Fantasy Builder</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body {
-      background: radial-gradient(circle at top, #0f2027, #203a43, #2c5364);
-      color: #fff;
-      font-family: 'Segoe UI', sans-serif;
-    }
-    .glass-panel {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      padding: 15px;
-      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-    }
-    .role-section h5 {
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      margin-bottom: 10px;
-      padding-bottom: 5px;
-    }
-    .player-card {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 10px;
-      padding: 10px;
-      margin-bottom: 12px;
-      transition: transform 0.2s;
-    }
-    .player-card:hover {
-      transform: scale(1.02);
-      box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
-    }
-    .btn-float {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 999;
-    }
-  </style>
-</head>
-<body>
+{% extends "base.html" %}
 
-<div class="container-fluid py-3">
+{% block title %}Dream11 Fantasy Builder{% endblock %}
 
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>⚔️ Dream11 Team Builder</h2>
-    <button class="btn btn-outline-light" onclick="document.getElementById('addPlayerForm').classList.toggle('d-none')">+ Add Player</button>
-  </div>
+{% block extra_css %}
+.role-section h5 {
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+}
+.player-card {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 12px;
+  transition: transform 0.2s;
+}
+.player-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+}
+.btn-float {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 999;
+}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-2">
+
+  <!-- Compact Navbar-Style Controls -->
+  <nav class="navbar navbar-expand-lg mb-3" style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1);">
+    <div class="container-fluid">
+      <span class="navbar-brand mb-0 h1 text-white">
+        <i class="fas fa-users"></i> Player Management
+      </span>
+      
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-light btn-sm" onclick="toggleAddPlayer()">
+          <i class="fas fa-plus"></i> Add Player
+        </button>
+        <button class="btn btn-outline-warning btn-sm" onclick="toggleAnalysis()">
+          <i class="fas fa-chart-bar"></i> Analysis
+        </button>
+        <button class="btn btn-outline-info btn-sm" onclick="toggleQuickActions()">
+          <i class="fas fa-tools"></i> Actions
+        </button>
+      </div>
+    </div>
+  </nav>
 
   <!-- Success/Error Messages -->
   {% if success_message %}
-  <div class="alert alert-success alert-dismissible fade show" role="alert">
-    <strong>✅ Success!</strong> {{ success_message }}
+  <div class="alert alert-success alert-dismissible fade show py-2" role="alert">
+    <strong>✅</strong> {{ success_message }}
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
   </div>
   {% endif %}
   
   {% if error_message %}
-  <div class="alert alert-danger alert-dismissible fade show" role="alert">
-    <strong>❌ Error!</strong> {{ error_message }}
+  <div class="alert alert-danger alert-dismissible fade show py-2" role="alert">
+    <strong>❌</strong> {{ error_message }}
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
   </div>
   {% endif %}
 
-  <!-- 📊 Toggle Analysis Card -->
-  <div class="d-flex justify-content-end mb-2">
-    <button class="btn btn-warning btn-sm" onclick="toggleAnalysis()">📊 Show/Hide Analysis</button>
-  </div>
-
-  <!-- 📋 Analysis Card -->
-  <div id="analysisCard" class="glass-panel mb-4 d-none">
-    <h5 class="text-center mb-3">Match Summary Analysis</h5>
-    <div class="row text-white">
+  <!-- Compact Analysis Card -->
+  <div id="analysisCard" class="d-none mb-3">
+    <div class="row g-2">
       <div class="col-md-6">
-        <h6>Team A</h6>
-        <ul>
-          <li><strong>Total %:</strong> {{ summary.TeamA_Total }}</li>
-          <li><strong>BAT:</strong> {{ summary.TeamA_BAT }}</li>
-          <li><strong>BOWL:</strong> {{ summary.TeamA_BOWL }}</li>
-          <li><strong>ALL:</strong> {{ summary.TeamA_ALL }}</li>
-          <li><strong>WK:</strong> {{ summary.TeamA_WK }}</li>
-        </ul>
+        <div class="card bg-dark text-white border-info" style="border-radius: 8px;">
+          <div class="card-body py-2">
+            <h6 class="card-title mb-2"><i class="fas fa-chart-line text-info"></i> Team A Analysis</h6>
+            <div class="row text-sm">
+              <div class="col-6"><small><strong>Total:</strong> {{ summary.TeamA_Total }}%</small></div>
+              <div class="col-6"><small><strong>BAT:</strong> {{ summary.TeamA_BAT }}%</small></div>
+              <div class="col-6"><small><strong>BOWL:</strong> {{ summary.TeamA_BOWL }}%</small></div>
+              <div class="col-6"><small><strong>ALL:</strong> {{ summary.TeamA_ALL }}%</small></div>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="col-md-6">
-        <h6>Team B</h6>
-        <ul>
-          <li><strong>Total %:</strong> {{ summary.TeamB_Total }}</li>
-          <li><strong>BAT:</strong> {{ summary.TeamB_BAT }}</li>
-          <li><strong>BOWL:</strong> {{ summary.TeamB_BOWL }}</li>
-          <li><strong>ALL:</strong> {{ summary.TeamB_ALL }}</li>
-          <li><strong>WK:</strong> {{ summary.TeamB_WK }}</li>
-        </ul>
+        <div class="card bg-dark text-white border-warning" style="border-radius: 8px;">
+          <div class="card-body py-2">
+            <h6 class="card-title mb-2"><i class="fas fa-chart-line text-warning"></i> Team B Analysis</h6>
+            <div class="row text-sm">
+              <div class="col-6"><small><strong>Total:</strong> {{ summary.TeamB_Total }}%</small></div>
+              <div class="col-6"><small><strong>BAT:</strong> {{ summary.TeamB_BAT }}%</small></div>
+              <div class="col-6"><small><strong>BOWL:</strong> {{ summary.TeamB_BOWL }}%</small></div>
+              <div class="col-6"><small><strong>ALL:</strong> {{ summary.TeamB_ALL }}%</small></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Add Player Form -->
-  <div id="addPlayerForm" class="glass-panel d-none mb-4">
-    <form action="/addplayer" method="post" class="row g-2">
-      <input type="hidden" name="matchid" value="{{matchid}}">
-      <div class="col-md-2"><input name="playername" class="form-control form-control-sm" placeholder="Name"></div>
-      <div class="col-md-2">
-        <select name="teamname" class="form-select form-select-sm">
-          {% for team in teams %}<option>{{team.team1}}</option><option>{{team.team2}}</option>{% endfor %}
-        </select>
+  <!-- Compact Add Player Form -->
+  <div id="addPlayerForm" class="d-none mb-3">
+    <div class="card bg-dark text-white border-success" style="border-radius: 8px;">
+      <div class="card-body py-2">
+        <form action="/addplayer" method="post" class="row g-2 align-items-end">
+          <input type="hidden" name="matchid" value="{{matchid}}">
+          <div class="col-md-2">
+            <label class="form-label text-white small mb-1">Player Name</label>
+            <input name="playername" class="form-control form-control-sm" placeholder="Enter name" required>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label text-white small mb-1">Team</label>
+            <select name="teamname" class="form-select form-select-sm" required>
+              {% for team in teams %}<option>{{team.team1}}</option><option>{{team.team2}}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-md-1">
+            <label class="form-label text-white small mb-1">Role</label>
+            <select name="role" class="form-select form-select-sm" required>
+              <option>BAT</option><option>BOWL</option><option>ALL</option><option>WK</option>
+            </select>
+          </div>
+          <div class="col-md-1">
+            <label class="form-label text-white small mb-1">%</label>
+            <input name="percentage" class="form-control form-control-sm" placeholder="0.0" type="number" step="0.1" required>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label text-white small mb-1">Match Role</label>
+            <select name="matchrole" class="form-select form-select-sm">
+              <option>OB1</option><option>OB2</option><option>1D</option><option>2D</option>
+              <option>F</option><option>PS</option><option>OBO1</option><option>OBO2</option>
+              <option>DBO1</option><option>DBO2</option><option>BBO</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="btn btn-success btn-sm w-100">
+              <i class="fas fa-plus"></i> Add Player
+            </button>
+          </div>
+        </form>
       </div>
-      <div class="col-md-1">
-        <select name="role" class="form-select form-select-sm">
-          <option>BAT</option><option>BOWL</option><option>ALL</option><option>WK</option>
-        </select>
+    </div>
+  </div>
+
+  <!-- Compact Quick Actions -->
+  <div id="quickActions" class="d-none mb-3">
+    <div class="card bg-dark text-white border-info" style="border-radius: 8px;">
+      <div class="card-body py-2">
+        <div class="row g-2">
+          <div class="col-md-3">
+            <a href="/bulkRemovePlayers?matchid={{matchid}}" class="btn btn-danger btn-sm w-100">
+              <i class="fas fa-trash-alt"></i> Bulk Remove
+            </a>
+          </div>
+          <div class="col-md-3">
+            <a href="/bulkUpdateMatchRoles?matchid={{matchid}}" class="btn btn-warning btn-sm w-100">
+              <i class="fas fa-users-cog"></i> Update Roles
+            </a>
+          </div>
+          <div class="col-md-3">
+            <form action="/customTeams" method="post" class="d-inline w-100">
+              <input type="hidden" name="matchid" value="{{matchid}}">
+              <button type="submit" class="btn btn-info btn-sm w-100">
+                <i class="fas fa-star"></i> Custom Teams
+              </button>
+            </form>
+          </div>
+          <div class="col-md-3">
+            <button type="button" class="btn btn-primary btn-sm w-100" data-bs-toggle="modal" data-bs-target="#generateTeamsModal">
+              <i class="fas fa-cogs"></i> Generate
+            </button>
+          </div>
+        </div>
       </div>
-      <div class="col-md-1"><input name="percentage" class="form-control form-control-sm" placeholder="%"></div>
-      <div class="col-md-2">
-        <select name="matchrole" class="form-select form-select-sm">
-          <option>OB1</option><option>OB2</option><option>1D</option><option>2D</option>
-          <option>F</option><option>PS</option><option>OBO1</option><option>OBO2</option>
-          <option>DBO1</option><option>DBO2</option><option>BBO</option>
-        </select>
-      </div>
-      <div class="col-md-2">
-        <button type="submit" class="btn btn-success btn-sm w-100">Add</button>
-      </div>
-    </form>
+    </div>
   </div>
 
   <!-- View Tabs -->
@@ -140,30 +186,7 @@
     </li>
   </ul>
 
-  <!-- 🔁 Action Buttons -->
-  <div class="mb-3 text-end">
-    <a href="/bulkRemovePlayers?matchid={{matchid}}" class="btn btn-danger me-2">
-      <i class="fas fa-trash-alt"></i> 🗑️ Bulk Remove Players
-    </a>
-    <a href="/bulkUpdateMatchRoles?matchid={{matchid}}" class="btn btn-warning me-2">
-      <i class="fas fa-users-cog"></i> Bulk Update Match Roles
-    </a>
-    <form action="/customTeams" method="post" class="d-inline">
-      <input type="hidden" name="matchid" value="{{matchid}}">
-      <button type="submit" class="btn btn-info me-2">
-        <i class="fas fa-star"></i> ⭐ Custom Teams
-      </button>
-    </form>
-    <form action="/scorecardTeams" method="post" class="d-inline">
-      <input type="hidden" name="matchid" value="{{matchid}}">
-      <button type="submit" class="btn btn-success me-2">
-        <i class="fas fa-chart-bar"></i> 📊 Scorecard Teams
-      </button>
-    </form>
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#generateTeamsModal">
-      ⚙️ Generate Teams
-    </button>
-  </div>
+
 
   <!-- Tab Content -->
   <div class="tab-content" id="viewTabsContent">
@@ -238,11 +261,21 @@
   </div>
 </div>
 
-<!-- Toggle Script -->
+<!-- Toggle Scripts -->
 <script>
   function toggleAnalysis() {
     const card = document.getElementById('analysisCard');
     card.classList.toggle('d-none');
+  }
+  
+  function toggleAddPlayer() {
+    const form = document.getElementById('addPlayerForm');
+    form.classList.toggle('d-none');
+  }
+  
+  function toggleQuickActions() {
+    const actions = document.getElementById('quickActions');
+    actions.classList.toggle('d-none');
   }
 </script>
 
@@ -533,6 +566,7 @@ document.addEventListener('DOMContentLoaded', function() {
   switchMode();
 });
 </script>
+{% endblock %}
 
-</body>
-</html>
+{% block extra_js %}
+{% endblock %}

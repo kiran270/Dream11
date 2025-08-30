@@ -1,0 +1,29 @@
+{
+  "match_id": "110745",
+  "users": [
+    {
+      "name": "kiran",
+      "auth_token": "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCIsImtpZCI6IlRqb0FsLVdyZWN3Z3MtZVVvcm5xWWE5Y2x4dyJ9.eyJhdWQiOlsiYXBpLmRyZWFtMTEuY29tIiwiZ3VhcmRpYW4iXSwiZXhwIjoxNzcxMzE5OTg3LCJpYXQiOjE3NTU3Njc5ODcsImlzcyI6ImRyZWFtMTEuY29tIiwic3ViIjoiNDY4MTYxIiwiYXpwIjoiMiIsInJmdCI6IjEifQ.KvlKZ8fzvkikfKmzW02iaqDRUkcmdyaCFy33SnFBJBfqQBrU0uZjmK6hSYQ1yhJMceIuKpbP51yU_KFC-DB2Ftkrhpt3DeTq-06G-JRoTFAGphCFyQe7UseMs5V_RHRCAuyPP1etLlYPJEFp5jxbutwAI_-ayrSUq8B31buVl9d5L1dcK1cmorY5-10D6kTjmSVS_eKc79WExcdo1MMScJP60V82TypdVUbrtjfnx-9U6HbH6f1OcGam8zIk4lHEZgRLg_HDiJgHKlNXZedBSdkYgoxpvFV8dH8o8Xq6CKeRzotrzJGbn2lZ8EZVfw_noSN-hh8Z9ISlA7GG7sm3Ow",
+      "team_range": [
+        1,
+        6
+      ]
+    },
+    {
+      "name": "eswar",
+      "auth_token": "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCIsImtpZCI6IlRqb0FsLVdyZWN3Z3MtZVVvcm5xWWE5Y2x4dyJ9.eyJhdWQiOlsiYXBpLmRyZWFtMTEuY29tIiwiZ3VhcmRpYW4iXSwiZXhwIjoxNzcyMDMxMzY3LCJpYXQiOjE3NTY0NzkzNjcsImlzcyI6ImRyZWFtMTEuY29tIiwic3ViIjoiMTAwMzA5OTQiLCJhenAiOiIyIiwicmZ0IjoiMSJ9.FUMTOyL57Xlf4GiGW4_8FCYp16zAHxrTZufd4UWAOBiH1nZsOWGCJdgGYW9JVKan8urSN6OfpijIax63fFkasdHVpIbNP_x3qdOzcJlBa_rKyUCnkrE46I_KPgth7HRhVWvEs_8dOCkuGaAz0IX7QgRsyuNDvIKHcQXtns5FE3NAkvsrjopRyHSZfAiXnqXEUVIx_Rl-03TqatP3TvQwC1klSkxT6xrDI2bcELNKZ9xesr-afJXxoo-1zf0VFsSTZ8jmU-nM37smS00XvLkFcYWpmWTWis8690Q29mffUWa2oqRFUK5zjfpMwrloukJ8E6wxEUxOebAtTa7Q5hSisw",
+      "team_range": [
+        7,
+        12
+      ]
+    },
+    {
+      "name": "varsha",
+      "auth_token": "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCIsImtpZCI6IlRqb0FsLVdyZWN3Z3MtZVVvcm5xWWE5Y2x4dyJ9.eyJhdWQiOlsiYXBpLmRyZWFtMTEuY29tIiwiZ3VhcmRpYW4iXSwiZXhwIjoxNzcyMDgwNzIxLCJpYXQiOjE3NTY1Mjg3MjEsImlzcyI6ImRyZWFtMTEuY29tIiwic3ViIjoiMTc4NjU3NDY2IiwiYXpwIjoiMiIsInJmdCI6IjEifQ.nTI_fG3ceCKPoT3tpPhh7sJoWwOelWs4CjPsdMfbKNarbZZqxofmcH9X9WFlyNGQ7Opq9SuRm6xtmMxHAT1de39jzxRHzSW9VA-PJOHMyehufO0sT4trLUSWdynJwAm0-1HwEG5dXX0_636FwRafYpEWwLSSUvAc3Qx37Iuo4GL_Ddi0Ud5vtQWh8jololVEysonYx_gIxh2Xl0uOZBT5NBmy97bzFvQDoF_u7U0N_TZPfWikP6WpP_lt6uIGeV9TmfdeDnKHNtQhD_QUeS-3vZUx77CNnzCjrkziPmKAZkQEvJ7CQAXqmZofEvhGmgmm0lzzM67B9AMxxUgEP6XRA",
+      "team_range": [
+        13,
+        18
+      ]
+    }
+  ]
+}

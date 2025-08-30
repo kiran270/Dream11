@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Team Comparison{% endblock %}
+
+{% block extra_css %}
+<style>
+.comparison-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.team-column {
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.team-column:last-child {
+    border-right: none;
+}
+
+.metric-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="comparison-card">
+        <h2 class="text-center mb-4"><i class="fas fa-balance-scale"></i> Team Comparison</h2>
+        
+        {% if comparison_data %}
+        <div class="row">
+            {% for team in comparison_data %}
+            <div class="col-md-6 team-column">
+                <h4 class="text-center">{{ team.name }}</h4>
+                <div class="text-center mb-3">
+                    <span class="metric-badge">Total: {{ team.total_points }}</span>
+                    <span class="metric-badge">Captain: {{ team.captain_points }}</span>
+                </div>
+                <!-- Add more team comparison details here -->
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center">
+            <p class="text-muted">No teams selected for comparison</p>
+            <a href="/compare_teams" class="btn btn-primary">Select Teams</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

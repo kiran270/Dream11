@@ -1,118 +1,239 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <title>Bootstrap Example</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-</head>
-<style type="text/css">
-body {
-    background-size:auto;
-    background-repeat: no-repeat;
-    background-color: rgb(88, 88, 88);
-}
+{% extends "base.html" %}
+
+{% block title %}Add Squad - Dream11{% endblock %}
+
+{% block extra_css %}
 #anyClass {
-  height:500px;
+  height: 400px;
   overflow-y: scroll;
 }
-#b {border-style:solid;}
-#teamimage{
-  height:80%;
-  width:100%;
-  padding-top:10px;
-  padding-left:10px;
-  padding-right: 10px;
+
+.form-control-sm, .form-select-sm {
+  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem;
 }
-</style>
-<body>
-<nav class="navbar navbar-default">
-  <div class="container-fluid">
-    <div class="navbar-header">
-      <a class="navbar-brand" href="#">WebSiteName</a>
+
+.glass-panel {
+  margin-bottom: 15px;
+}
+
+.table-sm th, .table-sm td {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.badge {
+  font-size: 0.75rem;
+}
+
+/* Compact analysis cards */
+.bg-opacity-25 {
+  --bs-bg-opacity: 0.25;
+}
+
+.rounded {
+  border-radius: 0.375rem;
+}
+
+/* Make the analysis section more compact */
+.analysis-card {
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .glass-panel {
+    padding: 10px !important;
+  }
+  
+  .col-4 input {
+    font-size: 0.8rem;
+  }
+}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-2">
+
+  <!-- Compact Navbar-Style Controls -->
+  <nav class="navbar navbar-expand-lg mb-3" style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1);">
+    <div class="container-fluid">
+      <span class="navbar-brand mb-0 h1 text-white">
+        <i class="fas fa-users-cog"></i> Squad Management
+      </span>
+      
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-light btn-sm" onclick="toggleAddPlayer()">
+          <i class="fas fa-plus"></i> Add Player
+        </button>
+        <button class="btn btn-outline-info btn-sm" onclick="toggleAnalysis()">
+          <i class="fas fa-chart-bar"></i> Analysis
+        </button>
+      </div>
     </div>
-    <ul class="nav navbar-nav">
-      <li class="active"><a href="/">Home</a></li>
-      <li><a href="/addmatch">AddMatch</a></li>
-      <li><a href="/addsquad">AddSquad</a></li>
-      <li><a href="#">Page 3</a></li>
-    </ul>
-  </div>
-</nav>
-<div class="container-fluid">
-  <div class="col-md-4">
-    <div class="panel panel-default">
-      <div class="panel-heading">Add Player</div>
-      <div class="panel-body">
-        <form id="addplayer" action="/addsquad" method="post">
-          <div class="form-group">
-            <label>Player Name</label>
-            <input type="text" class="form-control" id="playername" placeholder="Enter the playername" name="playername">
+  </nav>
+
+  <!-- Compact Add Player Form -->
+  <div id="addPlayerForm" class="d-none mb-3">
+    <div class="card bg-dark text-white border-success" style="border-radius: 8px;">
+      <div class="card-body py-2">
+        <form id="addplayer" action="/addsquad" method="post" class="row g-2 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label text-white small mb-1">Player Name</label>
+            <input type="text" class="form-control form-control-sm" id="playername" placeholder="Enter player name" name="playername" required>
           </div>
-          <div class="form-group">
-            <label>Role</label>
-            <select class="form-control" name="role" id="role">
-              <option>BAT</option>
-              <option>BOWL</option>
-              <option>ALL</option>
+          <div class="col-md-2">
+            <label class="form-label text-white small mb-1">Role</label>
+            <select class="form-select form-control-sm" name="role" id="role" required>
+              <option value="">Select Role</option>
+              <option value="BAT">BAT</option>
+              <option value="BOWL">BOWL</option>
+              <option value="ALL">ALL</option>
             </select>
           </div>
-          <div class="form-group">
-            <label>Batting Pitch</label>
-            <input type="text" class="form-control" id="battingpitch" placeholder="Enter the points" name="battingpitch">
+          <div class="col-md-2">
+            <label class="form-label text-white small mb-1">Batting</label>
+            <input type="number" class="form-control form-control-sm" id="battingpitch" placeholder="Bat pts" name="battingpitch" required>
           </div>
-          <div class="form-group">
-            <label>Balanced Pitch</label>
-            <input type="text" class="form-control" id="balancedpitch" placeholder="Enter the points" name="balancedpitch">
+          <div class="col-md-2">
+            <label class="form-label text-white small mb-1">Balanced</label>
+            <input type="number" class="form-control form-control-sm" id="balancedpitch" placeholder="Bal pts" name="balancedpitch" required>
           </div>
-          <div class="form-group">
-            <label>Bowling Pitch</label>
-            <input type="text" class="form-control" id="bowlingpitch" placeholder="Enter the points" name="bowlingpitch">
+          <div class="col-md-2">
+            <label class="form-label text-white small mb-1">Bowling</label>
+            <input type="number" class="form-control form-control-sm" id="bowlingpitch" placeholder="Bowl pts" name="bowlingpitch" required>
           </div>
-          <div class="col-md-offset-5">
-            <button type="submit" class="btn btn-success">Submit</button>
+          <div class="col-md-1">
+            <button type="submit" class="btn btn-success btn-sm w-100">
+              <i class="fas fa-plus"></i> Add
+            </button>
           </div>
         </form>
       </div>
     </div>
   </div>
-  <div class="col-md-8">
-    <div class="panel panel-default">
-      <div class="panel-heading">Selected Players</div>
-      <div class="panel-body" id="anyClass">
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Role</th>
-              <th>BattingPitch</th>
-              <th>BalancedPitch</th>
-              <th>BowlingPitch</th>
-            </tr>
-          </thead>
-          <tbody id="tablebody">
-            {% for x in squad %}
-              <tr>
-                <td>{{x.playername}}</td>
-                <td>{{x.role}}</td>
-                <td>{{x.battingpitch}}</td>
-                <td>{{x.balancedpitch}}</td>
-                <td>{{x.bowlingpitch}}</td>
-                <td>
-                  <form action="/removeSquad" method="post">
-                    <input type="hidden" id="playername" name="playername" value="{{x.playername}}">
-                    <button type="submit" class="btn btn-danger" id="{{x.playername}}">Delete</button>
-                  </form>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+
+  <!-- Compact Analysis Section -->
+  <div id="analysisSection" class="d-none mb-3">
+    <div class="card bg-dark text-white border-info" style="border-radius: 8px;">
+      <div class="card-body py-2">
+        <div class="row g-2 text-center">
+          <div class="col-md-2">
+            <div class="bg-primary bg-opacity-25 rounded p-2">
+              <small class="text-muted d-block">Total Players</small>
+              <strong>{{ squad|length }}</strong>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="bg-success bg-opacity-25 rounded p-2">
+              <small class="text-muted d-block">Avg Points</small>
+              <strong>
+                {% if squad %}
+                  {{ "%.1f"|format((squad|sum(attribute='battingpitch') + squad|sum(attribute='balancedpitch') + squad|sum(attribute='bowlingpitch')) / (squad|length * 3)) }}
+                {% else %}
+                  0.0
+                {% endif %}
+              </strong>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="bg-info bg-opacity-25 rounded p-2">
+              <small class="text-muted d-block">BAT</small>
+              <strong>{{ squad|selectattr('role', 'equalto', 'BAT')|list|length }}</strong>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="bg-warning bg-opacity-25 rounded p-2">
+              <small class="text-muted d-block">ALL</small>
+              <strong>{{ squad|selectattr('role', 'equalto', 'ALL')|list|length }}</strong>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="bg-danger bg-opacity-25 rounded p-2">
+              <small class="text-muted d-block">BOWL</small>
+              <strong>{{ squad|selectattr('role', 'equalto', 'BOWL')|list|length }}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Players Table -->
+
+    <!-- Players Table -->
+    <div class="col-12">
+      <div class="glass-panel" style="padding: 15px;">
+        <h5 class="mb-3"><i class="fas fa-users me-2"></i>Selected Players</h5>
+        <div id="anyClass">
+          <div class="table-responsive">
+            <table class="table table-hover table-sm">
+              <thead>
+                <tr>
+                  <th><i class="fas fa-user me-1"></i>Name</th>
+                  <th><i class="fas fa-tag me-1"></i>Role</th>
+                  <th><i class="fas fa-baseball-ball me-1"></i>Bat</th>
+                  <th><i class="fas fa-balance-scale me-1"></i>Bal</th>
+                  <th><i class="fas fa-bowling-ball me-1"></i>Bowl</th>
+                  <th><i class="fas fa-cog me-1"></i>Action</th>
+                </tr>
+              </thead>
+              <tbody id="tablebody">
+                {% for x in squad %}
+                  <tr>
+                    <td class="fw-bold">{{x.playername}}</td>
+                    <td>
+                      <span class="badge bg-primary">{{x.role}}</span>
+                    </td>
+                    <td>{{x.battingpitch}}</td>
+                    <td>{{x.balancedpitch}}</td>
+                    <td>{{x.bowlingpitch}}</td>
+                    <td>
+                      <form action="/removeSquad" method="post" class="d-inline">
+                        <input type="hidden" name="playername" value="{{x.playername}}">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete {{x.playername}}?')">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+                {% if not squad %}
+                  <tr>
+                    <td colspan="6" class="text-center text-muted py-3">
+                      <i class="fas fa-users fa-2x mb-2"></i><br>
+                      No players added yet
+                    </td>
+                  </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
-</body>
-</html>
+
+<!-- Toggle Scripts -->
+<script>
+  function toggleAddPlayer() {
+    const form = document.getElementById('addPlayerForm');
+    form.classList.toggle('d-none');
+  }
+  
+  function toggleAnalysis() {
+    const analysis = document.getElementById('analysisSection');
+    analysis.classList.toggle('d-none');
+  }
+</script>
+{% endblock %}

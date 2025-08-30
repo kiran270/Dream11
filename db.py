@@ -340,7 +340,7 @@ def create_ground_analysis_table():
 			all_rounders_importance REAL,
 			analysis_data TEXT,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-			FOREIGN KEY (match_id) REFERENCES matches (uniqueid)
+			FOREIGN KEY (match_id) REFERENCES matches (matchid)
 		)
 	''')
 	con.commit()
@@ -480,14 +480,55 @@ def removeSquad(playername):
 	con.commit() 
 	rows = cur.fetchall()
 
+def getPlayerMatchRole(teamname, playername):
+	"""
+	Check if a player exists in the players table by team and player name.
+	Returns the player's match role if found, None otherwise.
+	
+	Args:
+		teamname (str): Team name to search for
+		playername (str): Player name to search for
+	
+	Returns:
+		str or None: Match role if player exists, None otherwise
+	"""
+	try:
+		con = create_connection()
+		cur = con.cursor()
+		cur.execute("SELECT matchrole FROM player WHERE teamname = ? AND playername = ? LIMIT 1", 
+		           (teamname, playername))
+		result = cur.fetchone()
+		con.close()
+		
+		if result:
+			return result[0]  # Return the match role
+		return None
+	except Exception as e:
+		print(f"Error checking player existence: {e}")
+		return None
+
 def addPlayer(matchid,teamname,role,playername,credits,percentage,matchrole,player_id):
 	# create_tables()
 	try:
+		# Check if player already exists in the database for this team
+		existing_matchrole = getPlayerMatchRole(teamname, playername)
+		
+		# If player exists and has a match role other than DNS, use that role
+		if existing_matchrole and existing_matchrole != "DNS":
+			print(f"🔄 Player {playername} ({teamname}) already exists with match role: {existing_matchrole} - using existing role")
+			matchrole = existing_matchrole
+		elif existing_matchrole == "DNS":
+			print(f"⚠️ Player {playername} ({teamname}) exists but has DNS role - using provided match role: {matchrole}")
+		else:
+			print(f"➕ New player {playername} ({teamname}) - using provided match role: {matchrole}")
+		
 		con=create_connection()
 		cur = con.cursor()
 		cur.execute("INSERT into player (matchid,teamname,role,playername,credits,percentage,matchrole,player_id) values (?,?,?,?,?,?,?,?)",(matchid,teamname,role,playername,credits,percentage,matchrole,player_id))
 		con.commit()
-	except:
+		con.close()
+	except Exception as e:
+		print(f"Error adding player: {e}")
 		con.rollback()
 def dict_factory(cursor, row):
 	d = {}
@@ -530,11 +571,40 @@ def getDreamTeamsBySourceMatch(source_match_id):
 	except Exception as e:
 		print(f"Error querying dreamteams by source match: {e}")
 		return []
+def getMatchIdColumnName():
+	"""Determine the correct column name for match ID in matches table"""
+	try:
+		con = create_connection()
+		cur = con.cursor()
+		cur.execute("PRAGMA table_info(matches)")
+		columns = cur.fetchall()
+		con.close()
+		
+		# Check for different possible column names
+		column_names = [col[1] for col in columns]
+		
+		if 'matchid' in column_names:
+			return 'matchid'
+		elif 'id' in column_names:
+			return 'id'
+		elif 'uniqueid' in column_names:
+			return 'uniqueid'
+		else:
+			# Default to the first column (usually the primary key)
+			return column_names[0] if column_names else 'id'
+	except:
+		return 'id'  # Default fallback
+
 def getteams(matchid):
 	con =create_connection()
 	con.row_factory = sqlite3.Row
 	cur = con.cursor()
-	cur.execute("SELECT * FROM matches where uniqueid = ?",[matchid])
+	
+	# Dynamically determine the correct column name
+	id_column = getMatchIdColumnName()
+	query = f"SELECT * FROM matches where {id_column} = ?"
+	
+	cur.execute(query, [matchid])
 	rows = cur.fetchall()
 	return rows
 def getplayers(matchid):
@@ -561,7 +631,12 @@ def removeplayerByMatchID(matchid):
 def deleteMatch(matchid):
 	con =create_connection()
 	cur = con.cursor()
-	cur.execute("DELETE FROM matches where uniqueid = ?",[matchid])
+	
+	# Dynamically determine the correct column name
+	id_column = getMatchIdColumnName()
+	query = f"DELETE FROM matches where {id_column} = ?"
+	
+	cur.execute(query, [matchid])
 	con.commit() 
 	rows = cur.fetchall()
 def getSquad():
@@ -604,6 +679,53 @@ def updatePlayerMatchRole(playername, matchid, new_matchrole):
 		print(f"Error updating player match role: {e}")
 		con.rollback()
 		return False
+
+def updateMatchId(old_match_id, new_match_id):
+	"""Update match ID in matches table"""
+	try:
+		con = create_connection()
+		cur = con.cursor()
+		
+		# Dynamically determine the correct column name
+		id_column = getMatchIdColumnName()
+		query = f"UPDATE matches SET {id_column} = ? WHERE {id_column} = ?"
+		
+		cur.execute(query, (new_match_id, old_match_id))
+		con.commit()
+		con.close()
+		print(f"✅ Updated match ID from {old_match_id} to {new_match_id} in matches table")
+		return True
+	except Exception as e:
+		print(f"❌ Error updating match ID in matches table: {e}")
+		return False
+
+def updatePlayersMatchId(old_match_id, new_match_id):
+	"""Update match ID in players table"""
+	try:
+		con = create_connection()
+		cur = con.cursor()
+		cur.execute("UPDATE player SET matchid = ? WHERE matchid = ?", (new_match_id, old_match_id))
+		affected_rows = cur.rowcount
+		con.commit()
+		con.close()
+		print(f"✅ Updated match ID from {old_match_id} to {new_match_id} for {affected_rows} players")
+		return True
+	except Exception as e:
+		print(f"❌ Error updating match ID in players table: {e}")
+		return False
+
+def extractMatchIdFromUrl(url):
+	"""Extract match ID from URL like https://team-generation.netlify.app/match/110745"""
+	try:
+		import re
+		pattern = r'/match/(\d+)'
+		match = re.search(pattern, url)
+		if match:
+			return int(match.group(1))
+		return None
+	except Exception as e:
+		print(f"❌ Error extracting match ID from URL: {e}")
+		return None
 
 def bulkRemovePlayers(player_names, matchid):
 	"""Bulk remove multiple players from a match"""
@@ -666,3 +788,218 @@ def bulkRemovePlayersByPercentage(min_percentage, max_percentage, matchid):
 		print(f"Error removing players by percentage: {e}")
 		con.rollback()
 		return 0
+
+def create_team_analysis_tables():
+	"""Create tables for team analysis functionality"""
+	try:
+		con = create_connection()
+		cur = con.cursor()
+		
+		# Team performance history table
+		cur.execute("""
+			CREATE TABLE IF NOT EXISTS team_performance (
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				team_id TEXT NOT NULL,
+				match_id INTEGER,
+				total_points REAL DEFAULT 0,
+				captain_points REAL DEFAULT 0,
+				vice_captain_points REAL DEFAULT 0,
+				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+				FOREIGN KEY (match_id) REFERENCES matches (matchid)
+			)
+		""")
+		
+		# Player performance history table
+		cur.execute("""
+			CREATE TABLE IF NOT EXISTS player_performance (
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				player_id INTEGER,
+				player_name TEXT NOT NULL,
+				match_id INTEGER,
+				points REAL DEFAULT 0,
+				is_captain BOOLEAN DEFAULT 0,
+				is_vice_captain BOOLEAN DEFAULT 0,
+				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+				FOREIGN KEY (match_id) REFERENCES matches (matchid)
+			)
+		""")
+		
+		con.commit()
+		print("✅ Team analysis tables created successfully")
+		return True
+	except Exception as e:
+		print(f"❌ Error creating team analysis tables: {e}")
+		return False
+
+def get_team_composition_analysis(match_id):
+	"""Analyze team composition for a match"""
+	try:
+		con = create_connection()
+		con.row_factory = sqlite3.Row
+		cur = con.cursor()
+		
+		# Get role distribution
+		cur.execute("""
+			SELECT role, COUNT(*) as count, 
+			       AVG(percentage) as avg_selection,
+			       AVG(CAST(REPLACE(credits, ' Cr', '') AS REAL)) as avg_credits
+			FROM player 
+			WHERE matchid = ? 
+			GROUP BY role
+		""", [match_id])
+		
+		role_distribution = cur.fetchall()
+		
+		# Get team distribution
+		cur.execute("""
+			SELECT teamname, COUNT(*) as player_count,
+			       AVG(percentage) as avg_selection,
+			       SUM(CAST(REPLACE(credits, ' Cr', '') AS REAL)) as total_credits
+			FROM player 
+			WHERE matchid = ? 
+			GROUP BY teamname
+		""", [match_id])
+		
+		team_distribution = cur.fetchall()
+		
+		con.close()
+		return {
+			'role_distribution': role_distribution,
+			'team_distribution': team_distribution
+		}
+	except Exception as e:
+		print(f"Error in team composition analysis: {e}")
+		return None
+
+def get_player_performance_metrics(match_id):
+	"""Get player performance metrics for analysis"""
+	try:
+		con = create_connection()
+		con.row_factory = sqlite3.Row
+		cur = con.cursor()
+		
+		# Get top performers by selection percentage
+		cur.execute("""
+			SELECT playername, teamname, role, percentage, credits,
+			       CAST(REPLACE(credits, ' Cr', '') AS REAL) as credit_value
+			FROM player 
+			WHERE matchid = ? 
+			ORDER BY percentage DESC
+			LIMIT 20
+		""", [match_id])
+		
+		top_performers = cur.fetchall()
+		
+		# Get captain/vice-captain suggestions
+		cur.execute("""
+			SELECT playername, teamname, role, percentage, credits,
+			       CAST(REPLACE(credits, ' Cr', '') AS REAL) as credit_value,
+			       (percentage * 0.7 + (100 - CAST(REPLACE(credits, ' Cr', '') AS REAL)) * 0.3) as captain_score
+			FROM player 
+			WHERE matchid = ? AND role IN ('BAT', 'AL', 'WK')
+			ORDER BY captain_score DESC
+			LIMIT 10
+		""", [match_id])
+		
+		captain_suggestions = cur.fetchall()
+		
+		con.close()
+		return {
+			'top_performers': top_performers,
+			'captain_suggestions': captain_suggestions
+		}
+	except Exception as e:
+		print(f"Error in player performance metrics: {e}")
+		return None
+
+def get_team_balance_analysis(match_id):
+	"""Analyze team balance and provide recommendations"""
+	try:
+		con = create_connection()
+		con.row_factory = sqlite3.Row
+		cur = con.cursor()
+		
+		# Get current team balance from templates
+		cur.execute("""
+			SELECT matchbetween, stadium, wininning,
+			       one as atop, two as amid, three as ahit,
+			       four as bpow, five as bbre, six as bdea,
+			       seven as btop, eight as bmid, nine as bhit,
+			       ten as apow, eleven as abre, twelve as adea
+			FROM dreamteams 
+			WHERE source_match_id = ?
+		""", [match_id])
+		
+		templates = cur.fetchall()
+		
+		# Calculate balance metrics
+		balance_analysis = []
+		for template in templates:
+			total_players = sum([
+				int(template['atop']), int(template['amid']), int(template['ahit']),
+				int(template['bpow']), int(template['bbre']), int(template['bdea']),
+				int(template['btop']), int(template['bmid']), int(template['bhit']),
+				int(template['apow']), int(template['abre']), int(template['adea'])
+			])
+			
+			batting_heavy = (int(template['atop']) + int(template['amid']) + int(template['ahit']) + 
+			                int(template['btop']) + int(template['bmid']) + int(template['bhit']))
+			
+			bowling_heavy = (int(template['bpow']) + int(template['bbre']) + int(template['bdea']) +
+			                int(template['apow']) + int(template['abre']) + int(template['adea']))
+			
+			balance_analysis.append({
+				'template': template['matchbetween'],
+				'strategy': template['wininning'],
+				'total_players': total_players,
+				'batting_players': batting_heavy,
+				'bowling_players': bowling_heavy,
+				'balance_ratio': round(batting_heavy / max(bowling_heavy, 1), 2)
+			})
+		
+		con.close()
+		return balance_analysis
+	except Exception as e:
+		print(f"Error in team balance analysis: {e}")
+		return []
+
+def save_team_performance(team_data, match_id):
+	"""Save team performance data"""
+	try:
+		create_team_analysis_tables()
+		con = create_connection()
+		cur = con.cursor()
+		
+		cur.execute("""
+			INSERT INTO team_performance (team_id, match_id, total_points, captain_points, vice_captain_points)
+			VALUES (?, ?, ?, ?, ?)
+		""", (team_data['team_id'], match_id, team_data['total_points'], 
+		      team_data['captain_points'], team_data['vice_captain_points']))
+		
+		con.commit()
+		con.close()
+		return True
+	except Exception as e:
+		print(f"Error saving team performance: {e}")
+		return False
+
+def get_historical_performance(match_id):
+	"""Get historical performance data for analysis"""
+	try:
+		create_team_analysis_tables()
+		con = create_connection()
+		con.row_factory = sqlite3.Row
+		cur = con.cursor()
+		
+		cur.execute("""
+			SELECT * FROM team_performance 
+			WHERE match_id = ? 
+			ORDER BY total_points DESC
+		""", [match_id])
+		
+		performance_data = cur.fetchall()
+		con.close()
+		return performance_data
+	except Exception as e:
+		print(f"Error getting historical performance: {e}")
+		return []

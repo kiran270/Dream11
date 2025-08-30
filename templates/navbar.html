@@ -1,0 +1,139 @@
+<!-- Consistent Navbar Component -->
+<nav class="navbar navbar-expand-lg navbar-glass">
+  <div class="container-fluid">
+    <a class="navbar-brand text-white fw-bold" href="/">
+      <i class="fas fa-trophy me-2"></i>Dream11 Manager
+    </a>
+    
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <div class="navbar-nav me-auto">
+        <a class="nav-link text-white {{ 'active' if request.endpoint == 'home' else '' }}" href="/">
+          <i class="fas fa-home me-1"></i>Home
+        </a>
+        <a class="nav-link text-white {{ 'active' if request.endpoint == 'AddMatches' else '' }}" href="/addmatch">
+          <i class="fas fa-plus-circle me-1"></i>Add Match
+        </a>
+        <a class="nav-link text-white {{ 'active' if request.endpoint == 'AddSquad' else '' }}" href="/addsquad">
+          <i class="fas fa-users me-1"></i>Add Squad
+        </a>
+        <a class="nav-link text-white {{ 'active' if request.endpoint == 'viewTemplates' else '' }}" href="/viewTemplates">
+          <i class="fas fa-table me-1"></i>Templates
+        </a>
+        <a class="nav-link text-white {{ 'active' if request.endpoint == 'compare_teams' else '' }}" href="/compare_teams">
+          <i class="fas fa-chart-line me-1"></i>Team Analysis
+        </a>
+      </div>
+      
+      <div class="navbar-nav">
+        <div class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-rocket me-1"></i>Actions
+          </a>
+          <ul class="dropdown-menu dropdown-menu-dark">
+            <li><a class="dropdown-item" href="/auto_upload">
+              <i class="fas fa-upload me-2"></i>Auto Upload Teams
+            </a></li>
+            <li><a class="dropdown-item" href="/adddreamteam">
+              <i class="fas fa-trophy me-2"></i>Add Dream Team
+            </a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="/createCustomTemplate">
+              <i class="fas fa-magic me-2"></i>Custom Template
+            </a></li>
+            <li><a class="dropdown-item" href="/generateTemplateFromUrl">
+              <i class="fas fa-link me-2"></i>Generate from URL
+            </a></li>
+          </ul>
+        </div>
+        
+        <div class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-cog me-1"></i>Admin
+          </a>
+          <ul class="dropdown-menu dropdown-menu-dark">
+            <li><a class="dropdown-item" href="/bulkUpdateMatchRoles">
+              <i class="fas fa-edit me-2"></i>Bulk Update Roles
+            </a></li>
+            <li><a class="dropdown-item" href="/bulkRemovePlayers">
+              <i class="fas fa-user-minus me-2"></i>Bulk Remove Players
+            </a></li>
+            <li><a class="dropdown-item" href="/updatePlayerRole">
+              <i class="fas fa-user-edit me-2"></i>Update Player Role
+            </a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<style>
+.navbar-glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 1030;
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.nav-link {
+  transition: all 0.3s ease;
+  border-radius: 6px;
+  margin: 0 2px;
+  padding: 8px 12px !important;
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.nav-link.active {
+  background: rgba(255, 255, 255, 0.2);
+  font-weight: 600;
+}
+
+.dropdown-menu-dark {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1040;
+  position: absolute;
+}
+
+.dropdown-menu {
+  z-index: 1040 !important;
+}
+
+.nav-item.dropdown {
+  position: relative;
+  z-index: 1035;
+}
+
+.dropdown-item {
+  transition: all 0.3s ease;
+}
+
+.dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.navbar-toggler {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+</style>

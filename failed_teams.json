@@ -1,0 +1,38 @@
+[
+  {
+    "team": 1,
+    "name": "4-7",
+    "user": "user1",
+    "dream11_id": 1
+  },
+  {
+    "team": 2,
+    "name": "4-7",
+    "user": "user1",
+    "dream11_id": 2
+  },
+  {
+    "team": 3,
+    "name": "4-7",
+    "user": "user1",
+    "dream11_id": 3
+  },
+  {
+    "team": 4,
+    "name": "4-7",
+    "user": "user1",
+    "dream11_id": 4
+  },
+  {
+    "team": 5,
+    "name": "4-7",
+    "user": "user1",
+    "dream11_id": 5
+  },
+  {
+    "team": 6,
+    "name": "4-7",
+    "user": "user1",
+    "dream11_id": 6
+  }
+]
