@@ -24,6 +24,14 @@
         13,
         18
       ]
+    },
+    {
+      "name":"Kiran2",
+      "auth_token": "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCIsImtpZCI6IlRqb0FsLVdyZWN3Z3MtZVVvcm5xWWE5Y2x4dyJ9.eyJhdWQiOlsiYXBpLmRyZWFtMTEuY29tIiwiZ3VhcmRpYW4iXSwiZXhwIjoxNzcyMDk4NTczLCJpYXQiOjE3NTY1NDY1NzMsImlzcyI6ImRyZWFtMTEuY29tIiwic3ViIjoiMTI4OTc5NDI0IiwiYXpwIjoiMiIsInJmdCI6IjEifQ.P_XvZdDeesMrUAUeqwxHyE3TiKUPHZJSXnpF9WI_8JatD7vPFTySsOEX2gXSbgRzNZUm6ObS7SUmnU4baYRbABX8PFKT4YCJZCB0Nc3DhfucAnB5L6tmCpMWpTV7lMzXmW3Qmg2_La4LzHwtEbHCpvPcoT-xGZM7cLznQZbekskl4fU_OB9X3MZLVyB1sgwwZ8sEMRHe2f18hmSZqxy1spxIBis0AqnWbfdt0VvxvwtwAL_6U4wswubWV7UvxtWrnw65QYqTrRb9PjTILtvVHax5DD2xYe9DQ2RmFhAqeVk4Pbrkq_5Ozmiii-yl2Hk3EU4qkrarkLBGlF7FaIy1dQ",
+      "team_range": [
+        19,
+        24
+      ]
     }
   ]
 }

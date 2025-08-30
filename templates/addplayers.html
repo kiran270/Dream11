@@ -302,8 +302,33 @@
         <div class="modal-body">
           <input type="hidden" name="matchid" value="{{matchid}}">
           
+          <!-- Strategy Selection -->
+          <div class="mb-4">
+            <h6 class="text-white mb-3">
+              <i class="fas fa-bullseye text-warning"></i> Team Strategy
+            </h6>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="wininning" value="Batting" id="battingStrategy" checked>
+                  <label class="form-check-label text-white" for="battingStrategy">
+                    <i class="fas fa-baseball-ball text-success me-2"></i>Batting First
+                  </label>
+                  <small class="text-muted d-block">Optimized for setting a target</small>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="wininning" value="Chaseing" id="chasingStrategy">
+                  <label class="form-check-label text-white" for="chasingStrategy">
+                    <i class="fas fa-running text-info me-2"></i>Chaseing
+                  </label>
+                  <small class="text-muted d-block">Optimized for chaseing a target</small>
+                </div>
+              </div>
+            </div>
+          </div>
 
-          
           <!-- Team Generation Options -->
           <div class="mb-4">
             <h6 class="text-white mb-3">

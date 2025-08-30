@@ -543,14 +543,20 @@ def getMactches():
 	cur.execute("select * from matches")
 	rows = cur.fetchall()
 	return rows
-def getDreamTeams():
+def getDreamTeams(winning=None):
 	create_tables()
 	con =create_connection()
 	con.row_factory = sqlite3.Row
 	cur = con.cursor()
-	# Query dreamteams table for all templates
+	# Query dreamteams table for all templates, optionally filtered by winning
 	try:
-		cur.execute("select * from templates")
+		if winning:
+			cur.execute("select * from templates where wininning = ?", [winning])
+			print(f"Filtering templates by winning: {winning}")
+		else:
+			cur.execute("select * from templates")
+			print("Getting all templates (no filter)")
+		
 		rows = cur.fetchall()
 		print(f"Found {len(rows)} templates in database")
 		return rows

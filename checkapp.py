@@ -529,7 +529,7 @@ def adddreamteam():
 	if request.method == "POST":
 		matchbetween=request.form.get('matchbetween')
 		stadium=request.form.get('stadium')
-		wininning=request.form.get('wininning')
+		winning=request.form.get('winning')
 		one=request.form.get('1')
 		two=request.form.get('2')
 		three=request.form.get('3')
@@ -541,7 +541,7 @@ def adddreamteam():
 		nine=request.form.get('9')
 		ten=request.form.get('10')
 		eleven=request.form.get('11')
-		addDreamTeam(matchbetween,stadium,wininning,one,two,three,four,five,six,seven,eight,nine,ten,eleven)
+		addDreamTeam(matchbetween,stadium,winning,one,two,three,four,five,six,seven,eight,nine,ten,eleven)
 		return render_template("adddreamteam.html")
 	else:
 		return render_template("adddreamteam.html")
@@ -1199,7 +1199,7 @@ def createCustomTemplate():
 		template_data = {
 			'matchbetween': template_name,
 			'stadium': stadium,
-			'wininning': winning_condition,
+			'winning': winning_condition,
 			'atop': int(request.form.get('atop', 0)),
 			'amid': int(request.form.get('amid', 0)),
 			'ahit': int(request.form.get('ahit', 0)),
@@ -1242,14 +1242,14 @@ def viewTemplates():
 	winning_filter = request.args.get('winning_filter', '')
 	
 	# Get all templates
-	templates = getDreamTeams()
+	templates = getDreamTeams()  # Get all templates for viewing
 	
 	# Apply filters
 	filtered_templates = []
 	for template in templates:
 		match_condition = not match_filter or match_filter.lower() in template['matchbetween'].lower()
 		stadium_condition = not stadium_filter or stadium_filter.lower() in template['stadium'].lower()
-		winning_condition = not winning_filter or winning_filter.lower() in template['wininning'].lower()
+		winning_condition = not winning_filter or winning_filter.lower() in template['winning'].lower()
 		
 		if match_condition and stadium_condition and winning_condition:
 			filtered_templates.append(template)
@@ -1257,7 +1257,7 @@ def viewTemplates():
 	# Get unique values for filter dropdowns
 	all_matches = list(set([t['matchbetween'] for t in templates]))
 	all_stadiums = list(set([t['stadium'] for t in templates]))
-	all_winnings = list(set([t['wininning'] for t in templates]))
+	all_winnings = list(set([t['winning'] for t in templates]))
 	
 	return render_template("view_templates.html", 
 	                      templates=filtered_templates,
@@ -1915,7 +1915,7 @@ def scorecardTeams():
 	
 	# Fallback to all scorecard templates if no ground-specific templates found
 	if not scorecard_templates:
-		all_templates = getDreamTeams()
+		all_templates = getDreamTeams()  # Get all templates for scorecard analysis
 		scorecard_templates = []
 		for t in all_templates:
 			try:
@@ -2175,6 +2175,8 @@ def scorecardTeams():
 @app.route("/generateTeams",methods = ["POST","GET"])
 def generateTeams():
 	matchid=request.form.get('matchid')
+	winning=request.form.get('winning', 'Batting')  # Default to 'Batting' if not provided
+	print(f"🎯 Team generation strategy: {winning}")
 	players=getplayers(matchid)
 	teams=getteams(matchid)
 	
@@ -2248,13 +2250,13 @@ def generateTeams():
 	# Generate teams using templates - Loop 5 times for more variety
 	templatecombinations = []
 	for iteration in range(5):
-		print(f"🔄 Generating teams - Iteration {iteration + 1}/5")
-		teams_batch = getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teams[0][1],teams[0][2])
+		print(f"🔄 Generating teams - Iteration {iteration + 1}/5 (Strategy: {winning})")
+		teams_batch = getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teams[0][1],teams[0][2],winning)
 		templatecombinations.extend(teams_batch)
 		print(f"✅ Iteration {iteration + 1} completed: {len(teams_batch)} teams generated, Total: {len(templatecombinations)}")
 	
 	# Final validation: ensure exactly 1 team per template
-	expected_teams = len(getDreamTeams()) if getDreamTeams() else 0
+	expected_teams = len(getDreamTeams(winning)) if getDreamTeams(winning) else 0
 	actual_teams = len(templatecombinations)
 	success_rate = (actual_teams / expected_teams * 100) if expected_teams > 0 else 0
 	
@@ -2812,7 +2814,7 @@ def generate_simple_template(teams, match_text):
     template = {
         'matchbetween': f"{teams[0]}-{teams[1]}",
         'stadium': 'Auto-Generated',
-        'wininning': 'Batting',
+        'winning': 'Batting',
         # Balanced 11-player template
         'atop': 1, 'amid': 2, 'ahit': 1,
         'bpow': 0, 'bbre': 1, 'bdea': 1,
@@ -2834,10 +2836,10 @@ def save_template_to_db(template_data, template_name):
             template_data['matchbetween'] = template_name
         
         cur.execute("""
-            INSERT INTO templates (matchbetween, stadium, wininning, atop, amid, ahit, bpow, bbre, bdea, btop, bmid, bhit, apow, abre, adea, cap, vc)
+            INSERT INTO templates (matchbetween, stadium, winning, atop, amid, ahit, bpow, bbre, bdea, btop, bmid, bhit, apow, abre, adea, cap, vc)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
-            template_data['matchbetween'], template_data['stadium'], template_data['wininning'],
+            template_data['matchbetween'], template_data['stadium'], template_data['winning'],
             template_data['atop'], template_data['amid'], template_data['ahit'],
             template_data['bpow'], template_data['bbre'], template_data['bdea'],
             template_data['btop'], template_data['bmid'], template_data['bhit'],
@@ -3025,8 +3027,8 @@ def get_top13_summary(team, top13_names):
 		"valid": True  # All teams are valid regardless of top 13 count
 	}
 
-def getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teamA,teamB):
-	templates=getDreamTeams()
+def getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teamA,teamB,winning=None):
+	templates=getDreamTeams(winning)
 	print(f"Loaded templates: {len(templates) if templates else 0}")
 	if templates:
 		print(f"Templates source: {'Database' if hasattr(templates[0], 'keys') and 'id' in templates[0] else 'Default'}")
