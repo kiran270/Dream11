@@ -1278,7 +1278,7 @@ def bulkUpdateMatchRoles():
 		updated_count = 0
 		
 		for player in players:
-			player_name = player[3]  # player name
+			player_name = player['playername']  # player name
 			new_match_role = request.form.get(f'match_role_{player_name}')
 			
 			if new_match_role and new_match_role.strip():
@@ -2245,7 +2245,9 @@ def generateTeams():
 	bpow = [p for p in teamB_players if 'POW' in str(p[6])]
 	bbre = [p for p in teamB_players if 'BRE' in str(p[6])]
 	bdea = [p for p in teamB_players if 'DEA' in str(p[6])]
-	
+	print(atop)
+	print(amid)
+	print(ahit)
 	# If no match role data, use all players in general categories
 	# Generate teams using templates - Loop 5 times for more variety
 	templatecombinations = []
@@ -3681,6 +3683,59 @@ def getvalidcombinations(combinations,teamA,teamB):
 							validcombinations.append(team)
 	return validcombinations
 
+
+@app.route("/debug_matches")
+def debug_matches():
+    """Debug route to list all matches"""
+    try:
+        matches = getMactches()
+        return jsonify([dict(match) for match in matches])
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+@app.route("/debug_players/<matchid>")
+def debug_players(matchid):
+    """Debug route to check player data and match roles"""
+    try:
+        players = getplayers(matchid)
+        teams = getteams(matchid)
+        
+        debug_info = {
+            "match_id": matchid,
+            "total_players": len(players),
+            "teams": [{"name": team[1], "vs": team[2]} for team in teams] if teams else [],
+            "players_by_role": {},
+            "players_without_roles": [],
+            "all_players": []
+        }
+        
+        # Organize players by match role
+        role_counts = {}
+        for player in players:
+            player_info = {
+                "name": player['playername'],
+                "team": player['teamname'],
+                "role": player['role'],
+                "match_role": player.get('matchrole', 'None'),
+                "percentage": player.get('percentage', 0)
+            }
+            debug_info["all_players"].append(player_info)
+            
+            match_role = player.get('matchrole', 'None')
+            if match_role and match_role != 'None':
+                if match_role not in debug_info["players_by_role"]:
+                    debug_info["players_by_role"][match_role] = []
+                debug_info["players_by_role"][match_role].append(player_info)
+                role_counts[match_role] = role_counts.get(match_role, 0) + 1
+            else:
+                debug_info["players_without_roles"].append(player_info)
+        
+        debug_info["role_counts"] = role_counts
+        debug_info["players_without_match_roles"] = len(debug_info["players_without_roles"])
+        
+        return jsonify(debug_info)
+    except Exception as e:
+        return jsonify({"error": str(e)})
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5001,debug=True)

@@ -495,7 +495,7 @@ def getPlayerMatchRole(teamname, playername):
 	try:
 		con = create_connection()
 		cur = con.cursor()
-		cur.execute("SELECT matchrole FROM player WHERE teamname = ? AND playername = ? LIMIT 1", 
+		cur.execute("SELECT matchrole FROM players WHERE teamname = ? AND playername = ? LIMIT 1", 
 		           (teamname, playername))
 		result = cur.fetchone()
 		con.close()
@@ -509,6 +509,7 @@ def getPlayerMatchRole(teamname, playername):
 
 def addPlayer(matchid,teamname,role,playername,credits,percentage,matchrole,player_id):
 	# create_tables()
+	con = None
 	try:
 		# Check if player already exists in the database for this team
 		existing_matchrole = getPlayerMatchRole(teamname, playername)
@@ -527,9 +528,12 @@ def addPlayer(matchid,teamname,role,playername,credits,percentage,matchrole,play
 		cur.execute("INSERT into player (matchid,teamname,role,playername,credits,percentage,matchrole,player_id) values (?,?,?,?,?,?,?,?)",(matchid,teamname,role,playername,credits,percentage,matchrole,player_id))
 		con.commit()
 		con.close()
+		print(f"✅ Successfully added player: {playername}")
 	except Exception as e:
-		print(f"Error adding player: {e}")
-		con.rollback()
+		print(f"❌ Error adding player {playername}: {e}")
+		if con:
+			con.rollback()
+			con.close()
 def dict_factory(cursor, row):
 	d = {}
 	for idx, col in enumerate(cursor.description):
@@ -614,24 +618,23 @@ def getteams(matchid):
 	rows = cur.fetchall()
 	return rows
 def getplayers(matchid):
-	player_id=""
 	con =create_connection()
 	con.row_factory = sqlite3.Row
 	cur = con.cursor()
-	cur.execute("SELECT * FROM player where matchid = ? and player_id != ?",[matchid,player_id]) 
+	cur.execute("SELECT * FROM player where matchid = ?",[matchid]) 
 	rows = cur.fetchall()
 	return rows
 def removeplayer(playername,matchid):
 	con =create_connection()
 	cur = con.cursor()
 	print(playername)
-	cur.execute("DELETE FROM player where playername = ? and matchid = ?",[playername,matchid])
+	cur.execute("DELETE FROM players where playername = ? and matchid = ?",[playername,matchid])
 	con.commit() 
 	rows = cur.fetchall()
 def removeplayerByMatchID(matchid):
 	con =create_connection()
 	cur = con.cursor()
-	cur.execute("DELETE FROM player where matchid = ?",[matchid])
+	cur.execute("DELETE FROM players where matchid = ?",[matchid])
 	con.commit() 
 	rows = cur.fetchall()
 def deleteMatch(matchid):
@@ -675,15 +678,19 @@ def updatePlayerRole(playername, matchid, new_role):
 
 def updatePlayerMatchRole(playername, matchid, new_matchrole):
 	"""Update player match role in the database"""
+	con = None
 	try:
 		con = create_connection()
 		cur = con.cursor()
 		cur.execute("UPDATE player SET matchrole = ? WHERE playername = ? AND matchid = ?", (new_matchrole, playername, matchid))
 		con.commit()
+		con.close()
 		return True
 	except Exception as e:
 		print(f"Error updating player match role: {e}")
-		con.rollback()
+		if con:
+			con.rollback()
+			con.close()
 		return False
 
 def updateMatchId(old_match_id, new_match_id):
@@ -849,7 +856,7 @@ def get_team_composition_analysis(match_id):
 			SELECT role, COUNT(*) as count, 
 			       AVG(percentage) as avg_selection,
 			       AVG(CAST(REPLACE(credits, ' Cr', '') AS REAL)) as avg_credits
-			FROM player 
+			FROM players 
 			WHERE matchid = ? 
 			GROUP BY role
 		""", [match_id])
@@ -861,7 +868,7 @@ def get_team_composition_analysis(match_id):
 			SELECT teamname, COUNT(*) as player_count,
 			       AVG(percentage) as avg_selection,
 			       SUM(CAST(REPLACE(credits, ' Cr', '') AS REAL)) as total_credits
-			FROM player 
+			FROM players 
 			WHERE matchid = ? 
 			GROUP BY teamname
 		""", [match_id])
@@ -888,7 +895,7 @@ def get_player_performance_metrics(match_id):
 		cur.execute("""
 			SELECT playername, teamname, role, percentage, credits,
 			       CAST(REPLACE(credits, ' Cr', '') AS REAL) as credit_value
-			FROM player 
+			FROM players 
 			WHERE matchid = ? 
 			ORDER BY percentage DESC
 			LIMIT 20
@@ -901,7 +908,7 @@ def get_player_performance_metrics(match_id):
 			SELECT playername, teamname, role, percentage, credits,
 			       CAST(REPLACE(credits, ' Cr', '') AS REAL) as credit_value,
 			       (percentage * 0.7 + (100 - CAST(REPLACE(credits, ' Cr', '') AS REAL)) * 0.3) as captain_score
-			FROM player 
+			FROM players 
 			WHERE matchid = ? AND role IN ('BAT', 'AL', 'WK')
 			ORDER BY captain_score DESC
 			LIMIT 10
