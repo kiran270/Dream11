@@ -1,0 +1,100 @@
+   21  source venv/bin/activate && python3 checkapp.py
+   22  source venv/bin/activate && python3 checkapp.py
+   23  brew install python
+   24  python3 --version
+   25  pip insatall gimme-aws-creds
+   26  pip3 insatall gimme-aws-creds
+   27  pip3 install gimme-aws-creds
+   28  pip3 insatall gimme-aws-creds
+   29  pip3 install gimme-aws-creds
+   30  gimme-aws-creds
+   31  /Library/Developer/CommandLineTools/usr/bin/python3 -m pip install --upgrade pip
+   32  gimme-aws-configure --config
+   33  gimme-aws-creds --config
+   34  pip3 install gimme-aws-creds
+   35  source ~/.zshrc
+   36  touch ~/.zshrc
+   37  vim ~/.zshrc
+   38  source ~/.zshrc\n
+   39  gimme-aws-creds --config
+   40  gimme-aws-creds
+   41  source ~/.zshrc\n
+   42  gimme-aws-creds
+   43  gimme-aws-creds --config
+   44  gimme-aws-creds --config
+   45  cat ~/.okta_aws_login_config
+   46  vi ~/.okta_aws_login_config
+   47  > ~/.okta_aws_login_config
+   48  vi ~/.okta_aws_login_config
+   49  gimme-aws-creds
+   50  git --version
+   51  git clone https://gitlab.com/nielsen-media/mds/nielsen-sports/ingestion/apps/audio-analysis/app.git
+   52  ssh-keygen -t ed25519 -C "koribillikiran.kumar@nielsen.com"
+   53  eval "$(ssh-agent -s)"
+   54  ssh-add -K ~/.ssh/id_ed25519
+   55  cat ~/.ssh/id_ed25519.pub
+   56  cd Desktop
+   57  git clone https://gitlab.com/nielsen-media/mds/nielsen-sports/ingestion/apps/audio-analysis/app.git
+   58  source ~/.zshrc\n
+   59  git clone https://gitlab.com/nielsen-media/mds/nielsen-sports/ingestion/apps/audio-analysis/app.git
+   60  ls -l ~/.ssh
+   61  ssh -T git@gitlab.com
+   62  git clone https://gitlab.com/nielsen-media/mds/nielsen-sports/ingestion/apps/audio-analysis/app.git
+   63  git clone https://gitlab.com/nielsen-media/mds/nielsen-sports/ingestion/apps/audio-analysis/app.git
+   64  git clone git@gitlab.com:nielsen-media/mds/nielsen-sports/ingestion/apps/audio-analysis/app.git
+   65  ls -lart
+   66  source venv/bin/activate && python checkapp.py
+   67  source venv/bin/activate && python checkapp.py
+   68  source venv/bin/activate && python checkapp.py
+   69  source venv/bin/activate && python checkapp.py
+   70  source venv/bin/activate && python checkapp.py
+   71  source venv/bin/activate && python checkapp.py
+   72  source venv/bin/activate && python checkapp.py
+   73  python -m py_compile checkapp.py
+   74  source venv/bin/activate && python checkapp.py
+   75  git status
+   76  git add .
+   77  git commit -m "fixed the issues"
+   78  git config --global user.email "kirangilli.kumar@gmail.com"
+   79  git config --global user.name "kiran270"
+   80  git commit -m "fixed the issues"
+   81  git status
+   82  git push
+   83  source venv/bin/activate && python checkapp.py
+   84  gimme-aws-creds
+   85  kubectl get pods -A
+   86  brew install kubectl
+   87  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+   88  echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+   89  eval "$(/opt/homebrew/bin/brew shellenv)"
+   90  source ~/.zprofile
+   91  brew --version
+   92  brew install kubectl
+   93  kubectl version --client
+   94  kubectl config get-contexts
+   95  export KUBECONFIG=/path/to/your/kubeconfig
+   96  kubectl config get-contexts
+   97  kubectl config get-contexts
+   98  kubectl cluster-info
+   99  gimme-aws-creds
+  100  kubectl cluster-info
+  101  kubectl config get-contexts
+  102  kubectl cluster-info
+  103  export AWS_PROFILE=DEVADMIN
+  104  kubectl config get-contexts
+  105  kubectl cluster-info
+  106  aws eks list-clusters --region eu-west-1
+  107  brew install awscli\n
+  108  aws eks list-clusters --region eu-west-1
+  109  kubectl cluster-info
+  110  gimme-aws-creds
+  111  gimme-aws-creds
+  112  pip install diagrams
+  113  cd "/Users/kokumar2402/Desktop/audio-main/architecture-docs" && python generate_architecture_diagram.py
+  114  python3 generate_architecture_diagram.py
+  115  python3 generate_architecture_diagram.py
+  116  cd "/Users/kokumar2402/Desktop/audio-main" && brew install graphviz
+  117  cd "/Users/kokumar2402/Desktop/audio-main/architecture-docs" && python3 text_architecture_diagram.py
+  118  history
+  119  history --100
+  120  history -100

@@ -173,7 +173,7 @@ def scrape_players_for_match(match_id, team1, team2):
         # Try HTTPS first, then HTTP as fallback
         try:
             print("🔗 Navigating to team-generation.netlify.app...")
-            driver.get("http://team-generation.netlify.app/")
+            driver.get("https://team-generation.netlify.app/")
             time.sleep(3)
             print(f"✅ Successfully loaded page: {driver.title}")
         except Exception as e:
@@ -1292,13 +1292,31 @@ def bulkUpdateMatchRoles():
 	
 	# If GET request, show the bulk update form
 	match_id = request.args.get('matchid')
+	sort_by = request.args.get('sort_by', 'default')  # Get sorting preference
+	
 	players = getplayers(match_id)
 	teams = getteams(match_id)
+	
+	# Sort players based on the selected option
+	if sort_by == 'team':
+		# Sort by team name alphabetically
+		players = sorted(players, key=lambda x: x['teamname'])
+	elif sort_by == 'percentage':
+		# Sort by percentage (highest first)
+		players = sorted(players, key=lambda x: float(x['percentage']) if x['percentage'] else 0, reverse=True)
+	elif sort_by == 'role':
+		# Sort by role alphabetically
+		players = sorted(players, key=lambda x: x['role'])
+	elif sort_by == 'name':
+		# Sort by player name alphabetically
+		players = sorted(players, key=lambda x: x['playername'])
+	# Default: keep original order (no sorting)
 	
 	return render_template("bulk_update_match_roles.html", 
 	                      match_id=match_id, 
 	                      players=players, 
-	                      teams=teams)
+	                      teams=teams,
+	                      current_sort=sort_by)
 
 @app.route("/updatePlayerRole",methods = ["POST","GET"])
 def updatePlayerRole():
@@ -2251,7 +2269,7 @@ def generateTeams():
 	# If no match role data, use all players in general categories
 	# Generate teams using templates - Loop 5 times for more variety
 	templatecombinations = []
-	for iteration in range(5):
+	for iteration in range(100):
 		print(f"🔄 Generating teams - Iteration {iteration + 1}/5 (Strategy: {winning})")
 		teams_batch = getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teams[0][1],teams[0][2],winning)
 		templatecombinations.extend(teams_batch)

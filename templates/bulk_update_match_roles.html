@@ -182,26 +182,102 @@
     <form method="POST" action="/bulkUpdateMatchRoles">
       <input type="hidden" name="match_id" value="{{ match_id }}">
       
+      <!-- Player Summary -->
       <div class="row mb-3">
-        <div class="col-md-6">
-          <button type="button" class="btn btn-info btn-sm" onclick="setAllRoles('TOP')">Set All to TOP</button>
-          <button type="button" class="btn btn-info btn-sm" onclick="setAllRoles('MID')">Set All to MID</button>
-          <button type="button" class="btn btn-info btn-sm" onclick="setAllRoles('HIT')">Set All to HIT</button>
+        <div class="col-12">
+          <div class="glass-card">
+            <h6 class="text-white mb-2">
+              <i class="fas fa-chart-bar"></i> Player Summary
+              <small class="text-muted">({{ players|length }} total players)</small>
+            </h6>
+            <div class="row">
+              <div class="col-md-6">
+                <small class="text-muted">By Team:</small>
+                {% set team_counts = {} %}
+                {% for player in players %}
+                  {% if team_counts.update({player.teamname: team_counts.get(player.teamname, 0) + 1}) %}{% endif %}
+                {% endfor %}
+                {% for team, count in team_counts.items() %}
+                  <span class="badge {% if loop.index == 1 %}bg-success{% else %}bg-danger{% endif %} me-1">
+                    {{ team }}: {{ count }}
+                  </span>
+                {% endfor %}
+              </div>
+              <div class="col-md-6">
+                <small class="text-muted">By Role:</small>
+                {% set role_counts = {} %}
+                {% for player in players %}
+                  {% if role_counts.update({player.role: role_counts.get(player.role, 0) + 1}) %}{% endif %}
+                {% endfor %}
+                {% for role, count in role_counts.items() %}
+                  <span class="badge bg-secondary me-1">{{ role }}: {{ count }}</span>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="col-md-6">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="setAllRoles('POW')">Set All to POW</button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="setAllRoles('BRE')">Set All to BRE</button>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="setAllRoles('DEA')">Set All to DEA</button>
+      </div>
+
+      <!-- Sorting Options -->
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <label for="sortSelect" class="form-label text-white">
+            <i class="fas fa-sort"></i> Sort Players By:
+          </label>
+          <select id="sortSelect" class="form-select form-select-sm" onchange="changeSorting()">
+            <option value="default" {% if current_sort == 'default' %}selected{% endif %}>Default Order</option>
+            <option value="team" {% if current_sort == 'team' %}selected{% endif %}>Team Name</option>
+            <option value="percentage" {% if current_sort == 'percentage' %}selected{% endif %}>Selection %</option>
+            <option value="role" {% if current_sort == 'role' %}selected{% endif %}>Role</option>
+            <option value="name" {% if current_sort == 'name' %}selected{% endif %}>Player Name</option>
+          </select>
+        </div>
+        <div class="col-md-8">
+          <label class="form-label text-white">
+            <i class="fas fa-magic"></i> Quick Role Assignment:
+          </label>
+          <div class="d-flex flex-wrap gap-1">
+            <div class="btn-group btn-group-sm" role="group">
+              <button type="button" class="btn btn-info" onclick="setAllRoles('TOP')">All TOP</button>
+              <button type="button" class="btn btn-info" onclick="setAllRoles('MID')">All MID</button>
+              <button type="button" class="btn btn-info" onclick="setAllRoles('HIT')">All HIT</button>
+            </div>
+            <div class="btn-group btn-group-sm" role="group">
+              <button type="button" class="btn btn-secondary" onclick="setAllRoles('POW')">All POW</button>
+              <button type="button" class="btn btn-secondary" onclick="setAllRoles('BRE')">All BRE</button>
+              <button type="button" class="btn btn-secondary" onclick="setAllRoles('DEA')">All DEA</button>
+            </div>
+            {% if teams %}
+            <div class="btn-group btn-group-sm" role="group">
+              <button type="button" class="btn btn-success" onclick="setTeamRoles('{{ teams[0][1] }}', 'TOP')" title="Set {{ teams[0][1] }} to TOP">
+                {{ teams[0][1] }} TOP
+              </button>
+              <button type="button" class="btn btn-danger" onclick="setTeamRoles('{{ teams[0][2] }}', 'TOP')" title="Set {{ teams[0][2] }} to TOP">
+                {{ teams[0][2] }} TOP
+              </button>
+            </div>
+            {% endif %}
+          </div>
         </div>
       </div>
 
       <div class="table-responsive">
         <table class="table table-dark table-striped">
-          <thead>
+          <thead class="sticky-top">
             <tr>
-              <th>Player Name</th>
-              <th>Team</th>
-              <th>Role</th>
+              <th>
+                Player Name
+                {% if current_sort == 'name' %}<i class="fas fa-sort-alpha-down text-warning ms-1"></i>{% endif %}
+              </th>
+              <th>
+                Team
+                {% if current_sort == 'team' %}<i class="fas fa-sort-alpha-down text-warning ms-1"></i>{% endif %}
+              </th>
+              <th>
+                Role
+                {% if current_sort == 'role' %}<i class="fas fa-sort-alpha-down text-warning ms-1"></i>{% endif %}
+              </th>
+              <th>Selection %</th>
               <th>Current Match Role</th>
               <th>New Match Role</th>
             </tr>
@@ -221,12 +297,17 @@
                 <span class="badge bg-secondary">{{ player.role }}</span>
               </td>
               <td>
+                <span class="text-info">{{ "%.1f"|format(player.percentage) }}%</span>
+                {% if current_sort == 'percentage' %}<i class="fas fa-sort-numeric-down text-warning ms-1"></i>{% endif %}
+              </td>
+              <td>
                 <small class="text-muted">{{ player.matchrole if player.matchrole else 'Not Set' }}</small>
               </td>
               <td>
                 <select class="form-select form-select-sm" name="match_role_{{ player.playername }}">
                   <option value="">Keep Current</option>
                   <optgroup label="Top Order">
+                    <option value="DNS" {% if player.matchrole == 'DNS' %}selected{% endif %}>DNS</option>
                     <option value="TOP" {% if player.matchrole == 'TOP' %}selected{% endif %}>TOP</option>
                     <option value="TOP-MID" {% if player.matchrole == 'TOP-MID' %}selected{% endif %}>TOP-MID</option>
                   </optgroup>
@@ -274,6 +355,43 @@ function setAllRoles(role) {
   const selects = document.querySelectorAll('select[name^="match_role_"]');
   selects.forEach(select => {
     select.value = role;
+  });
+}
+
+function changeSorting() {
+  const sortBy = document.getElementById('sortSelect').value;
+  const currentUrl = new URL(window.location);
+  currentUrl.searchParams.set('sort_by', sortBy);
+  window.location.href = currentUrl.toString();
+}
+
+// Add team-specific role assignment functions
+function setTeamRoles(teamName, role) {
+  const rows = document.querySelectorAll('.player-row');
+  rows.forEach(row => {
+    const teamBadge = row.querySelector('.badge');
+    if (teamBadge && teamBadge.textContent.trim() === teamName) {
+      const select = row.querySelector('select[name^="match_role_"]');
+      if (select) {
+        select.value = role;
+      }
+    }
+  });
+}
+
+// Add role-specific assignment functions
+function setRoleBasedRoles(playerRole, matchRole) {
+  const rows = document.querySelectorAll('.player-row');
+  rows.forEach(row => {
+    const roleBadges = row.querySelectorAll('.badge');
+    roleBadges.forEach(badge => {
+      if (badge.classList.contains('bg-secondary') && badge.textContent.trim() === playerRole) {
+        const select = row.querySelector('select[name^="match_role_"]');
+        if (select) {
+          select.value = matchRole;
+        }
+      }
+    });
   });
 }
 </script>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team 1 - Top Percentage Players</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .captain-badge { background: linear-gradient(45deg, #FFD700, #FFA500); }
+        .vice-captain-badge { background: linear-gradient(45deg, #C0C0C0, #A9A9A9); }
+        .player-card { transition: transform 0.2s; }
+        .player-card:hover { transform: translateY(-2px); }
+        .role-badge { font-size: 0.8em; }
+        .percentage-bar { height: 4px; border-radius: 2px; }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <h1 class="card-title mb-3">
+                            <i class="fas fa-trophy text-warning"></i>
+                            Team 1 - Top Percentage Players
+                        </h1>
+                        <h4 class="text-muted">{{ team1.match_between }}</h4>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h5 class="text-primary">{{ "%.1f"|format(team1.total_percentage) }}%</h5>
+                                    <small class="text-muted">Total Selection</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h5 class="text-success">{{ "%.1f"|format(team1.total_credits) }} Cr</h5>
+                                    <small class="text-muted">Total Credits</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h5 class="text-warning">{{ team1.captain.name }}</h5>
+                                    <small class="text-muted">Captain ({{ "%.1f"|format(team1.captain.percentage) }}%)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h5 class="text-info">{{ team1.vice_captain.name }}</h5>
+                                    <small class="text-muted">Vice Captain ({{ "%.1f"|format(team1.vice_captain.percentage) }}%)</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Role Distribution -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Role Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for role, count in team1.role_distribution.items() %}
+                            <div class="col-md-3 col-6 mb-2">
+                                <div class="text-center">
+                                    <span class="badge bg-secondary role-badge">{{ role }}</span>
+                                    <div class="h6 mt-1">{{ count }} player{{ 's' if count != 1 else '' }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Players List -->
+        <div class="row">
+            {% for player in team1.players %}
+            <div class="col-lg-6 col-xl-4 mb-3">
+                <div class="card player-card shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="card-title mb-1">
+                                    {{ player.position }}. {{ player.name }}
+                                    {% if player.is_captain %}
+                                        <span class="badge captain-badge text-dark ms-1">
+                                            <i class="fas fa-crown"></i> C
+                                        </span>
+                                    {% elif player.is_vice_captain %}
+                                        <span class="badge vice-captain-badge text-dark ms-1">
+                                            <i class="fas fa-medal"></i> VC
+                                        </span>
+                                    {% endif %}
+                                </h6>
+                                <div class="text-muted small">
+                                    <span class="badge bg-primary me-1">{{ player.team }}</span>
+                                    <span class="badge bg-secondary">{{ player.role }}</span>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <div class="h6 text-success mb-0">{{ player.credits }}</div>
+                                <small class="text-muted">Credits</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">Selection</small>
+                                <strong class="text-primary">{{ "%.1f"|format(player.percentage) }}%</strong>
+                            </div>
+                            <div class="percentage-bar bg-light mt-1">
+                                <div class="percentage-bar bg-primary" style="width: {{ player.percentage }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Actions -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Actions</h5>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-success" onclick="saveTeam()">
+                                <i class="fas fa-save"></i> Save Team to Database
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="exportTeam()">
+                                <i class="fas fa-download"></i> Export Team
+                            </button>
+                            <a href="/addplayers/{{ team1.match_id }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Players
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function saveTeam() {
+            if (confirm('Save this team to the database?')) {
+                fetch('/save_team1/{{ team1.match_id }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        players: {{ team1.players | tojson }},
+                        match_between: "{{ team1.match_between }}",
+                        total_percentage: {{ team1.total_percentage }},
+                        total_credits: {{ team1.total_credits }}
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ Team saved successfully!');
+                    } else {
+                        alert('❌ Failed to save team: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('❌ Error: ' + error);
+                });
+            }
+        }
+
+        function exportTeam() {
+            const teamData = {
+                match: "{{ team1.match_between }}",
+                captain: "{{ team1.captain.name }}",
+                vice_captain: "{{ team1.vice_captain.name }}",
+                total_percentage: {{ team1.total_percentage }},
+                total_credits: {{ team1.total_credits }},
+                players: {{ team1.players | tojson }}
+            };
+            
+            const dataStr = JSON.stringify(teamData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'team1_{{ team1.match_id }}.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
