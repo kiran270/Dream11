@@ -555,7 +555,7 @@ def getDreamTeams(winning=None):
 	# Query dreamteams table for all templates, optionally filtered by winning
 	try:
 		if winning:
-			cur.execute("select * from templates where wininning = ? and matchbetween='equal'", [winning])
+			cur.execute("select * from templates where wininning = ?", [winning])
 			print(f"Filtering templates by winning: {winning}")
 		else:
 			cur.execute("select * from templates")

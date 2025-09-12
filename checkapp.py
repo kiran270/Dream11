@@ -9,6 +9,7 @@ import random
 import re
 import time
 import os
+import sqlite3
 from datetime import datetime
 try:
     from bs4 import BeautifulSoup
@@ -680,6 +681,469 @@ def auto_upload_teams():
 			"success": False, 
 			"message": f"Error: {str(e)}"
 		})
+
+@app.route("/player_alternatives_map/<int:match_id>")
+def player_alternatives_map(match_id):
+	"""Display Top-11 players with their alternatives based on match role groups"""
+	try:
+		# Get match info using existing function
+		teams = getteams(match_id)
+		if not teams:
+			return "Match not found", 404
+		
+		match_info = teams[0]
+		
+		# Get all players using existing function
+		all_players_raw = getplayers(match_id)
+		
+		# Filter out DNS players
+		non_dns_players = []
+		for player in all_players_raw:
+			match_role = (player['matchrole'] or '').upper()
+			if match_role != 'DNS':
+				non_dns_players.append(player)
+		
+		if len(non_dns_players) < 11:
+			return f"Not enough non-DNS players found. Need at least 11, found {len(non_dns_players)}", 400
+		
+		# Convert to list and sort by percentage, add rank
+		all_players = []
+		for i, player in enumerate(sorted(non_dns_players, key=lambda x: float(x['percentage']), reverse=True), 1):
+			player_dict = dict(player)
+			player_dict['overall_rank'] = i
+			all_players.append(player_dict)
+		
+		# Get top 11 players
+		top_11_players = all_players[:11]
+		
+		# Group all players by team and match role combination
+		player_alternatives = {}
+		for player in all_players:
+			team_name = player['teamname']
+			match_role = player['matchrole'] or 'NO_ROLE'
+			# Create a key combining team and match role
+			group_key = f"{team_name}_{match_role}"
+			
+			if group_key not in player_alternatives:
+				player_alternatives[group_key] = []
+			player_alternatives[group_key].append(player)
+		
+		# Sort alternatives within each group by percentage (already sorted, but ensure consistency)
+		for group_key, players in player_alternatives.items():
+			player_alternatives[group_key] = sorted(players, key=lambda x: float(x['percentage']), reverse=True)
+		
+		# Create a set of top-11 player names for exclusion
+		top_11_names = set(player['playername'] for player in top_11_players)
+		
+		# Create a mapping for easy lookup by main player
+		alternatives_by_player = {}
+		for main_player in top_11_players:
+			main_team = main_player['teamname']
+			main_role = main_player['matchrole'] or 'NO_ROLE'
+			group_key = f"{main_team}_{main_role}"
+			
+			# Get alternatives from same team and role, excluding ALL top-11 players
+			alternatives = []
+			if group_key in player_alternatives:
+				for alt_player in player_alternatives[group_key]:
+					# Exclude all top-11 players, not just the current main player
+					if alt_player['playername'] not in top_11_names:
+						alternatives.append(alt_player)
+			
+			alternatives_by_player[main_player['playername']] = {
+				'alternatives': alternatives,
+				'team': main_team,
+				'role': main_role,
+				'group_key': group_key
+			}
+		
+		# Prepare match info
+		match_info_dict = {
+			'team1': match_info['team1'],
+			'team2': match_info['team2']
+		}
+		
+		return render_template("player_alternatives_map.html",
+		                     top_11_players=top_11_players,
+		                     alternatives_by_player=alternatives_by_player,
+		                     all_players=all_players,
+		                     match_id=match_id,
+		                     match_info=match_info_dict)
+		
+	except Exception as e:
+		return f"Error generating alternatives map: {str(e)}", 500
+
+@app.route("/generate_alternative_teams/<int:match_id>", methods=["POST"])
+def generate_alternative_teams(match_id):
+	"""Generate 100 teams by swapping players with alternatives"""
+	try:
+		import random
+		
+		# Get match info using existing function
+		teams = getteams(match_id)
+		if not teams:
+			return jsonify({"success": False, "message": "Match not found"})
+		
+		match_info = teams[0]
+		
+		# Get all players using existing function
+		all_players_raw = getplayers(match_id)
+		
+		# Filter out DNS players
+		non_dns_players = []
+		for player in all_players_raw:
+			match_role = (player['matchrole'] or '').upper()
+			if match_role != 'DNS':
+				non_dns_players.append(player)
+		
+		if len(non_dns_players) < 11:
+			return jsonify({"success": False, "message": f"Not enough non-DNS players found. Need at least 11, found {len(non_dns_players)}"})
+		
+		# Convert to list and sort by percentage, add rank
+		all_players = []
+		for i, player in enumerate(sorted(non_dns_players, key=lambda x: float(x['percentage']), reverse=True), 1):
+			player_dict = dict(player)
+			player_dict['overall_rank'] = i
+			all_players.append(player_dict)
+		
+		# Get top 11 players as base team
+		top_11_players = all_players[:11]
+		
+		# Group all players by team and match role combination
+		player_alternatives = {}
+		for player in all_players:
+			team_name = player['teamname']
+			match_role = player['matchrole'] or 'NO_ROLE'
+			group_key = f"{team_name}_{match_role}"
+			
+			if group_key not in player_alternatives:
+				player_alternatives[group_key] = []
+			player_alternatives[group_key].append(player)
+		
+		# Sort alternatives within each group by percentage
+		for group_key, players in player_alternatives.items():
+			player_alternatives[group_key] = sorted(players, key=lambda x: float(x['percentage']), reverse=True)
+		
+		# Create a set of top-11 player names for exclusion
+		top_11_names = set(player['playername'] for player in top_11_players)
+		
+		# Create alternatives mapping
+		alternatives_by_player = {}
+		for main_player in top_11_players:
+			main_team = main_player['teamname']
+			main_role = main_player['matchrole'] or 'NO_ROLE'
+			group_key = f"{main_team}_{main_role}"
+			
+			alternatives = []
+			if group_key in player_alternatives:
+				for alt_player in player_alternatives[group_key]:
+					if alt_player['playername'] not in top_11_names:
+						alternatives.append(alt_player)
+			
+			alternatives_by_player[main_player['playername']] = alternatives
+		
+		# Generate 100 teams by swapping players
+		generated_teams = []
+		match_between = f"{match_info['team1']} vs {match_info['team2']}"
+		
+		for team_num in range(1, 101):  # Generate 100 teams
+			current_team = top_11_players.copy()
+			team_name = f"Alt-Team-{team_num}"
+			
+			# Randomly swap 1-3 players with their alternatives
+			swap_count = random.randint(1, min(3, len([p for p in top_11_players if alternatives_by_player.get(p['playername'])])))
+			
+			# Get players that have alternatives
+			swappable_players = [p for p in current_team if alternatives_by_player.get(p['playername'])]
+			
+			if swappable_players:
+				players_to_swap = random.sample(swappable_players, min(swap_count, len(swappable_players)))
+				
+				for player_to_swap in players_to_swap:
+					alternatives = alternatives_by_player[player_to_swap['playername']]
+					if alternatives:
+						# Pick a random alternative
+						replacement = random.choice(alternatives)
+						# Replace in current team
+						for i, team_player in enumerate(current_team):
+							if team_player['playername'] == player_to_swap['playername']:
+								current_team[i] = replacement
+								break
+			
+			# Assign captain and vice-captain from same team
+			team_a_players = [p for p in current_team if p['teamname'] == match_info['team1']]
+			team_b_players = [p for p in current_team if p['teamname'] == match_info['team2']]
+			
+			# Sort by percentage within each team
+			team_a_sorted = sorted(team_a_players, key=lambda x: float(x['percentage']), reverse=True)
+			team_b_sorted = sorted(team_b_players, key=lambda x: float(x['percentage']), reverse=True)
+			
+			# Choose captain and vice-captain from the team with more players, or higher percentage
+			if len(team_a_sorted) >= len(team_b_sorted) and len(team_a_sorted) >= 2:
+				captain = team_a_sorted[0]
+				vice_captain = team_a_sorted[1]
+			elif len(team_b_sorted) >= 2:
+				captain = team_b_sorted[0]
+				vice_captain = team_b_sorted[1]
+			else:
+				# Fallback: pick top 2 players overall
+				team_sorted = sorted(current_team, key=lambda x: float(x['percentage']), reverse=True)
+				captain = team_sorted[0]
+				vice_captain = team_sorted[1]
+			
+			# Find captain and vice-captain indices
+			cap_index = 0
+			vc_index = 1
+			for i, player in enumerate(current_team):
+				if player['playername'] == captain['playername']:
+					cap_index = i
+				elif player['playername'] == vice_captain['playername']:
+					vc_index = i
+			
+			# Save team to database
+			success = addDreamTeam(
+				matchbetween=match_between,
+				stadium="Alternative Swap Strategy",
+				wininning=team_name,
+				one=current_team[0]['playername'] if len(current_team) > 0 else "",
+				two=current_team[1]['playername'] if len(current_team) > 1 else "",
+				three=current_team[2]['playername'] if len(current_team) > 2 else "",
+				four=current_team[3]['playername'] if len(current_team) > 3 else "",
+				five=current_team[4]['playername'] if len(current_team) > 4 else "",
+				six=current_team[5]['playername'] if len(current_team) > 5 else "",
+				seven=current_team[6]['playername'] if len(current_team) > 6 else "",
+				eight=current_team[7]['playername'] if len(current_team) > 7 else "",
+				nine=current_team[8]['playername'] if len(current_team) > 8 else "",
+				ten=current_team[9]['playername'] if len(current_team) > 9 else "",
+				eleven=current_team[10]['playername'] if len(current_team) > 10 else "",
+				twelve="0",
+				cap=cap_index,
+				vc=vc_index,
+				source_match_id=match_id
+			)
+			
+			if success:
+				generated_teams.append(team_name)
+		
+		return jsonify({
+			"success": True,
+			"message": f"Successfully generated {len(generated_teams)} alternative teams",
+			"teams_count": len(generated_teams)
+		})
+		
+	except Exception as e:
+		return jsonify({"success": False, "message": f"Error generating teams: {str(e)}"})
+
+@app.route("/finalteams", methods=["GET"])
+def finalteams():
+	"""Display teams from dreamteams table"""
+	matchid = request.args.get('matchid')
+	print(f"🔍 finalteams route called with matchid: {matchid}")
+	
+	if not matchid:
+		print("❌ No matchid provided, redirecting to home")
+		return redirect("/")
+	
+	try:
+		# Get match info
+		teams = getteams(matchid)
+		print(f"🔍 Found teams: {len(teams) if teams else 0}")
+		if not teams:
+			print("❌ No teams found, redirecting to home")
+			return redirect("/")
+		
+		# Get all players for this match to create lookup
+		players = getplayers(matchid)
+		print(f"🔍 Found players: {len(players) if players else 0}")
+		
+		player_lookup = {}
+		for player in players:
+			player_lookup[player['playername']] = player
+			# Debug: Print first few players to see their team assignments
+			if len(player_lookup) <= 3:
+				print(f"🔍 Player: {player['playername']} - Team: {player['teamname']}")
+		
+		# Get all dream teams for this match
+		con = create_connection()
+		con.row_factory = sqlite3.Row
+		cur = con.cursor()
+		
+		# Try both queries to find teams
+		cur.execute("SELECT * FROM dreamteams WHERE source_match_id = ? ORDER BY dreamteamid DESC", [matchid])
+		dream_teams = cur.fetchall()
+		
+		if not dream_teams:
+			# Try alternative query
+			match_pattern = f"%{teams[0]['team1']}%{teams[0]['team2']}%"
+			cur.execute("SELECT * FROM dreamteams WHERE matchbetween LIKE ? ORDER BY dreamteamid DESC", [match_pattern])
+			dream_teams = cur.fetchall()
+		
+		con.close()
+		print(f"🔍 Found dream teams: {len(dream_teams)}")
+		
+		if not dream_teams:
+			print("❌ No dream teams found")
+			# Return empty teams page instead of redirecting
+			return render_template("finalteams.html",
+			                      validcombinations=[],
+			                      teamA=teams[0]['team1'],
+			                      teamB=teams[0]['team2'],
+			                      matchid=matchid,
+			                      top13_names=[],
+			                      ground_insights="No teams found. Generate teams first from Player Alternatives Map.")
+		
+		# Convert dream teams to the correct format expected by finalteams.html
+		validcombinations = []
+		for i, team in enumerate(dream_teams):
+			# Get player names from team
+			player_names = [
+				team['one'] or '',
+				team['two'] or '',
+				team['three'] or '',
+				team['four'] or '',
+				team['five'] or '',
+				team['six'] or '',
+				team['seven'] or '',
+				team['eight'] or '',
+				team['nine'] or '',
+				team['ten'] or '',
+				team['eleven'] or ''
+			]
+			
+			# Create team array where each position is a full player object
+			team_data = []
+			total_percentage = 0
+			
+			for j, player_name in enumerate(player_names):
+				if player_name and player_name in player_lookup:
+					player_data = player_lookup[player_name]
+					# Format as expected: [playerid, teamname, role, playername, credits, percentage, matchrole, player_id]
+					player_obj = [
+						player_data['playerid'] if 'playerid' in player_data.keys() else j,
+						player_data['teamname'] if 'teamname' in player_data.keys() else '',
+						player_data['role'] if 'role' in player_data.keys() else '',
+						player_data['playername'] if 'playername' in player_data.keys() else player_name,
+						player_data['credits'] if 'credits' in player_data.keys() else '0',
+						player_data['percentage'] if 'percentage' in player_data.keys() else 0,
+						player_data['matchrole'] if 'matchrole' in player_data.keys() else '',
+						player_data['player_id'] if 'player_id' in player_data.keys() else None
+					]
+					team_data.append(player_obj)
+					total_percentage += float(player_data['percentage'] if 'percentage' in player_data.keys() else 0)
+				else:
+					# Fallback for missing players
+					player_obj = [j, '', '', player_name or f'Player{j+1}', '0', 0, '', None]
+					team_data.append(player_obj)
+			
+			# Add captain and vice-captain as references (positions 11 and 12)
+			cap_index = team['cap'] or 0
+			vc_index = team['vc'] or 1
+			
+			if cap_index < len(team_data):
+				team_data.append(team_data[cap_index])  # Captain reference
+			else:
+				team_data.append(team_data[0] if team_data else [])
+				
+			if vc_index < len(team_data) - 1:  # -1 because we just added captain
+				team_data.append(team_data[vc_index])  # Vice-captain reference
+			else:
+				team_data.append(team_data[1] if len(team_data) > 2 else team_data[0] if team_data else [])
+			
+			# Add metadata
+			team_data.append(total_percentage)  # Total percentage
+			team_data.append(team['wininning'] or f'Alt-Team-{i+1}')  # Team name
+			
+			validcombinations.append(team_data)
+		
+		print(f"✅ Returning {len(validcombinations)} teams to template")
+		print(f"🔍 TeamA: {teams[0]['team1']}, TeamB: {teams[0]['team2']}")
+		
+		# Debug: Check first team's player assignments
+		if validcombinations:
+			first_team = validcombinations[0]
+			print(f"🔍 First team player teams: {[player[1] if len(player) > 1 else 'N/A' for player in first_team[:11]]}")
+		
+		# Get actual team names from players to ensure consistency
+		team_names_from_players = set()
+		for player in players:
+			if player['teamname']:
+				team_names_from_players.add(player['teamname'])
+		
+		team_names_list = list(team_names_from_players)
+		teamA_name = teams[0]['team1'] if len(team_names_list) == 0 else team_names_list[0]
+		teamB_name = teams[0]['team2'] if len(team_names_list) <= 1 else team_names_list[1]
+		
+		print(f"🔍 Using TeamA: {teamA_name}, TeamB: {teamB_name}")
+		print(f"🔍 Available team names from players: {team_names_list}")
+		
+		return render_template("finalteams.html",
+		                      validcombinations=validcombinations,
+		                      teamA=teamA_name,
+		                      teamB=teamB_name,
+		                      matchid=matchid,
+		                      top13_names=[],
+		                      ground_insights=f"Generated {len(validcombinations)} teams from Player Alternatives Map")
+		
+	except Exception as e:
+		print(f"❌ Error in finalteams route: {e}")
+		import traceback
+		traceback.print_exc()
+		# Return error page instead of redirecting
+		return f"Error loading teams: {str(e)}", 500
+
+@app.route("/save_alternative_team/<int:match_id>", methods=["POST"])
+def save_alternative_team(match_id):
+	"""Save a team created from the alternatives map"""
+	try:
+		data = request.get_json()
+		team_players = data.get('team', [])
+		team_name = data.get('team_name', 'Alternative Team')
+		
+		if len(team_players) != 11:
+			return jsonify({"success": False, "message": "Team must have exactly 11 players"})
+		
+		# Get match info
+		con = create_connection()
+		cur = con.cursor()
+		cur.execute("SELECT team1, team2 FROM matches WHERE matchid = ?", [match_id])
+		match_info = cur.fetchone()
+		con.close()
+		
+		if not match_info:
+			return jsonify({"success": False, "message": "Match not found"})
+		
+		team1_name, team2_name = match_info
+		match_between = f"{team1_name} vs {team2_name}"
+		
+		# Save team to database
+		success = addDreamTeam(
+			matchbetween=match_between,
+			stadium="Alternative Selection Strategy",
+			wininning=team_name,
+			one=team_players[0]['playername'] if len(team_players) > 0 else "",
+			two=team_players[1]['playername'] if len(team_players) > 1 else "",
+			three=team_players[2]['playername'] if len(team_players) > 2 else "",
+			four=team_players[3]['playername'] if len(team_players) > 3 else "",
+			five=team_players[4]['playername'] if len(team_players) > 4 else "",
+			six=team_players[5]['playername'] if len(team_players) > 5 else "",
+			seven=team_players[6]['playername'] if len(team_players) > 6 else "",
+			eight=team_players[7]['playername'] if len(team_players) > 7 else "",
+			nine=team_players[8]['playername'] if len(team_players) > 8 else "",
+			ten=team_players[9]['playername'] if len(team_players) > 9 else "",
+			eleven=team_players[10]['playername'] if len(team_players) > 10 else "",
+			twelve="0",
+			cap=0,  # Captain is first player
+			vc=1,   # Vice-captain is second player
+			source_match_id=match_id
+		)
+		
+		if success:
+			return jsonify({"success": True, "message": "Alternative team saved successfully!"})
+		else:
+			return jsonify({"success": False, "message": "Failed to save team to database"})
+			
+	except Exception as e:
+		return jsonify({"success": False, "message": f"Error saving team: {str(e)}"})
 
 @app.route("/team_analysis")
 def team_analysis_home():
@@ -1453,388 +1917,7 @@ def generate_teams_multiple_sets(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,ap
 	print(f"\n📊 Total teams generated: {len(all_teams)} from {len(fixed_sets)} sets")
 	return all_teams
 
-@app.route("/customTeams",methods = ["POST","GET"])
-def customTeams():
-	matchid = request.form.get('matchid') if request.method == "POST" else request.args.get('matchid')
-	if not matchid:
-		return redirect("/")
-	
-	players = getplayers(matchid)
-	teams = getteams(matchid)
-	
-	if not players or not teams:
-		return redirect("/")
-	
-	# Filter out DNS (Did Not Start) players
-	players = [p for p in players if len(p) > 6 and str(p[6]).upper() != 'DNS']
-	
-	# Load and apply ground analysis - first try database, then fallback to files
-	from db import get_ground_analysis
-	import json
-	
-	ground_analyzer = None
-	ground_insights = ""
-	
-	# Try to get ground analysis from database first
-	db_analysis = get_ground_analysis(matchid)
-	if db_analysis and db_analysis.get('analysis_data'):
-		try:
-			analysis_data = json.loads(db_analysis['analysis_data'])
-			# GroundAnalyzer not available - using basic ground insights
-			ground_insights = f"Ground analysis data available for {analysis_data.get('ground_name', 'this ground')}"
-			print("🏟️ Using stored ground analysis from database (basic mode)")
-		except Exception as e:
-			print(f"⚠️ Error loading database ground analysis: {e}")
-	
-	# Ground analysis features disabled - using standard player percentages
-	print("⚠️ Ground analysis features disabled, using standard player percentages")
-	
-	# Sort players by percentage (highest first) - now includes ground adjustments
-	players = sorted(players, key=operator.itemgetter(5), reverse=True)
-	
-	# Organize players by team and role
-	teamA_players = [p for p in players if p[1] == teams[0][1]]
-	teamB_players = [p for p in players if p[1] == teams[0][2]]
-	
-	# Organize by role
-	all_wk = [p for p in players if p[2] == 'WK']
-	all_bat = [p for p in players if p[2] == 'BAT']
-	all_all = [p for p in players if p[2] in ['ALL', 'AL']]
-	all_bowl = [p for p in players if p[2] == 'BOWL']
-	
-	teamA_bat = [p for p in teamA_players if p[2] == 'BAT']
-	teamB_bat = [p for p in teamB_players if p[2] == 'BAT']
-	
-	custom_teams = []
-	
-	def validate_team_composition(selected_players):
-		"""Validate that team has at least 1 WK, 1 BAT, 1 ALL/AL, and 1 BOWL"""
-		roles = {'WK': 0, 'BAT': 0, 'ALL': 0, 'AL': 0, 'BOWL': 0}
-		
-		for player in selected_players:
-			if len(player) > 2:  # Ensure player has role data
-				role = player[2]
-				if role in roles:
-					roles[role] += 1
-		
-		# Check if we have at least 1 of each required role
-		has_wk = roles['WK'] >= 1
-		has_bat = roles['BAT'] >= 1
-		has_all = (roles['ALL'] + roles['AL']) >= 1  # ALL or AL counts as all-rounder
-		has_bowl = roles['BOWL'] >= 1
-		
-		return has_wk and has_bat and has_all and has_bowl
-	
-	def create_team(name, strategy_title, strategy_description, selected_players):
-		"""Helper function to create a team object - no fallbacks"""
-		if not selected_players or len(selected_players) != 11:
-			return None
-		
-		# Validate team composition
-		if not validate_team_composition(selected_players):
-			return None
-		
-		# Find captain and vice-captain (highest percentage players in the team)
-		team_sorted = sorted(selected_players, key=lambda x: float(x[5]), reverse=True)
-		captain = team_sorted[0]
-		vice_captain = team_sorted[1]
-		
-		team = {
-			'name': name,
-			'strategy_title': strategy_title,
-			'strategy_description': strategy_description,
-			'players': [],
-			'total_percentage': sum([float(p[5]) for p in selected_players])
-		}
-		
-		for player in selected_players:
-			team['players'].append({
-				'name': player[3],
-				'team': player[1],
-				'role': player[2],
-				'credits': player[4],
-				'percentage': player[5],
-				'is_captain': player == captain,
-				'is_vice_captain': player == vice_captain
-			})
-		
-		return team
-	
-	def safe_extend(target_list, source_list, count):
-		"""Safely extend list with specified count - no fallbacks"""
-		if len(source_list) < count:
-			return 0  # Not enough players, don't add any
-		target_list.extend(source_list[:count])
-		return count
-	
-	# Team 1: Top 11 based on % selection
-	team1_players = players[:11]
-	team1 = create_team(
-		'Team 1: Top Performers',
-		'Highest Selection Percentage Strategy',
-		'Top 11 players with highest selection percentages for maximum crowd confidence.',
-		team1_players
-	)
-	if team1: custom_teams.append(team1)
-	
-	# Team 2: Team A Dominance
-	team2_players = []
-	if (len(teamA_players) >= 7 and len(teamB_bat) >= 2 and 
-		len(all_all) >= 1 and len(all_bowl) >= 1):
-		safe_extend(team2_players, teamA_players, 7)
-		safe_extend(team2_players, teamB_bat, 2)
-		safe_extend(team2_players, all_all, 1)
-		safe_extend(team2_players, all_bowl, 1)
-		
-		team2 = create_team(
-			'Team 2: Team A Dominance',
-			f'{teams[0][1]} Heavy Strategy',
-			f'7 top players from {teams[0][1]}, 2 best batsmen from {teams[0][2]}, plus best all-rounder and bowler.',
-			team2_players
-		)
-		if team2: custom_teams.append(team2)
-	
-	# Team 3: Team B Dominance
-	team3_players = []
-	if (len(teamB_players) >= 7 and len(teamA_bat) >= 2 and 
-		len(all_all) >= 1 and len(all_bowl) >= 1):
-		safe_extend(team3_players, teamB_players, 7)
-		safe_extend(team3_players, teamA_bat, 2)
-		safe_extend(team3_players, all_all, 1)
-		safe_extend(team3_players, all_bowl, 1)
-		
-		team3 = create_team(
-			'Team 3: Team B Dominance',
-			f'{teams[0][2]} Heavy Strategy',
-			f'7 top players from {teams[0][2]}, 2 best batsmen from {teams[0][1]}, plus best all-rounder and bowler.',
-			team3_players
-		)
-		if team3: custom_teams.append(team3)
-	
-	# Team 4: Batting Heavy
-	team4_players = []
-	if (len(all_wk) >= 1 and len(all_bat) >= 6 and 
-		len(all_all) >= 2 and len(all_bowl) >= 2):
-		safe_extend(team4_players, all_wk, 1)
-		safe_extend(team4_players, all_bat, 6)
-		safe_extend(team4_players, all_all, 2)
-		safe_extend(team4_players, all_bowl, 2)
-		
-		team4 = create_team(
-			'Team 4: Batting Powerhouse',
-			'Batting Heavy Strategy',
-			'6 batsmen, 2 all-rounders, 2 bowlers, and 1 wicket-keeper for maximum batting depth.',
-			team4_players
-		)
-		if team4: custom_teams.append(team4)
-	
-	# Team 5: Bowling Heavy
-	team5_players = []
-	if (len(all_wk) >= 1 and len(all_bat) >= 3 and 
-		len(all_all) >= 3 and len(all_bowl) >= 4):
-		safe_extend(team5_players, all_wk, 1)
-		safe_extend(team5_players, all_bat, 3)
-		safe_extend(team5_players, all_all, 3)
-		safe_extend(team5_players, all_bowl, 4)
-		
-		team5 = create_team(
-			'Team 5: Bowling Attack',
-			'Bowling Heavy Strategy',
-			'4 bowlers, 3 all-rounders, 3 batsmen, and 1 wicket-keeper for strong bowling attack.',
-			team5_players
-		)
-		if team5: custom_teams.append(team5)
-	
-	# Team 6: All-Rounder Heavy
-	team6_players = []
-	if (len(all_wk) >= 1 and len(all_bat) >= 3 and 
-		len(all_all) >= 5 and len(all_bowl) >= 2):
-		safe_extend(team6_players, all_wk, 1)
-		safe_extend(team6_players, all_bat, 3)
-		safe_extend(team6_players, all_all, 5)
-		safe_extend(team6_players, all_bowl, 2)
-		
-		team6 = create_team(
-			'Team 6: All-Rounder Special',
-			'All-Rounder Heavy Strategy',
-			'5 all-rounders for maximum flexibility, supported by 3 batsmen, 2 bowlers, and 1 keeper.',
-			team6_players
-		)
-		if team6: custom_teams.append(team6)
-	
-	# Team 7: Budget Friendly
-	budget_players = sorted(players, key=lambda x: float(x[4]))  # Sort by credits (ascending)
-	team7_players = budget_players[:11]
-	
-	team7 = create_team(
-		'Team 7: Budget Warriors',
-		'Low Credit Strategy',
-		'Lowest credit players who can still deliver value - perfect for budget constraints.',
-		team7_players
-	)
-	if team7: custom_teams.append(team7)
-	
-	# Team 8: Premium Players
-	premium_players = sorted(players, key=lambda x: float(x[4]), reverse=True)  # Sort by credits (descending)
-	team8_players = premium_players[:11]
-	
-	team8 = create_team(
-		'Team 8: Premium Squad',
-		'High Credit Strategy',
-		'Most expensive players - premium quality team with highest credit players.',
-		team8_players
-	)
-	if team8: custom_teams.append(team8)
-	
-	# Team 9: Balanced 50-50
-	team9_players = []
-	if len(teamA_players) >= 5 and len(teamB_players) >= 6:
-		safe_extend(team9_players, teamA_players, 5)
-		safe_extend(team9_players, teamB_players, 6)
-		
-		team9 = create_team(
-			'Team 9: Perfect Balance',
-			'50-50 Team Split',
-			f'Balanced representation: 5 from {teams[0][1]} and 6 from {teams[0][2]}.',
-			team9_players
-		)
-		if team9: custom_teams.append(team9)
-	
-	# Team 10: Wicket-Keeper Heavy
-	team10_players = []
-	if (len(all_wk) >= 2 and len(all_bat) >= 4 and 
-		len(all_all) >= 3 and len(all_bowl) >= 2):
-		safe_extend(team10_players, all_wk, 2)
-		safe_extend(team10_players, all_bat, 4)
-		safe_extend(team10_players, all_all, 3)
-		safe_extend(team10_players, all_bowl, 2)
-		
-		team10 = create_team(
-			'Team 10: Double Keeper',
-			'Wicket-Keeper Heavy Strategy',
-			'2 wicket-keepers for extra batting depth and flexibility in team selection.',
-			team10_players
-		)
-		if team10: custom_teams.append(team10)
-	
-	# Teams 11-20: Percentage Range Teams
-	for i in range(10):
-		start_idx = i * 2
-		end_idx = start_idx + 11
-		if end_idx <= len(players):
-			range_players = players[start_idx:end_idx]
-			team = create_team(
-				f'Team {11+i}: Range {start_idx+1}-{end_idx}',
-				f'Players Ranked {start_idx+1}-{end_idx}',
-				f'Players ranked {start_idx+1} to {end_idx} by selection percentage.',
-				range_players
-			)
-			if team: custom_teams.append(team)
-	
-	# Teams 21-30: Role-based Combinations
-	role_combinations = [
-		(2, 5, 2, 2, 'Keeper + Batting Focus'),
-		(1, 4, 4, 2, 'All-Rounder Focus'),
-		(1, 3, 3, 4, 'Bowling Focus'),
-		(1, 6, 1, 3, 'Pure Batting'),
-		(1, 2, 5, 3, 'All-Rounder Heavy'),
-		(2, 3, 3, 3, 'Balanced Roles'),
-		(1, 5, 3, 2, 'Batting + All-Rounder'),
-		(1, 4, 2, 4, 'Bowling Heavy'),
-		(2, 4, 2, 3, 'Keeper + Balanced'),
-		(1, 3, 4, 3, 'All-Rounder + Bowling')
-	]
-	
-	for i, (wk_count, bat_count, all_count, bowl_count, strategy) in enumerate(role_combinations):
-		if (len(all_wk) >= wk_count and len(all_bat) >= bat_count and 
-			len(all_all) >= all_count and len(all_bowl) >= bowl_count):
-			team_players = []
-			safe_extend(team_players, all_wk, wk_count)
-			safe_extend(team_players, all_bat, bat_count)
-			safe_extend(team_players, all_all, all_count)
-			safe_extend(team_players, all_bowl, bowl_count)
-			
-			team = create_team(
-				f'Team {21+i}: {strategy}',
-				f'Role Strategy: {wk_count}WK-{bat_count}BAT-{all_count}ALL-{bowl_count}BOWL',
-				f'{strategy} with {wk_count} keepers, {bat_count} batsmen, {all_count} all-rounders, {bowl_count} bowlers.',
-				team_players
-			)
-			if team: custom_teams.append(team)
-	
-	# Teams 31-35: Credit Range Teams
-	credit_ranges = [
-		('Budget', 0, 8.5),
-		('Mid-Range', 8.5, 10.0),
-		('Premium', 10.0, 12.0),
-		('Super Premium', 12.0, 15.0),
-		('Mixed Budget', 0, 15.0)
-	]
-	
-	for i, (range_name, min_credit, max_credit) in enumerate(credit_ranges):
-		team_players = []
-		
-		if range_name == 'Mixed Budget':
-			# Mix of budget and premium - only if we have enough
-			budget_players_filtered = [p for p in players if float(p[4]) <= 8.5]
-			premium_players_filtered = [p for p in players if float(p[4]) >= 10.0]
-			if len(budget_players_filtered) >= 6 and len(premium_players_filtered) >= 5:
-				safe_extend(team_players, budget_players_filtered, 6)
-				safe_extend(team_players, premium_players_filtered, 5)
-		else:
-			credit_filtered = [p for p in players if min_credit <= float(p[4]) <= max_credit]
-			if len(credit_filtered) >= 11:
-				team_players = credit_filtered[:11]
-		
-		if len(team_players) == 11:
-			team = create_team(
-				f'Team {31+i}: {range_name}',
-				f'{range_name} Credit Strategy',
-				f'Players with credits between {min_credit} and {max_credit}.',
-				team_players
-			)
-			if team: custom_teams.append(team)
-	
-	# Teams 36-40: Special Strategies
-	special_strategies = []
-	
-	# Only add strategies if we have enough players
-	if len(players) >= 11:
-		special_strategies.append(('Differential Picks', 'Low ownership players for unique team', players[-11:]))  # Lowest percentage
-		special_strategies.append(('Crowd Favorites', 'Most popular players', players[:11]))  # Highest percentage
-		
-		# Value picks - best percentage per credit ratio
-		value_sorted = sorted(players, key=lambda x: float(x[5])/float(x[4]), reverse=True)
-		if len(value_sorted) >= 11:
-			special_strategies.append(('Value Picks', 'Best percentage per credit ratio', value_sorted[:11]))
-		
-		# Contrarian - middle range players
-		if len(players) >= 22:  # Need at least 22 players for middle range
-			middle_start = len(players)//2 - 5
-			middle_end = middle_start + 11
-			special_strategies.append(('Contrarian', 'Against the crowd picks', players[middle_start:middle_end]))
-		
-		# Wildcard - every second player
-		wildcard_players = players[::2]
-		if len(wildcard_players) >= 11:
-			special_strategies.append(('Wildcard', 'Random mix strategy', wildcard_players[:11]))
-	
-	for i, (strategy_name, description, strategy_players) in enumerate(special_strategies):
-		if len(strategy_players) == 11:
-			team = create_team(
-				f'Team {36+i}: {strategy_name}',
-				f'{strategy_name} Strategy',
-				description,
-				strategy_players
-			)
-			if team: custom_teams.append(team)
-	
-	return render_template("custom_teams.html", 
-	                      custom_teams=custom_teams,
-	                      teamA=teams[0][1],
-	                      teamB=teams[0][2],
-	                      matchid=matchid,
-	                      ground_insights=ground_insights)
+
 
 @app.route("/scorecardTeams",methods = ["POST","GET"])
 def scorecardTeams():
@@ -2190,6 +2273,66 @@ def scorecardTeams():
 	                      ground_insights=ground_insights,
 	                      page_title="Scorecard-Based Teams")
 
+def remove_duplicate_teams_post_generation(teams_list):
+	"""
+	Remove teams that have more than 8 common players with other teams
+	This is called after all teams are generated to clean up duplicates
+	"""
+	if not teams_list or len(teams_list) <= 1:
+		return teams_list
+	
+	print(f"🔍 Checking {len(teams_list)} teams for duplicates (>8 common players)...")
+	
+	unique_teams = []
+	removed_count = 0
+	
+	for i, current_team in enumerate(teams_list):
+		is_duplicate = False
+		
+		# Extract player IDs from current team (first 11 players)
+		if len(current_team) < 11:
+			print(f"⚠️ Team {i+1} has only {len(current_team)} players, skipping")
+			continue
+			
+		current_player_ids = []
+		for j in range(11):
+			if j < len(current_team) and current_team[j] and len(current_team[j]) > 7:
+				player_id = current_team[j][7] if current_team[j][7] is not None else 0
+				current_player_ids.append(player_id)
+		
+		if len(current_player_ids) != 11:
+			print(f"⚠️ Team {i+1} doesn't have 11 valid player IDs, skipping")
+			continue
+		
+		# Check against all previously accepted unique teams
+		for existing_team in unique_teams:
+			existing_player_ids = []
+			for j in range(11):
+				if j < len(existing_team) and existing_team[j] and len(existing_team[j]) > 7:
+					player_id = existing_team[j][7] if existing_team[j][7] is not None else 0
+					existing_player_ids.append(player_id)
+			
+			if len(existing_player_ids) == 11:
+				# Calculate common players
+				common_players = len(set(current_player_ids) & set(existing_player_ids))
+				
+				if common_players > 8:  # More than 8 common = duplicate
+					is_duplicate = True
+					removed_count += 1
+					if removed_count <= 5:  # Log first 5 removals
+						print(f"🗑️ Removed team {i+1}: {common_players} common players with existing team")
+					break
+		
+		if not is_duplicate:
+			unique_teams.append(current_team)
+	
+	print(f"✅ Duplicate removal completed:")
+	print(f"   Original teams: {len(teams_list)}")
+	print(f"   Unique teams: {len(unique_teams)}")
+	print(f"   Removed duplicates: {removed_count}")
+	
+	return unique_teams
+
 @app.route("/generateTeams",methods = ["POST","GET"])
 def generateTeams():
 	matchid=request.form.get('matchid')
@@ -2274,6 +2417,12 @@ def generateTeams():
 		teams_batch = getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teams[0][1],teams[0][2],winning)
 		templatecombinations.extend(teams_batch)
 		print(f"✅ Iteration {iteration + 1} completed: {len(teams_batch)} teams generated, Total: {len(templatecombinations)}")
+	
+	# Remove duplicate/similar teams (more than 8 common players)
+	print(f"\n🔄 REMOVING DUPLICATE TEAMS:")
+	print(f"   Teams before duplicate removal: {len(templatecombinations)}")
+	templatecombinations = remove_duplicate_teams_post_generation(templatecombinations)
+	print(f"   Teams after duplicate removal: {len(templatecombinations)}")
 	
 	# Final validation: ensure exactly 1 team per template
 	expected_teams = len(getDreamTeams(winning)) if getDreamTeams(winning) else 0
