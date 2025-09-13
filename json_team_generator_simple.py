@@ -374,20 +374,13 @@ def generate_single_team(team_a_players: List[Tuple], team_b_players: List[Tuple
                     player_ids.append(player_id)
                     seen_ids.add(player_id)
                 else:
-                    # Generate unique fallback ID if duplicate found
-                    fallback_id = team_id * 1000 + i + 1
-                    while fallback_id in seen_ids:
-                        fallback_id += 1000
-                    player_ids.append(fallback_id)
-                    seen_ids.add(fallback_id)
-                    print(f"⚠️ Team {team_id}: Duplicate player ID {player_id} replaced with {fallback_id}")
+                    # No fallback ID generation - skip duplicate players
+                    print(f"⚠️ Team {team_id}: Duplicate player ID {player_id} - skipping team")
+                    return None
             else:
-                # Generate unique fallback ID
-                fallback_id = team_id * 1000 + i + 1
-                while fallback_id in seen_ids:
-                    fallback_id += 1000
-                player_ids.append(fallback_id)
-                seen_ids.add(fallback_id)
+                # No fallback ID generation - skip teams with missing player IDs
+                print(f"⚠️ Team {team_id}: Missing player ID for player {i} - skipping team")
+                return None
         
         # Verify we have exactly 11 unique player IDs
         if len(set(player_ids)) != 11:
@@ -596,77 +589,9 @@ def main():
         
         return database_filename
     
-    # Method 2: Fallback to sample data
-    print("\n🔄 METHOD 2: Using Sample Data (Fallback)")
-    print("-" * 40)
-    
-    # Sample player data in your database format
-    # Format: (playerid, teamname, role, playername, credits, percentage, matchrole, player_id)
-    sample_players = [
-        (1, "India", "BAT", "Virat Kohli", "11.0 Cr", 85.5, "TOP-HIT", 10001),
-        (2, "India", "BAT", "Rohit Sharma", "10.5 Cr", 78.2, "TOP-HIT", 10002),
-        (3, "India", "WK", "KL Rahul", "10.0 Cr", 72.1, "MID-HIT", 10003),
-        (4, "India", "AR", "Hardik Pandya", "9.5 Cr", 68.9, "MID-HIT", 10004),
-        (5, "India", "AR", "Ravindra Jadeja", "9.0 Cr", 65.3, "MID-HIT", 10005),
-        (6, "India", "BOWL", "Jasprit Bumrah", "9.5 Cr", 71.4, "POW-BRE", 10006),
-        (7, "India", "BOWL", "Mohammed Shami", "8.5 Cr", 58.7, "POW-BRE", 10007),
-        (8, "India", "BOWL", "Yuzvendra Chahal", "8.0 Cr", 52.3, "BRE-DEA", 10008),
-        (9, "India", "BAT", "Shikhar Dhawan", "9.0 Cr", 61.8, "TOP-MID", 10009),
-        (10, "India", "WK", "Rishabh Pant", "9.5 Cr", 69.2, "MID-HIT", 10010),
-        (11, "India", "BAT", "Shreyas Iyer", "8.5 Cr", 55.6, "MID-HIT", 10011),
-        
-        (12, "Pakistan", "BAT", "Babar Azam", "10.5 Cr", 82.1, "TOP-HIT", 20001),
-        (13, "Pakistan", "WK", "Mohammad Rizwan", "10.0 Cr", 75.8, "TOP-MID", 20002),
-        (14, "Pakistan", "BAT", "Fakhar Zaman", "9.0 Cr", 63.4, "TOP-MID", 20003),
-        (15, "Pakistan", "AR", "Shadab Khan", "8.5 Cr", 59.7, "MID-HIT", 20004),
-        (16, "Pakistan", "AR", "Imad Wasim", "8.0 Cr", 48.9, "MID-BRE", 20005),
-        (17, "Pakistan", "BOWL", "Shaheen Afridi", "9.5 Cr", 73.2, "POW-BRE", 20006),
-        (18, "Pakistan", "BOWL", "Haris Rauf", "8.5 Cr", 56.1, "BRE-DEA", 20007),
-        (19, "Pakistan", "BOWL", "Naseem Shah", "8.0 Cr", 51.8, "POW-BRE", 20008),
-        (20, "Pakistan", "AR", "Mohammad Hafeez", "8.0 Cr", 47.3, "MID-HIT", 20009),
-        (21, "Pakistan", "WK", "Sarfaraz Ahmed", "7.5 Cr", 42.6, "MID-HIT", 20010),
-        (22, "Pakistan", "BAT", "Asif Ali", "7.5 Cr", 38.9, "HIT-DEA", 20011)
-    ]
-    
-    # Generate teams using sample data with a realistic match ID format
-    filename = generate_teams_json_only(
-        players_data=sample_players,
-        team_a_name="India",
-        team_b_name="Pakistan",
-        match_id="IND_vs_PAK_2024_SAMPLE",  # Indicate this is sample data
-        num_teams=100
-    )
-    
-    if filename:
-        # Load and display the generated teams
-        teams_data = load_teams_from_json(filename)
-        
-        # Validate team uniqueness
-        validate_team_uniqueness(teams_data)
-        
-        # Analyze sequential team diversity
-        analyze_sequential_team_diversity(teams_data, min_differences=3)
-        
-        print(f"\n📊 SAMPLE DATA TEAMS SUMMARY:")
-        print(f"   File: {filename}")
-        print(f"   Total teams: {teams_data.get('metadata', {}).get('total_teams', 0)}")
-        print(f"   Match: {teams_data.get('metadata', {}).get('match', 'Unknown')}")
-        print(f"   Match ID: {teams_data.get('metadata', {}).get('match_id', 'Unknown')}")
-        
-        # Convert to API format
-        api_teams = convert_json_to_api_format(teams_data)
-        print(f"   API-ready teams: {len(api_teams)}")
-        
-        # Show first team example
-        if api_teams:
-            print(f"\n📋 Example Team 1:")
-            first_team = api_teams[0]
-            print(f"   Team ID: {first_team['team_id']}")
-            print(f"   Captain: {first_team['captain']}")
-            print(f"   Vice Captain: {first_team['vice_captain']}")
-            print(f"   Players: {first_team['players']}")
-    
-    return filename
+    # No fallback to sample data - if database method fails, return None
+    print("\n❌ Database method failed - no fallback available")
+    return None
 
 if __name__ == "__main__":
     main()

@@ -308,7 +308,7 @@
             <div class="row">
               <div class="col-md-6">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="wininning" value="Batting" id="battingStrategy" checked>
+                  <input class="form-check-input" type="radio" name="wininning" value="Batting" id="wininning" checked>
                   <label class="form-check-label text-white" for="battingStrategy">
                     <i class="fas fa-baseball-ball text-success me-2"></i>Batting First
                   </label>
@@ -317,13 +317,61 @@
               </div>
               <div class="col-md-6">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="wininning" value="Chaseing" id="chasingStrategy">
+                  <input class="form-check-input" type="radio" name="wininning" value="Chaseing" id="wininning">
                   <label class="form-check-label text-white" for="chasingStrategy">
                     <i class="fas fa-running text-info me-2"></i>Chaseing
                   </label>
                   <small class="text-muted d-block">Optimized for chaseing a target</small>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <!-- Fixed Players Selection -->
+          <div class="mb-4">
+            <h6 class="text-white mb-3">
+              <i class="fas fa-lock text-warning"></i> Fixed Players (Optional)
+            </h6>
+            
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <div class="d-flex gap-2 mb-2">
+                  <button type="button" class="btn btn-sm btn-outline-info" onclick="selectTopPlayers(3)">
+                    Top 3
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-info" onclick="selectTopPlayers(5)">
+                    Top 5
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-warning" onclick="selectByRole('BAT')">
+                    All BAT
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-warning" onclick="selectByRole('BOWL')">
+                    All BOWL
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearAllFixed()">
+                    Clear All
+                  </button>
+                  <span class="text-info ms-auto">
+                    Selected: <span id="fixedPlayerCount" class="text-info">0</span>/5
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row" style="max-height: 200px; overflow-y: auto;">
+              {% for player in players %}
+              <div class="col-md-6 col-lg-4">
+                <div class="form-check mb-2">
+                  <input class="form-check-input fixed-player-checkbox" type="checkbox" 
+                         name="fixed_players" value="{{ player.playername }}" 
+                         id="fixed_{{ loop.index }}">
+                  <label class="form-check-label text-white small" for="fixed_{{ loop.index }}">
+                    <strong>{{ player.playername }}</strong><br>
+                    <small class="text-muted">{{ player.teamname }} | {{ player.role }} | {{ player.percentage }}%</small>
+                  </label>
+                </div>
+              </div>
+              {% endfor %}
             </div>
           </div>
 
@@ -362,6 +410,8 @@
             </h6>
             <ul class="mb-0 text-white small" id="generationSummary">
               <li>Teams to generate: <strong>1 per template</strong></li>
+              <li>Fixed players: <strong><span id="summaryFixedCount">0</span></strong></li>
+              <li>Variable slots: <strong><span id="summaryVariableSlots">11</span></strong></li>
               <li>Top 13 validation: <strong>Enabled</strong></li>
               <li>Team diversity: <strong>Enabled</strong></li>
             </ul>
@@ -384,51 +434,14 @@
 <script>
 // Team generation form logic
 document.addEventListener('DOMContentLoaded', function() {
-  const singleSetRadio = document.getElementById('singleSet');
-  const multipleSetsRadio = document.getElementById('multipleSets');
-  const singleSetMode = document.getElementById('singleSetMode');
-  const multipleSetsMode = document.getElementById('multipleSetsMode');
-  
-  // Mode switching
-  function switchMode() {
-    const summaryList = document.getElementById('generationSummary');
-    
-    if (singleSetRadio.checked) {
-      singleSetMode.style.display = 'block';
-      multipleSetsMode.style.display = 'none';
-      summaryList.innerHTML = `
-        <li>Mode: <strong>Single Set</strong></li>
-        <li>Teams to generate: <strong>1 per template</strong></li>
-        <li>Fixed players: <strong><span id="summaryFixedCount">0</span></strong></li>
-        <li>Variable slots: <strong><span id="summaryVariableSlots">11</span></strong></li>
-        <li>Top 13 validation: <strong>Enabled</strong></li>
-      `;
-      updateSingleSetCounts();
-    } else {
-      singleSetMode.style.display = 'none';
-      multipleSetsMode.style.display = 'block';
-      summaryList.innerHTML = `
-        <li>Mode: <strong>Multiple Sets</strong></li>
-        <li>Teams to generate: <strong><span id="summaryFixedCount">0 sets</span> × templates</strong></li>
-        <li>Fixed players per set: <strong>5</strong></li>
-        <li>Variable slots per team: <strong>6</strong></li>
-        <li>Top 13 validation: <strong>Enabled</strong></li>
-      `;
-      updateAllSetCounts();
-    }
-  }
-  
-  singleSetRadio.addEventListener('change', switchMode);
-  multipleSetsRadio.addEventListener('change', switchMode);
-  
-  // Single set logic
+  // Fixed player selection logic
   const checkboxes = document.querySelectorAll('.fixed-player-checkbox');
   const countDisplay = document.getElementById('fixedPlayerCount');
   const summaryCount = document.getElementById('summaryFixedCount');
   const summarySlots = document.getElementById('summaryVariableSlots');
   const maxFixed = 5;
   
-  function updateSingleSetCounts() {
+  function updateFixedPlayerCounts() {
     const checkedCount = document.querySelectorAll('.fixed-player-checkbox:checked').length;
     countDisplay.textContent = checkedCount;
     summaryCount.textContent = checkedCount;
@@ -454,74 +467,20 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   checkboxes.forEach(checkbox => {
-    checkbox.addEventListener('change', updateSingleSetCounts);
+    checkbox.addEventListener('change', updateFixedPlayerCounts);
   });
-  
-  // Multiple sets logic
-  function updateSetCount(setNum) {
-    const setCheckboxes = document.querySelectorAll(`.set${setNum}-checkbox:checked`);
-    const countBadge = document.getElementById(`set${setNum}Count`);
-    const count = setCheckboxes.length;
-    
-    countBadge.textContent = `${count}/5`;
-    countBadge.className = count === 5 ? 'badge bg-success ms-2' : 'badge bg-secondary ms-2';
-    
-    // Disable unchecked boxes if max reached for this set
-    const allSetCheckboxes = document.querySelectorAll(`.set${setNum}-checkbox`);
-    allSetCheckboxes.forEach(checkbox => {
-      if (!checkbox.checked && count >= 5) {
-        checkbox.disabled = true;
-      } else {
-        checkbox.disabled = false;
-      }
-    });
-  }
-  
-  function updateAllSetCounts() {
-    for (let i = 1; i <= 10; i++) {
-      updateSetCount(i);
-    }
-    
-    // Update summary
-    const totalSets = Array.from({length: 10}, (_, i) => i + 1)
-      .filter(setNum => document.querySelectorAll(`.set${setNum}-checkbox:checked`).length === 5).length;
-    
-    summaryCount.textContent = `${totalSets} sets`;
-    summarySlots.textContent = `${totalSets} × templates`;
-  }
-  
-  // Add event listeners for all set checkboxes
-  for (let setNum = 1; setNum <= 10; setNum++) {
-    const setCheckboxes = document.querySelectorAll(`.set${setNum}-checkbox`);
-    setCheckboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', () => updateSetCount(setNum));
-    });
-  }
   
   // Form validation
   document.getElementById('generateTeamsForm').addEventListener('submit', function(e) {
-    if (singleSetRadio.checked) {
-      const checkedCount = document.querySelectorAll('.fixed-player-checkbox:checked').length;
-      if (checkedCount > maxFixed) {
-        e.preventDefault();
-        alert(`Please select maximum ${maxFixed} fixed players. Currently selected: ${checkedCount}`);
-        return false;
-      }
-    } else {
-      // Validate that at least one complete set exists
-      let completeSets = 0;
-      for (let i = 1; i <= 10; i++) {
-        if (document.querySelectorAll(`.set${i}-checkbox:checked`).length === 5) {
-          completeSets++;
-        }
-      }
-      if (completeSets === 0) {
-        e.preventDefault();
-        alert('Please create at least one complete set of 5 players.');
-        return false;
-      }
+    const checkedCount = document.querySelectorAll('.fixed-player-checkbox:checked').length;
+    if (checkedCount > maxFixed) {
+      e.preventDefault();
+      alert(`Please select maximum ${maxFixed} fixed players. Currently selected: ${checkedCount}`);
+      return false;
     }
   });
+  
+
   
   // Helper functions
   window.selectTopPlayers = function(count) {
@@ -534,20 +493,7 @@ document.addEventListener('DOMContentLoaded', function() {
         selected++;
       }
     });
-    updateSingleSetCounts();
-  };
-  
-  window.selectTopPlayersForSet = function(setNum, count) {
-    clearSet(setNum);
-    const checkboxes = document.querySelectorAll(`.set${setNum}-checkbox`);
-    let selected = 0;
-    checkboxes.forEach(checkbox => {
-      if (selected < count) {
-        checkbox.checked = true;
-        selected++;
-      }
-    });
-    updateSetCount(setNum);
+    updateFixedPlayerCounts();
   };
   
   window.selectByRole = function(role) {
@@ -563,7 +509,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
     });
-    updateSingleSetCounts();
+    updateFixedPlayerCounts();
   };
   
   window.clearAllFixed = function() {
@@ -571,22 +517,11 @@ document.addEventListener('DOMContentLoaded', function() {
       checkbox.checked = false;
       checkbox.disabled = false;
     });
-    updateSingleSetCounts();
+    updateFixedPlayerCounts();
   };
-  
-  window.clearSet = function(setNum) {
-    const setCheckboxes = document.querySelectorAll(`.set${setNum}-checkbox`);
-    setCheckboxes.forEach(checkbox => {
-      checkbox.checked = false;
-      checkbox.disabled = false;
-    });
-    updateSetCount(setNum);
-  };
-  
-
   
   // Initialize
-  switchMode();
+  updateFixedPlayerCounts();
 });
 </script>
 {% endblock %}

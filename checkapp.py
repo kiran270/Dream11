@@ -844,7 +844,10 @@ def generate_alternative_teams(match_id):
 		
 		# Generate 100 teams by swapping players
 		generated_teams = []
+		skipped_teams = 0
 		match_between = f"{match_info['team1']} vs {match_info['team2']}"
+		
+		print(f"🔄 Generating alternative teams by swapping players...")
 		
 		for team_num in range(1, 101):  # Generate 100 teams
 			current_team = top_11_players.copy()
@@ -862,13 +865,20 @@ def generate_alternative_teams(match_id):
 				for player_to_swap in players_to_swap:
 					alternatives = alternatives_by_player[player_to_swap['playername']]
 					if alternatives:
-						# Pick a random alternative
-						replacement = random.choice(alternatives)
-						# Replace in current team
-						for i, team_player in enumerate(current_team):
-							if team_player['playername'] == player_to_swap['playername']:
-								current_team[i] = replacement
-								break
+						# Get current team player names to avoid duplicates
+						current_team_names = set(p['playername'] for p in current_team if p['playername'] != player_to_swap['playername'])
+						
+						# Find alternatives that are not already in the team
+						available_alternatives = [alt for alt in alternatives if alt['playername'] not in current_team_names]
+						
+						if available_alternatives:
+							# Pick a random alternative that's not already in the team
+							replacement = random.choice(available_alternatives)
+							# Replace in current team
+							for i, team_player in enumerate(current_team):
+								if team_player['playername'] == player_to_swap['playername']:
+									current_team[i] = replacement
+									break
 			
 			# Assign captain and vice-captain from same team
 			team_a_players = [p for p in current_team if p['teamname'] == match_info['team1']]
@@ -890,6 +900,14 @@ def generate_alternative_teams(match_id):
 				team_sorted = sorted(current_team, key=lambda x: float(x['percentage']), reverse=True)
 				captain = team_sorted[0]
 				vice_captain = team_sorted[1]
+			
+			# Validate team has no duplicate players
+			team_player_names = [p['playername'] for p in current_team]
+			if len(team_player_names) != len(set(team_player_names)):
+				duplicates = [name for name in team_player_names if team_player_names.count(name) > 1]
+				print(f"⚠️ Team {team_num} has duplicate players: {set(duplicates)}, skipping")
+				skipped_teams += 1
+				continue  # Skip this team and don't save it
 			
 			# Find captain and vice-captain indices
 			cap_index = 0
@@ -925,10 +943,15 @@ def generate_alternative_teams(match_id):
 			if success:
 				generated_teams.append(team_name)
 		
+		print(f"✅ Alternative team generation completed:")
+		print(f"   Teams generated: {len(generated_teams)}")
+		print(f"   Teams skipped (duplicates): {skipped_teams}")
+		
 		return jsonify({
 			"success": True,
-			"message": f"Successfully generated {len(generated_teams)} alternative teams",
-			"teams_count": len(generated_teams)
+			"message": f"Successfully generated {len(generated_teams)} alternative teams (skipped {skipped_teams} with duplicates)",
+			"teams_count": len(generated_teams),
+			"skipped_count": skipped_teams
 		})
 		
 	except Exception as e:
@@ -1884,7 +1907,7 @@ def bulkRemovePlayersRoute():
 
 def generate_teams_single_set(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teamA,teamB,top13_names,fixed_players_names,enforce_top13,ensure_diversity):
 	"""Generate teams with a single set of fixed players"""
-	return getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teamA,teamB,top13_names,fixed_players_names,enforce_top13,ensure_diversity)
+	return getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teamA,teamB,winning=None,fixed_players=fixed_players_names)
 
 def generate_teams_multiple_sets(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teamA,teamB,top13_names,fixed_sets,enforce_top13,ensure_diversity):
 	"""Generate teams with multiple sets of fixed players - 1 team per template per set"""
@@ -1896,7 +1919,7 @@ def generate_teams_multiple_sets(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,ap
 		print(f"\n🔒 Processing Set {set_index}: {fixed_players_names}")
 		
 		# Generate teams for this set
-		set_teams = getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teamA,teamB,top13_names,fixed_players_names,enforce_top13,ensure_diversity)
+		set_teams = getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teamA,teamB,winning=None,fixed_players=fixed_players_names)
 		
 		# Add set identifier to team names
 		for j, team in enumerate(set_teams):
@@ -2014,18 +2037,7 @@ def scorecardTeams():
 	from db import getDreamTeamsBySourceMatch
 	scorecard_templates = getDreamTeamsBySourceMatch(matchid)
 	
-	# Fallback to all scorecard templates if no ground-specific templates found
-	if not scorecard_templates:
-		all_templates = getDreamTeams()  # Get all templates for scorecard analysis
-		scorecard_templates = []
-		for t in all_templates:
-			try:
-				# Access sqlite3.Row columns by name
-				stadium = t['stadium'] if 'stadium' in t.keys() else ''
-				if 'Scorecard Analysis' in str(stadium):
-					scorecard_templates.append(t)
-			except (KeyError, TypeError):
-				continue
+	# No fallback - only use ground-specific scorecard templates
 	
 	if not scorecard_templates:
 		print("❌ No scorecard templates found")
@@ -2336,7 +2348,7 @@ def remove_duplicate_teams_post_generation(teams_list):
 @app.route("/generateTeams",methods = ["POST","GET"])
 def generateTeams():
 	matchid=request.form.get('matchid')
-	winning=request.form.get('winning', 'Batting')  # Default to 'Batting' if not provided
+	winning=request.form.get('wininning', 'Batting')  # Default to 'Batting' if not provided
 	print(f"🎯 Team generation strategy: {winning}")
 	players=getplayers(matchid)
 	teams=getteams(matchid)
@@ -2373,8 +2385,17 @@ def generateTeams():
 	enforce_top13 = request.form.get('enforce_top13') == '1'
 	ensure_diversity = request.form.get('ensure_diversity') == '1'
 	
+	# Get fixed players from form
+	fixed_players = request.form.getlist('fixed_players')
+	
 	print(f"🎯 Enforce top 13 rule: {enforce_top13}")
 	print(f"🔄 Ensure team diversity: {ensure_diversity}")
+	print(f"🔒 Fixed players: {fixed_players}")
+	
+	# Validate fixed players count
+	if len(fixed_players) > 5:
+		print(f"⚠️ Too many fixed players selected ({len(fixed_players)}), limiting to first 5")
+		fixed_players = fixed_players[:5]
 	
 	# Always use template-based generation
 	print("Using template-based team generation with ground analysis")
@@ -2412,9 +2433,9 @@ def generateTeams():
 	# If no match role data, use all players in general categories
 	# Generate teams using templates - Loop 5 times for more variety
 	templatecombinations = []
-	for iteration in range(100):
+	for iteration in range(50):
 		print(f"🔄 Generating teams - Iteration {iteration + 1}/5 (Strategy: {winning})")
-		teams_batch = getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teams[0][1],teams[0][2],winning)
+		teams_batch = getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teams[0][1],teams[0][2],winning,fixed_players)
 		templatecombinations.extend(teams_batch)
 		print(f"✅ Iteration {iteration + 1} completed: {len(teams_batch)} teams generated, Total: {len(templatecombinations)}")
 	
@@ -2706,6 +2727,10 @@ def generateTeams():
 		print(f"❌ Error exporting sorted teams to JSON: {e}")
 		import traceback
 		traceback.print_exc()
+	
+	# No fallback team creation - if main export fails, that's it
+	if not templatecombinations or len(templatecombinations) == 0:
+		print(f"⚠️ No teams available for JSON export")
 	
 	return render_template("finalteams.html",
 	                      validcombinations=convert_teams_for_template(templatecombinations),
@@ -3196,7 +3221,7 @@ def get_top13_summary(team, top13_names):
 		"valid": True  # All teams are valid regardless of top 13 count
 	}
 
-def getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teamA,teamB,winning=None):
+def getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teamA,teamB,winning=None,fixed_players=None):
 	templates=getDreamTeams(winning)
 	print(f"Loaded templates: {len(templates) if templates else 0}")
 	if templates:
@@ -3213,6 +3238,18 @@ def getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teamA,t
 	target_teams = 500
 	all_players = atop + amid + ahit + bpow + bbre + bdea + btop + bmid + bhit + apow + abre + adea
 	
+	# Handle fixed players
+	fixed_player_objects = []
+	if fixed_players:
+		print(f"🔒 Processing {len(fixed_players)} fixed players: {fixed_players}")
+		for player_name in fixed_players:
+			# Find the player object by name
+			for player in all_players:
+				if player[3] == player_name:  # player[3] is the player name
+					fixed_player_objects.append(player)
+					break
+		print(f"🔒 Found {len(fixed_player_objects)} fixed player objects")
+	
 	# If we don't have enough total players, return empty
 	if len(all_players) < 11:
 		print(f"Not enough total players: {len(all_players)}")
@@ -3220,6 +3257,8 @@ def getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teamA,t
 	
 	print(f"Total players available: {len(all_players)}")
 	print(f"Templates to process: {len(templates)}")
+	if fixed_players:
+		print(f"🔒 Fixed players will be included in every team: {[p[3] for p in fixed_player_objects]}")
 	
 	for z in templates:
 		# Debug: Check what columns are available in the template
@@ -3273,25 +3312,53 @@ def getTeams(atop,amid,ahit,bpow,bbre,bdea,btop,bmid,bhit,apow,abre,adea,teamA,t
 		
 		teams=[]
 		attempts = 0
-		for k in range(0,5000):  # Generate 20 teams per template
+		for k in range(0,100):  # Generate 20 teams per template
 			attempts += 1
 			team=[]
 			print(f"Attempt {attempts} for template {template_name}")
 			
-			# Try to get players from each category in the correct order
+			# Start with fixed players if any
 			initial_team_size = len(team)
-			team.extend(safe_sample(atop,get_template_value(z,'atop')))
-			team.extend(safe_sample(amid,get_template_value(z,'amid')))
-			team.extend(safe_sample(ahit,get_template_value(z,'ahit')))
-			team.extend(safe_sample(bpow,get_template_value(z,'bpow')))
-			team.extend(safe_sample(bbre,get_template_value(z,'bbre')))
-			team.extend(safe_sample(bdea,get_template_value(z,'bdea')))
-			team.extend(safe_sample(btop,get_template_value(z,'btop')))
-			team.extend(safe_sample(bmid,get_template_value(z,'bmid')))
-			team.extend(safe_sample(bhit,get_template_value(z,'bhit')))
-			team.extend(safe_sample(apow,get_template_value(z,'apow')))
-			team.extend(safe_sample(abre,get_template_value(z,'abre')))
-			team.extend(safe_sample(adea,get_template_value(z,'adea')))
+			if fixed_player_objects:
+				team.extend(fixed_player_objects)
+				print(f"🔒 Added {len(fixed_player_objects)} fixed players to team")
+			
+			# Calculate remaining slots needed for each category after fixed players
+			remaining_slots = 11 - len(fixed_player_objects)
+			if remaining_slots <= 0:
+				print(f"⚠️ Too many fixed players ({len(fixed_player_objects)}), skipping template")
+				continue
+			
+			# Create filtered category lists excluding fixed players
+			def filter_category(category_players):
+				return [p for p in category_players if p not in fixed_player_objects]
+			
+			filtered_atop = filter_category(atop)
+			filtered_amid = filter_category(amid)
+			filtered_ahit = filter_category(ahit)
+			filtered_bpow = filter_category(bpow)
+			filtered_bbre = filter_category(bbre)
+			filtered_bdea = filter_category(bdea)
+			filtered_btop = filter_category(btop)
+			filtered_bmid = filter_category(bmid)
+			filtered_bhit = filter_category(bhit)
+			filtered_apow = filter_category(apow)
+			filtered_abre = filter_category(abre)
+			filtered_adea = filter_category(adea)
+			
+			# Try to get remaining players from each category
+			team.extend(safe_sample(filtered_atop,get_template_value(z,'atop')))
+			team.extend(safe_sample(filtered_amid,get_template_value(z,'amid')))
+			team.extend(safe_sample(filtered_ahit,get_template_value(z,'ahit')))
+			team.extend(safe_sample(filtered_bpow,get_template_value(z,'bpow')))
+			team.extend(safe_sample(filtered_bbre,get_template_value(z,'bbre')))
+			team.extend(safe_sample(filtered_bdea,get_template_value(z,'bdea')))
+			team.extend(safe_sample(filtered_btop,get_template_value(z,'btop')))
+			team.extend(safe_sample(filtered_bmid,get_template_value(z,'bmid')))
+			team.extend(safe_sample(filtered_bhit,get_template_value(z,'bhit')))
+			team.extend(safe_sample(filtered_apow,get_template_value(z,'apow')))
+			team.extend(safe_sample(filtered_abre,get_template_value(z,'abre')))
+			team.extend(safe_sample(filtered_adea,get_template_value(z,'adea')))
 			
 			print(f"Team size after adding players: {len(team)} (added {len(team) - initial_team_size} players)")
 			
@@ -3522,9 +3589,9 @@ def save_teams_to_file(teams, teamA_name, teamB_name):
 							player_id = team[j][7] if len(team[j]) > 7 else 0
 				except (IndexError, TypeError, AttributeError) as e:
 					print(f"⚠️ DEBUG: Error extracting player ID for team {i}, player {j}: {e}")
-					player_id = j + 1000 + (i * 100)  # Generate fallback ID
+					player_id = 0  # No fallback ID generation
 				
-				player_ids.append(int(player_id) if player_id else (j + 1000 + (i * 100)))
+				player_ids.append(int(player_id) if player_id else 0)
 			
 			print(f"🔍 DEBUG: Team {i} player IDs: {player_ids}")
 			
@@ -3824,28 +3891,9 @@ def getvalidcombinations(combinations,teamA,teamB):
 				if BATcount>=1 and BATcount<=7:
 					if ALcount>=1 and ALcount<=7:
 						if BOWLCount>=1 and BOWLCount<=7:
-							# Select captain and vice-captain using template indices (fallback logic)
-							captain = None
-							vice_captain = None
-							
-							# For fallback logic, use percentage-based selection since template context may not be available
-							team_sorted_by_percentage = sorted(team, key=lambda x: int(x[5]) if x[5] else 0, reverse=True)
-							
-							if len(team_sorted_by_percentage) > 0:
-								captain = team_sorted_by_percentage[0]  # Highest percentage player as captain
-							
-							if len(team_sorted_by_percentage) > 1:
-								vice_captain = team_sorted_by_percentage[1]  # Second highest as vice-captain
-							elif len(team_sorted_by_percentage) > 0 and captain:
-								other_players = [p for p in team if p != captain]
-								if other_players:
-									vice_captain = random.choice(other_players)
-							
-							# Add captain and vice-captain as positions 11 and 12 (these are references, not duplicates)
-							if captain:
-								team.append(captain)  # Position 11
-							if vice_captain:
-								team.append(vice_captain)  # Position 12
+							# No fallback captain/vice-captain selection - teams must have proper template-based selection
+							# Skip teams that don't have proper captain/vice-captain from template
+							continue
 								
 							validcombinations.append(team)
 	return validcombinations
